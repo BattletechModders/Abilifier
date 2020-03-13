@@ -57,46 +57,11 @@ namespace Abilifier
         {
             foreach (var abilityDef in ModAbilities)
             {
-                Log($"{abilityDef.Description.Id} {abilityDef.ReqSkill} {abilityDef.ReqSkillLevel}");
+                Log($"{abilityDef.Id} {abilityDef.ReqSkill} {abilityDef.ReqSkillLevel}");
             }
         }
-
-        //internal static void Choose(AbilityDef abilityDef, HBSDOTweenToggle pip)
-        //{
-        //    try
-        //    {
-        //        var sim = UnityGameInstance.BattleTechGame.Simulation;
-        //        var ability = UnityGameInstance.BattleTechGame.DataManager.AbilityDefs
-        //            .Select(x => x.Value)
-        //            .First(x => x.Description.Name == abilityName);
-        //        ___gutPips[7].Initialize(
-        //            "Guts",
-        //            7,
-        //            sim.GetLevelCost(7),
-        //            abilityName != "COOLANT VENT",
-        //            Helpers.OnValueClick,
-        //            (str, num) => AccessTools.Method(typeof(SGBarracksAdvancementPanel), "OnPipHoverEnter")
-        //                .Invoke(__instance, new object[] {typeof(string), typeof(int)}),
-        //            (str, num) => AccessTools.Method(typeof(SGBarracksAdvancementPanel), "OnPipHoverExit")
-        //                .Invoke(__instance, new object[] {typeof(string), typeof(int)}),
-        //            ability,
-        //            true);
-        //        Traverse.Create(__instance).Method("RefreshPanel").GetValue();
-        //        var curPilot = Traverse.Create(__instance).Field("curPilot").GetValue<Pilot>();
-        //        if (curPilot.StatCollection.GetValue<int>(type) > value)
-        //        {
-        //            Traverse.Create(__instance).Method("SetTempPilotSkill", type, value, -sim.GetLevelCost(value), true).GetValue();
-        //            Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
-        //            return;
-        //        }
-        //        Helpers.SetTempPilotSkill(__instance, ability, type, value, sim.GetLevelCost(value));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log(ex);
-        //    }
-        //}
-
+        
+        // modified copy from assembly
         internal static void SetTempPilotSkill(AbilityDef abilityDef, string type, int skill, int expAmount, bool updateScreen = true)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -112,8 +77,8 @@ namespace Abilifier
                 var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
                 //if (sim.CanPilotTakeAbility(pilotDef, abilityDef))
                 {
-                    Log("Adding " + abilityDef.Description.Id);
-                    pilotDef.abilityDefNames.Add(abilityDef.Description.Id);
+                    Log("Adding " + abilityDef.Id);
+                    pilotDef.abilityDefNames.Add(abilityDef.Id);
                     upgradedPrimarySkills.Add(abilityDef);
                 }
 
@@ -143,13 +108,12 @@ namespace Abilifier
             }
 
             pilot.ModifyPilotStat_Barracks(0, "Advancement", type, (uint) (skill + 1));
-            panel.SetPilot(pilot);
+            panel.SetPilot(pilot, false);
             Traverse.Create(panel).Method("RefreshPanel").GetValue();
             var callback = Traverse.Create(panel).Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
             if (updateScreen)
             {
-                Log("callback " + callback.Method);
-                //callback?.Invoke(pilot);
+                callback.Invoke(pilot);
             }
         }
 

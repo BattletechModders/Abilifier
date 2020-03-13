@@ -61,13 +61,15 @@ namespace Abilifier
                     try
                     {
                         // build complete list of defs from HBS and imported json
-                        var abilityDefs = Helpers.ModAbilities.Where(x => x.ReqSkillLevel == index + 1 && x.ReqSkill.ToString() == type).ToList();
+                        var abilityDefs = Helpers.ModAbilities
+                            .Where(x => x.ReqSkillLevel == index + 1 && x.ReqSkill.ToString() == type).ToList();
                         var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
                         foreach (var abilityDictionary in abilityDictionaries)
                         {
                             abilityDefs.AddRange(abilityDictionary[index].Where(x => x.ReqSkill.ToString() == type));
                         }
 
+                        // dynamic buttons based on available abilities
                         var popup = GenericPopupBuilder
                             .Create("", "Select an ability")
                             .AddFader();
@@ -91,17 +93,7 @@ namespace Abilifier
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "OnValueClick")]
         public static class SGBarracksAdvancementPanel_OnValueClick_Patch
         {
-            public static void Prefix(Pilot ___curPilot)
-            {
-                try
-                {
-                    ___curPilot.AddExperience(0, "", 100000);
-                }
-                catch (Exception ex)
-                {
-                    Log(ex);
-                }
-            }
+            public static void Prefix(Pilot ___curPilot) => ___curPilot.AddExperience(0, "", 100000);
         }
     }
 }
