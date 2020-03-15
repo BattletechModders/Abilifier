@@ -6,6 +6,7 @@
   "Description": "Ability options",
   "Author": "gnivler" ,
   "Settings": {
-    "enableTrace": false
+    "enableTrace": false,
+    "enableLog": false
   }
 }

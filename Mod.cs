@@ -27,10 +27,11 @@ namespace Abilifier
             }
 
             var logFile = modSettings.modDirectory + "/log.txt";
-            if (File.Exists( logFile))
+            if (File.Exists(logFile))
             {
                 File.Delete(logFile);
             }
+
             Trace("Starting up " + DateTime.Now.ToShortTimeString());
             Helpers.PopulateAbilities();
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
@@ -39,9 +40,12 @@ namespace Abilifier
 
         internal static void Log(object input)
         {
-            using (var writer = new StreamWriter(modSettings.modDirectory + "/log.txt"))
+            if (modSettings.enableLog)
             {
-                writer.WriteLine($"[Abilifier] {input ?? "NULL"}");
+                using (var writer = new StreamWriter(modSettings.modDirectory + "/log.txt"))
+                {
+                    writer.WriteLine($"[Abilifier] {input ?? "NULL"}");
+                }
             }
 
             if (modSettings.enableTrace)
@@ -61,6 +65,7 @@ namespace Abilifier
         public class Settings
         {
             public bool enableTrace;
+            public bool enableLog;
             public string modDirectory;
         }
     }
