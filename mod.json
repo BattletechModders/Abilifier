@@ -2,6 +2,10 @@
   "Name": "Abilifier",
   "DLL": "Abilifier.dll",
   "Version": "0.1",
+  "Enabled": true,
   "Description": "Ability options",
-  "Author": "gnivler"
+  "Author": "gnivler" ,
+  "Settings": {
+    "enableTrace": false
+  }
 }

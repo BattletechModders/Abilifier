@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Text;
 using BattleTech;
 using BattleTech.Data;
 using BattleTech.UI;
@@ -30,74 +28,94 @@ namespace Abilifier
             foreach (var file in jsonFiles)
             {
                 var abilityDef = new AbilityDef();
-                using (var stream = file.OpenRead())
+                abilityDef.FromJSON(File.ReadAllText(file.FullName));
+                if (!ModAbilities.Contains(abilityDef))
                 {
-                    var buffer = new byte[stream.Length];
-                    var json = "";
-                    var encoding = new UTF8Encoding(true);
-                    while (stream.Read(buffer, 0, (int) stream.Length) > 0)
-                    {
-                        json += encoding.GetString(buffer);
-                    }
+                    ModAbilities.Add(abilityDef);
+                }
+                else
+                {
+                    Log("Duplicate AbilityDef, id is " + abilityDef.Id);
+                }
+            }
+        }
 
-                    abilityDef.FromJSON(json);
-                    if (!ModAbilities.Contains(abilityDef))
+        // modified copy from assembly
+        internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            var traverse = Traverse.Create(panel);
+            var orderedDictionary = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
+            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true);
+            foreach (var obj in orderedDictionary.Values)
+            {
+                var keyValuePair = (KeyValuePair<string, int>) obj;
+                Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
+                // this is the only change - calling internal implementation
+                SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
+            }
+
+            var callback = traverse.Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
+            callback?.Invoke(traverse.Field("curPilot").GetValue<Pilot>());
+        }
+
+        // modified copy from assembly
+        internal static void SetTempPilotSkill(string type, int skill, int expAmount, AbilityDef abilityDef = null)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            var abilityTree = sim.AbilityTree[type][skill];
+            var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
+            var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
+            var pilotDef = curPilot.ToPilotDef(true);
+            pilotDef.DataManager = sim.DataManager;
+            var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
+            var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            for (var i = 0; i < abilityTree.Count; i++)
+            {
+                Trace($"Looping {type} {skill}: {abilityTree[i].Id}");
+                if (expAmount > 0)
+                {
+                    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    if (!upgradedSkills.Contains(skillKey))
                     {
-                        ModAbilities.Add(abilityDef);
+                        upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
+                        Trace($"Add trait {abilityTree[i].Id}");
+                    }
+                }
+                else
+                {
+                    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    upgradedSkills.Remove(skillKey2);
+                    upgradedPrimarySkills.Remove(abilityTree[i]);
+                    Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
+                    return;
+                }
+                
+                var abilityToUse = abilityDef ?? abilityTree[i];
+                Trace($"abilityToUse: {abilityToUse.Id}");
+                pilotDef.ForceRefreshAbilityDefs();
+                // extra condition blocks skills from being taken at incorrect location
+                if (expAmount > 0 &&
+                    abilityToUse.ReqSkillLevel == skill + 1 &&
+                    !pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
+                    sim.CanPilotTakeAbility(pilotDef, abilityToUse))
+                {
+                    Trace("Add primary " + abilityToUse.Id);
+                    pilotDef.abilityDefNames.Add(abilityToUse.Id);
+                    if (abilityToUse.IsPrimaryAbility)
+                    {
+                        upgradedPrimarySkills.Add(abilityToUse);
                     }
                     else
                     {
-                        Log("Duplicate AbilityDef, id is " + abilityDef.Description.Id);
+                        // still need to add it, even if it can't be a primary at location
+                        Trace("Add trait " + abilityToUse.Id);
+                        pilotDef.abilityDefNames.Add(abilityToUse.Id);
                     }
                 }
             }
-        }
 
-        internal static void LogAbilityDictionary()
-        {
-            foreach (var abilityDef in ModAbilities)
-            {
-                Log($"{abilityDef.Id} {abilityDef.ReqSkill} {abilityDef.ReqSkillLevel}");
-            }
-        }
-        
-        // modified copy from assembly
-        internal static void SetTempPilotSkill(AbilityDef abilityDef, string type, int skill, int expAmount, bool updateScreen = true)
-        {
-            var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
-            var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
-            PilotDef pilotDef = curPilot.ToPilotDef(true);
-            pilotDef.DataManager = sim.DataManager;
-            pilotDef.abilityDefNames.Add(abilityDef.Id);
-            pilotDef.ForceRefreshAbilityDefs();
-            var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
-            if (expAmount > 0)
-            {
-                var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
-                //if (sim.CanPilotTakeAbility(pilotDef, abilityDef))
-                {
-                    Log("Adding " + abilityDef.Id);
-                    pilotDef.abilityDefNames.Add(abilityDef.Id);
-                    upgradedPrimarySkills.Add(abilityDef);
-                }
-
-                var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
-                if (!upgradedSkills.Contains(skillKey))
-                {
-                    upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
-                }
-            }
-            else if (expAmount < 0)
-            {
-                var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
-                if (upgradedSkills.Contains(skillKey2))
-                {
-                    upgradedSkills.Remove(skillKey2);
-                }
-
-                return;
-            }
+            Trace("\n");
 
             pilotDef.ForceRefreshAbilityDefs();
             var pilot = new Pilot(pilotDef, curPilot.GUID, true);
@@ -111,10 +129,8 @@ namespace Abilifier
             panel.SetPilot(pilot, false);
             Traverse.Create(panel).Method("RefreshPanel").GetValue();
             var callback = Traverse.Create(panel).Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
-            if (updateScreen)
-            {
-                callback.Invoke(pilot);
-            }
+            // callback sets the Reset / Confirm buttons states
+            callback.Invoke(pilot);
         }
 
         internal static void PreloadIcons()

@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Reflection;
 using Harmony;
 using Newtonsoft.Json;
+
 // ReSharper disable UnassignedField.Global
 // ReSharper disable InconsistentNaming
 
@@ -24,21 +26,41 @@ namespace Abilifier
                 modSettings = new Settings();
             }
 
-            Log("Starting up");
+            var logFile = modSettings.modDirectory + "/log.txt";
+            if (File.Exists( logFile))
+            {
+                File.Delete(logFile);
+            }
+            Trace("Starting up " + DateTime.Now.ToShortTimeString());
             Helpers.PopulateAbilities();
-            Helpers.LogAbilityDictionary();
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
         internal static void Log(object input)
         {
-            FileLog.Log($"[Abilifier] {input ?? "NULL"}");
+            using (var writer = new StreamWriter(modSettings.modDirectory + "/log.txt"))
+            {
+                writer.WriteLine($"[Abilifier] {input ?? "NULL"}");
+            }
+
+            if (modSettings.enableTrace)
+            {
+                Trace(input);
+            }
+        }
+
+        internal static void Trace(object input)
+        {
+            if (modSettings.enableTrace)
+            {
+                FileLog.Log($"[Abilifier] Trace: {input ?? "NULL"}");
+            }
         }
 
         public class Settings
         {
-            public bool enableDebug;
+            public bool enableTrace;
             public string modDirectory;
         }
     }
