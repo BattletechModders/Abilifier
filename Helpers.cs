@@ -19,26 +19,26 @@ namespace Abilifier
 {
     public class Helpers
     {
-        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
+//        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
 
-        internal static void PopulateAbilities()
-        {
-            var jsonFiles = new DirectoryInfo(
-                Path.Combine(modSettings.modDirectory, "Abilities")).GetFiles().ToList();
-            foreach (var file in jsonFiles)
-            {
-                var abilityDef = new AbilityDef();
-                abilityDef.FromJSON(File.ReadAllText(file.FullName));
-                if (!ModAbilities.Contains(abilityDef))
-                {
-                    ModAbilities.Add(abilityDef);
-                }
-                else
-                {
-                    Log("Duplicate AbilityDef, id is " + abilityDef.Id);
-                }
-            }
-        }
+//        internal static void PopulateAbilities()
+//        {
+//            var jsonFiles = new DirectoryInfo(
+//                Path.Combine(modSettings.modDirectory, "Abilities")).GetFiles().ToList();
+//            foreach (var file in jsonFiles)
+//            {
+//                var abilityDef = new AbilityDef();
+//                abilityDef.FromJSON(File.ReadAllText(file.FullName));
+//                if (!ModAbilities.Contains(abilityDef))
+//                {
+//                    ModAbilities.Add(abilityDef);
+//                }
+//                else
+//                {
+//                    Log("Duplicate AbilityDef, id is " + abilityDef.Id);
+//                }
+//            }
+//        }
 
         // modified copy from assembly
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
@@ -133,34 +133,34 @@ namespace Abilifier
             callback.Invoke(pilot);
         }
 
-        internal static void PreloadIcons()
-        {
-            var dm = UnityGameInstance.BattleTechGame.DataManager;
-            var loadRequest = dm.CreateLoadRequest();
-            foreach (var abilityDef in ModAbilities)
-            {
-                loadRequest.AddLoadRequest<SVGAsset>(BattleTechResourceType.SVGAsset, abilityDef.Description.Icon, null);
-            }
+ //       internal static void PreloadIcons()
+ //       {
+ //           var dm = UnityGameInstance.BattleTechGame.DataManager;
+ //           var loadRequest = dm.CreateLoadRequest();
+ //           foreach (var abilityDef in ModAbilities)
+ //           {
+ //               loadRequest.AddLoadRequest<SVGAsset>(BattleTechResourceType.SVGAsset, abilityDef.Description.Icon, null);
+ //           }
 
-            loadRequest.ProcessRequests();
-        }
+//            loadRequest.ProcessRequests();
+//        }
 
-        public static void InsertAbilities()
-        {
-            var dm = UnityGameInstance.BattleTechGame.DataManager;
-            var sim = UnityGameInstance.BattleTechGame.Simulation;
+//        public static void InsertAbilities()
+//        {
+//            var dm = UnityGameInstance.BattleTechGame.DataManager;
+//            var sim = UnityGameInstance.BattleTechGame.Simulation;
 
-            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").Field("items").GetValue<Dictionary<string,AbilityDef>>();
+//            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").Field("items").GetValue<Dictionary<string,AbilityDef>>();
 
             
-            foreach (var abilityDef in ModAbilities)
-            {
-                abilityDefs.Add(abilityDef.Id, abilityDef);
-                var load = new DataManager.DependencyLoadRequest(dm);
-                abilityDef.GatherDependencies(dm, load, 0);
-                sim.AbilityTree[abilityDef.ReqSkill.ToString()][abilityDef.ReqSkillLevel].Add(abilityDef);
-            }
+//            foreach (var abilityDef in ModAbilities)
+//            {
+//                abilityDefs.Add(abilityDef.Id, abilityDef);
+//                var load = new DataManager.DependencyLoadRequest(dm);
+//                abilityDef.GatherDependencies(dm, load, 0);
+//                sim.AbilityTree[abilityDef.ReqSkill.ToString()][abilityDef.ReqSkillLevel].Add(abilityDef);
+//            }
             //Traverse.Create(dm).Field("AbilityDefs").SetValue(abilityDefs);
-        }
+//        }
     }
 }

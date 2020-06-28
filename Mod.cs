@@ -33,7 +33,7 @@ namespace Abilifier
             }
 
             Trace("Starting up " + DateTime.Now.ToShortTimeString());
-            Helpers.PopulateAbilities();
+//            Helpers.PopulateAbilities();
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }

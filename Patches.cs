@@ -15,24 +15,26 @@ namespace Abilifier
 {
     public class Patches
     {
-        [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "Initialize")]
-        public static class SGBarracksAdvancementPanel_Initialize_Patch
-        {
-            public static void Prefix()
-            {
-                try
-                {
-                    Helpers.PreloadIcons();
-                    Helpers.InsertAbilities();
-                }
-                catch (Exception ex)
-                {
-                    Log(ex);
-                }
-            }
-        }
+//        [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "Initialize")]
+//        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
+//        public static class SGBarracksAdvancementPanel_Initialize_Patch
+//        {
+//            public static void Prefix()
+//            {
+//                try
+ //               {
+//                    Helpers.PreloadIcons();
+//                    Helpers.InsertAbilities();
+//                }
+//                catch (Exception ex)
+//                {
+//                    Log(ex);
+//                }
+//            }
+//        }
 
         [HarmonyPatch(typeof(SGBarracksSkillPip), "Initialize")]
+        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
         public static class SGBarracksSkillPip_Initialize_Patch
         {
             public static void Prefix(int index, ref AbilityDef ability)
@@ -49,6 +51,7 @@ namespace Abilifier
 
         // rewrite of original
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "OnValueClick")]
+        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
         public static class SGBarracksAdvancementPanel_OnValueClick_Patch
         {
             public static bool Prefix(
@@ -100,9 +103,10 @@ namespace Abilifier
                     // Ability pips
                     // build complete list of defs from HBS and imported json
 
-                    var abilityDefs = Helpers.ModAbilities
-                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
+//                    var abilityDefs = Helpers.ModAbilities
+//                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
 
+                    var abilityDefs = new List<AbilityDef>();
                     var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
                     foreach (var abilityDictionary in abilityDictionaries)
                     {
@@ -144,7 +148,7 @@ namespace Abilifier
                             abilityDescs += abilityDef.Description.Name + ": " + abilityDef.Description.Details + "\n\n";
                         }
                     }
-                    //    [[DM.BaseDescriptionDefs[TBoneLoreRoberts],Roberts]]
+
                     var popup = GenericPopupBuilder
                         .Create("Select an ability",
                         abilityDescs)
