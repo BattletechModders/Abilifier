@@ -7,6 +7,7 @@ using BattleTech.UI.Tooltips;
 using Harmony;
 using SVGImporter;
 using static Abilifier.Mod;
+using HBS.Data;
 
 // ReSharper disable InconsistentNaming
 
@@ -98,8 +99,10 @@ namespace Abilifier
 
                     // Ability pips
                     // build complete list of defs from HBS and imported json
+
                     var abilityDefs = Helpers.ModAbilities
                         .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
+
                     var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
                     foreach (var abilityDictionary in abilityDictionaries)
                     {
@@ -127,8 +130,24 @@ namespace Abilifier
                     }
 
                     // dynamic buttons based on available abilities
+                    string abilityDescs=null;
+                    foreach (var abilityDef in abilityDefs)
+                    {
+                        string abilityID = abilityDef.Id+"Desc";
+                        string abilityName = abilityDef.Description.Name;
+                        if (Mod.modSettings.usePopUpsForAbilityDesc == true)
+                        {
+                            abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                        }
+                        else
+                        {
+                            abilityDescs += abilityDef.Description.Name + ": " + abilityDef.Description.Details + "\n\n";
+                        }
+                    }
+                    //    [[DM.BaseDescriptionDefs[TBoneLoreRoberts],Roberts]]
                     var popup = GenericPopupBuilder
-                        .Create("", "Select an ability")
+                        .Create("Select an ability",
+                        abilityDescs)
                         .AddFader();
                     popup.AlwaysOnTop = true;
                     var pip = pips[type][value];

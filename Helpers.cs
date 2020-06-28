@@ -49,7 +49,7 @@ namespace Abilifier
             panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true);
             foreach (var obj in orderedDictionary.Values)
             {
-                var keyValuePair = (KeyValuePair<string, int>) obj;
+                var keyValuePair = (KeyValuePair<string, int>)obj;
                 Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                 // this is the only change - calling internal implementation
                 SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
@@ -90,7 +90,7 @@ namespace Abilifier
                     Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
                     return;
                 }
-                
+
                 var abilityToUse = abilityDef ?? abilityTree[i];
                 Trace($"abilityToUse: {abilityToUse.Id}");
                 pilotDef.ForceRefreshAbilityDefs();
@@ -122,10 +122,10 @@ namespace Abilifier
             pilot.pilotDef.DataManager = curPilot.pilotDef.DataManager;
             if (expAmount > 0)
             {
-                pilot.SpendExperience(0, "Advancement", (uint) expAmount);
+                pilot.SpendExperience(0, "Advancement", (uint)expAmount);
             }
 
-            pilot.ModifyPilotStat_Barracks(0, "Advancement", type, (uint) (skill + 1));
+            pilot.ModifyPilotStat_Barracks(0, "Advancement", type, (uint)(skill + 1));
             panel.SetPilot(pilot, false);
             Traverse.Create(panel).Method("RefreshPanel").GetValue();
             var callback = Traverse.Create(panel).Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
@@ -149,7 +149,10 @@ namespace Abilifier
         {
             var dm = UnityGameInstance.BattleTechGame.DataManager;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").GetValue<DictionaryStore<AbilityDef>>();
+
+            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").Field("items").GetValue<Dictionary<string,AbilityDef>>();
+
+            
             foreach (var abilityDef in ModAbilities)
             {
                 abilityDefs.Add(abilityDef.Id, abilityDef);
@@ -157,6 +160,7 @@ namespace Abilifier
                 abilityDef.GatherDependencies(dm, load, 0);
                 sim.AbilityTree[abilityDef.ReqSkill.ToString()][abilityDef.ReqSkillLevel].Add(abilityDef);
             }
+            //Traverse.Create(dm).Field("AbilityDefs").SetValue(abilityDefs);
         }
     }
 }

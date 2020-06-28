@@ -66,6 +66,7 @@ namespace Abilifier
         {
             public bool enableTrace;
             public bool enableLog;
+            public bool usePopUpsForAbilityDesc = false;
             public string modDirectory;
         }
     }
