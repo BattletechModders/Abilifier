@@ -44,3 +44,18 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
     "Icon" : ""
 }
 ```
+
+Settings available in the mod.json:
+```
+  "Settings": {
+	"enableTrace": false,
+	"enableLog": false,
+	"usePopUpsForAbilityDesc": false,
+	"debugXP": true
+	},
+```
+`enableTrace` and `enableLog` allow logging.
+
+`usePopUpsForAbilityDesc` sets Abilifier to use hover tooltips for Ability descriptions as described above.
+
+`debugXP` grants 100000 XP when XP is spent (useful for testing newly added abilities).
