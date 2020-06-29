@@ -66,7 +66,10 @@ namespace Abilifier
             {
                 try
                 {
-                    ___curPilot.AddExperience(0, "", 100000);
+                    if (modSettings.debugXP == true)
+                    {
+                        ___curPilot.AddExperience(0, "", 100000);
+                    }
 
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
                     var pips = new Dictionary<string, List<SGBarracksSkillPip>>
