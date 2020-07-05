@@ -19,28 +19,29 @@ namespace Abilifier
 {
     public class Helpers
     {
-//        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
+        //        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
 
-//        internal static void PopulateAbilities()
-//        {
-//            var jsonFiles = new DirectoryInfo(
-//                Path.Combine(modSettings.modDirectory, "Abilities")).GetFiles().ToList();
-//            foreach (var file in jsonFiles)
-//            {
-//                var abilityDef = new AbilityDef();
-//                abilityDef.FromJSON(File.ReadAllText(file.FullName));
-//                if (!ModAbilities.Contains(abilityDef))
-//                {
-//                    ModAbilities.Add(abilityDef);
-//                }
-//                else
-//                {
-//                    Log("Duplicate AbilityDef, id is " + abilityDef.Id);
-//                }
-//            }
-//        }
+        //        internal static void PopulateAbilities()
+        //        {
+        //            var jsonFiles = new DirectoryInfo(
+        //                Path.Combine(modSettings.modDirectory, "Abilities")).GetFiles().ToList();
+        //            foreach (var file in jsonFiles)
+        //            {
+        //                var abilityDef = new AbilityDef();
+        //                abilityDef.FromJSON(File.ReadAllText(file.FullName));
+        //                if (!ModAbilities.Contains(abilityDef))
+        //                {
+        //                    ModAbilities.Add(abilityDef);
+        //                }
+        //                else
+        //                {
+        //                    Log("Duplicate AbilityDef, id is " + abilityDef.Id);
+        //                }
+        //            }
+        //        }
 
         // modified copy from assembly
+        public static Pilot selectedPilot;
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -65,17 +66,28 @@ namespace Abilifier
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var abilityTree = sim.AbilityTree[type][skill];
             var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
-            var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
+
+            var traverse = Traverse.Create(panel);
+            
+        //    var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
+            var curPilot = traverse.Field("curPilot").GetValue<Pilot>();
+            
             var pilotDef = curPilot.ToPilotDef(true);
             pilotDef.DataManager = sim.DataManager;
-            var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
-            var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+        //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
+            var upgradedSkills = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
+            
+        //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            
             for (var i = 0; i < abilityTree.Count; i++)
             {
                 Trace($"Looping {type} {skill}: {abilityTree[i].Id}");
                 if (expAmount > 0)
                 {
-                    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                //    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    var skillKey = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
+                    
                     if (!upgradedSkills.Contains(skillKey))
                     {
                         upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
@@ -84,7 +96,8 @@ namespace Abilifier
                 }
                 else
                 {
-                    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                //    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    var skillKey2 = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
                     upgradedSkills.Remove(skillKey2);
                     upgradedPrimarySkills.Remove(abilityTree[i]);
                     Trace($"Removing {skillKey2}: {abilityTree[i].Id}");

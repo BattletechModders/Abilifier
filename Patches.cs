@@ -8,6 +8,8 @@ using Harmony;
 using SVGImporter;
 using static Abilifier.Mod;
 using HBS.Data;
+using UnityEngine;
+using System.Reflection;
 
 // ReSharper disable InconsistentNaming
 
@@ -15,23 +17,6 @@ namespace Abilifier
 {
     public class Patches
     {
-//        [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "Initialize")]
-//        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
-//        public static class SGBarracksAdvancementPanel_Initialize_Patch
-//        {
-//            public static void Prefix()
-//            {
-//                try
- //               {
-//                    Helpers.PreloadIcons();
-//                    Helpers.InsertAbilities();
-//                }
-//                catch (Exception ex)
-//                {
-//                    Log(ex);
-//                }
-//            }
-//        }
 
         [HarmonyPatch(typeof(SGBarracksSkillPip), "Initialize")]
         [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
@@ -48,6 +33,57 @@ namespace Abilifier
                 }
             }
         }
+
+
+        [HarmonyPatch(typeof(SGBarracksMWDetailPanel), "SetPilot")]
+
+        public static class SGBarracksMWDetailPanel_SetPilot_Patch
+        {
+            public static void Postfix(Pilot p, SGBarracksMWDetailPanel __instance,
+                Pilot ___curPilot,
+                SGBarracksAdvancementPanel ___advancement,
+                SGBarracksWidget ___barracks
+                )
+            {
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                var selectedPilot = Traverse.Create(___barracks).Field("selectedPilot").GetValue<Pilot>();
+
+                var gunPips = Traverse.Create(___advancement).Field("gunPips").GetValue <List<SGBarracksSkillPip>>();
+                var pilotPips = Traverse.Create(___advancement).Field("pilotPips").GetValue <List<SGBarracksSkillPip>>();
+                var gutPips = Traverse.Create(___advancement).Field("gutPips").GetValue <List<SGBarracksSkillPip>>();
+                var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue <List<SGBarracksSkillPip>>();
+
+                var abilityDefs = new List<AbilityDef>();
+                var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+                foreach (var abilityDictionary in abilityDictionaries)
+                {
+                    abilityDefs.AddRange(abilityDictionary[4].Where(x => x.ReqSkill.ToString() == "Piloting"));
+                }
+
+//                var abilityDefs = sim.GetAbilityDefFromTree("Piloting", 5);
+                var abilityDef = abilityDefs.Find(x => x.Description.Id == "AbilityDefP5a");
+
+                //added 0931?
+                var pilotDef = selectedPilot.ToPilotDef(true);
+                var pilot = new Pilot(pilotDef, selectedPilot.GUID, true);
+                pilot.pilotDef.DataManager = selectedPilot.pilotDef.DataManager;
+
+
+                if (pilot.pilotDef.abilityDefNames.Contains("AbilityDefP8"))
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        Traverse.Create(pilotPips[i]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
+                        Traverse.Create(pilotPips[i]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                    }
+                }
+                Traverse.Create(___advancement).Method("RefreshPanel").GetValue();
+            }
+        }
+
+ 
+
 
         // rewrite of original
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "OnValueClick")]
@@ -106,11 +142,14 @@ namespace Abilifier
                     // Ability pips
                     // build complete list of defs from HBS and imported json
 
-//                    var abilityDefs = Helpers.ModAbilities
-//                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
+                    //                    var abilityDefs = Helpers.ModAbilities
+                    //                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
 
-                    var abilityDefs = new List<AbilityDef>();
+                    
                     var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+
+                    //List<AbilityDef> abilityDefs = sim.GetAbilityDefFromTree(type, value); //does same thing as below?
+                    var abilityDefs = new List<AbilityDef>();
                     foreach (var abilityDictionary in abilityDictionaries)
                     {
                         abilityDefs.AddRange(abilityDictionary[value].Where(x => x.ReqSkill.ToString() == type));
@@ -137,10 +176,10 @@ namespace Abilifier
                     }
 
                     // dynamic buttons based on available abilities
-                    string abilityDescs=null;
+                    string abilityDescs = null;
                     foreach (var abilityDef in abilityDefs)
                     {
-                        string abilityID = abilityDef.Id+"Desc";
+                        string abilityID = abilityDef.Id + "Desc";
                         string abilityName = abilityDef.Description.Name;
                         if (Mod.modSettings.usePopUpsForAbilityDesc == true)
                         {
@@ -181,6 +220,7 @@ namespace Abilifier
 
                 return false;
             }
+
         }
     }
 }
