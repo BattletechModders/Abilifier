@@ -35,13 +35,59 @@ namespace Abilifier
             }
         }
 
+        [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
+        public static class SGBarracksAdvancementPanel_SetPips_Patch
+        {
+            public static bool Prefix(SGBarracksAdvancementPanel __instance,
+                List<SGBarracksSkillPip> pips, int originalSkill, int curSkill, int idx, bool needsXP, bool isLocked, Pilot ___curPilot)
+
+            {
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                SGBarracksSkillPip.PurchaseState purchaseState = SGBarracksSkillPip.PurchaseState.Unselected;
+                if (originalSkill > idx)
+                {
+                    purchaseState = SGBarracksSkillPip.PurchaseState.Purchased;
+                }
+                else if (curSkill > idx)
+                {
+                    purchaseState = SGBarracksSkillPip.PurchaseState.Selected;
+                }
+                bool flag = false;
+                if (isLocked && (idx + 1 == pips.Count || curSkill == idx + 1))
+                {
+                    flag = true;
+                }
+                if (pips[idx].Ability != null)
+                {
+                    bool flag2 = sim.CanPilotTakeAbility(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
+                    bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
+
+                    var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkillLevel == idx+1 && x.IsPrimaryAbility==true);
+                    bool flag4 = true;
+                    if (abilityDefs != null)
+                    {
+                        flag4 = true;
+                    }
+                    else
+                    { flag4 = false; }
+
+
+                    pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
+                    pips[idx].SetActiveAbilityVisible(flag2 || flag3 || flag4);
+                }
+                pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
+                return false;
+            }
+        }
+
+            //////////////////////////////////////working below///////////////////////////////////////////////
         [HarmonyPatch(typeof(SGBarracksMWDetailPanel), "SetPilot")]
 
         public static class SGBarracksMWDetailPanel_SetPilot_Patch
         {
             public static void Postfix(SGBarracksMWDetailPanel __instance,
                 Pilot p,
-                ref SGBarracksAdvancementPanel ___advancement
+                SGBarracksAdvancementPanel ___advancement
                 )
             {
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
