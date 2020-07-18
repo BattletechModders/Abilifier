@@ -8,7 +8,8 @@ using Harmony;
 using SVGImporter;
 using static Abilifier.Mod;
 using HBS.Data;
-using UnityEngine;
+using UnityEngine.Events;
+
 using System.Reflection;
 
 // ReSharper disable InconsistentNaming
@@ -34,43 +35,47 @@ namespace Abilifier
             }
         }
 
-
         [HarmonyPatch(typeof(SGBarracksMWDetailPanel), "SetPilot")]
 
         public static class SGBarracksMWDetailPanel_SetPilot_Patch
         {
-            public static void Postfix(Pilot p, SGBarracksMWDetailPanel __instance,
-                Pilot ___curPilot,
-                SGBarracksAdvancementPanel ___advancement,
-                SGBarracksWidget ___barracks
+            public static void Postfix(SGBarracksMWDetailPanel __instance,
+                Pilot p,
+                ref SGBarracksAdvancementPanel ___advancement
                 )
             {
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
-                var selectedPilot = Traverse.Create(___barracks).Field("selectedPilot").GetValue<Pilot>();
 
-                var gunPips = Traverse.Create(___advancement).Field("gunPips").GetValue <List<SGBarracksSkillPip>>();
-                var pilotPips = Traverse.Create(___advancement).Field("pilotPips").GetValue <List<SGBarracksSkillPip>>();
-                var gutPips = Traverse.Create(___advancement).Field("gutPips").GetValue <List<SGBarracksSkillPip>>();
-                var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue <List<SGBarracksSkillPip>>();
+
+                var gunPips = Traverse.Create(___advancement).Field("gunPips").GetValue<List<SGBarracksSkillPip>>();
+                var pilotPips = Traverse.Create(___advancement).Field("pilotPips").GetValue<List<SGBarracksSkillPip>>();
+                var gutPips = Traverse.Create(___advancement).Field("gutPips").GetValue<List<SGBarracksSkillPip>>();
+                var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
+
 
                 var abilityDefs = new List<AbilityDef>();
                 var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
-                foreach (var abilityDictionary in abilityDictionaries)
-                {
-                    abilityDefs.AddRange(abilityDictionary[4].Where(x => x.ReqSkill.ToString() == "Piloting"));
-                }
 
-//                var abilityDefs = sim.GetAbilityDefFromTree("Piloting", 5);
+                abilityDefs = sim.AbilityTree["Piloting"][4];
+//                foreach (var abilityDictionary in abilityDictionaries)
+//                {
+//                    abilityDefs.AddRange(abilityDictionary[4].Where(x => x.ReqSkill.ToString() == "Piloting"));
+//                }
+
+                //var abilityDefs = sim.GetAbilityDefFromTree("Piloting", 5);
                 var abilityDef = abilityDefs.Find(x => x.Description.Id == "AbilityDefP5a");
+                var abilityDef2 = abilityDefs.Find(x => x.Description.Id == "AbilityDefP5");
 
                 //added 0931?
-                var pilotDef = selectedPilot.ToPilotDef(true);
-                var pilot = new Pilot(pilotDef, selectedPilot.GUID, true);
-                pilot.pilotDef.DataManager = selectedPilot.pilotDef.DataManager;
+
+                var pilotDef = p.ToPilotDef(true);
+                var pilot = new Pilot(pilotDef, p.GUID, true);
+                pilot.pilotDef.DataManager = p.pilotDef.DataManager;
 
 
-                if (pilot.pilotDef.abilityDefNames.Contains("AbilityDefP8"))
+                if (p.pilotDef.abilityDefNames.Contains("AbilityDefP8"))
                 {
+                    
                     for (int i = 0; i < 10; i++)
                     {
                         Traverse.Create(pilotPips[i]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
@@ -78,11 +83,20 @@ namespace Abilifier
                             .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
                     }
                 }
-                Traverse.Create(___advancement).Method("RefreshPanel").GetValue();
+ //               else
+ //               {
+ //                   for (int i = 0; i < 10; i++)
+ //                   {
+ //                       Traverse.Create(pilotPips[i]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef2.AbilityIcon;
+ //                       Traverse.Create(pilotPips[i]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+ //                           .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef2.Description));
+ //                   }
+ //               }
             }
         }
 
- 
+
+
 
 
         // rewrite of original
