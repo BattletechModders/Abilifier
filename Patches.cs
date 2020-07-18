@@ -53,51 +53,53 @@ namespace Abilifier
                 var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
 
 
-                var abilityDefs = new List<AbilityDef>();
-                var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
-
-                abilityDefs = sim.AbilityTree["Piloting"][4];
-//                foreach (var abilityDictionary in abilityDictionaries)
-//                {
-//                    abilityDefs.AddRange(abilityDictionary[4].Where(x => x.ReqSkill.ToString() == "Piloting"));
-//                }
-
-                //var abilityDefs = sim.GetAbilityDefFromTree("Piloting", 5);
-                var abilityDef = abilityDefs.Find(x => x.Description.Id == "AbilityDefP5a");
-                var abilityDef2 = abilityDefs.Find(x => x.Description.Id == "AbilityDefP5");
-
-                //added 0931?
-
-                var pilotDef = p.ToPilotDef(true);
-                var pilot = new Pilot(pilotDef, p.GUID, true);
-                pilot.pilotDef.DataManager = p.pilotDef.DataManager;
 
 
-                if (p.pilotDef.abilityDefNames.Contains("AbilityDefP8"))
+                var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility==true);
+                
+                foreach(AbilityDef ability in abilityDefs)
                 {
-                    
-                    for (int i = 0; i < 10; i++)
+                    if (ability.ReqSkill == SkillType.Gunnery)
                     {
-                        Traverse.Create(pilotPips[i]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
-                        Traverse.Create(pilotPips[i]).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                        Traverse.Create(gunPips[ability.ReqSkillLevel-1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
- //               else
- //               {
- //                   for (int i = 0; i < 10; i++)
- //                   {
- //                       Traverse.Create(pilotPips[i]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef2.AbilityIcon;
- //                       Traverse.Create(pilotPips[i]).Field("AbilityTooltip").GetValue<HBSTooltip>()
- //                           .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef2.Description));
- //                   }
- //               }
+
+                foreach (AbilityDef ability in abilityDefs)
+                {
+                    if (ability.ReqSkill == SkillType.Piloting)
+                    {
+                        Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                    }
+                }
+
+                foreach (AbilityDef ability in abilityDefs)
+                {
+                    if (ability.ReqSkill == SkillType.Guts)
+                    {
+                        Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                    }
+                }
+
+                foreach (AbilityDef ability in abilityDefs)
+                {
+                    if (ability.ReqSkill == SkillType.Tactics)
+                    {
+                        Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                    }
+                }
+
+
             }
         }
-
-
-
-
 
         // rewrite of original
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "OnValueClick")]

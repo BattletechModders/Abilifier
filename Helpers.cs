@@ -41,7 +41,7 @@ namespace Abilifier
         //        }
 
         // modified copy from assembly
-        public static Pilot selectedPilot;
+
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
