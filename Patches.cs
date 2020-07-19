@@ -35,6 +35,7 @@ namespace Abilifier
             }
         }
 
+        //SetPips patch so that Icons for non-taken abilities do not show up after 3 primary abilities taken, AND to ensure that icons for TAKEN abilities DO show up
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
         public static class SGBarracksAdvancementPanel_SetPips_Patch
         {
@@ -61,16 +62,12 @@ namespace Abilifier
                 {
                     bool flag2 = sim.CanPilotTakeAbility(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
                     bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
-                    //                    bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
-                    //think this might work, although may need to figure out how to get Traverse to run each time
-                    var type = pips[idx].Ability.ReqSkill; //maybe try Ability from pip
+                    //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
+                    var type = pips[idx].Ability.ReqSkill; 
                     var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
-                    && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility == true); ;
-                    //                   bool flag4 = false;
+                    && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility == true);
                     bool flag4 = abilityDefs.Any();
-
-
 
                     pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
                     pips[idx].SetActiveAbilityVisible(flag2 || flag3 || flag4);
@@ -80,7 +77,7 @@ namespace Abilifier
             }
         }
 
-            //////////////////////////////////////working below///////////////////////////////////////////////
+
         [HarmonyPatch(typeof(SGBarracksMWDetailPanel), "SetPilot")]
 
         public static class SGBarracksMWDetailPanel_SetPilot_Patch
@@ -99,10 +96,9 @@ namespace Abilifier
                 var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
 
 
-
-
                 var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility==true);
                 
+                //loop through abilities the pilot has, and place those ability icons/tooltips in the appropriate pip slot.
                 foreach(AbilityDef ability in abilityDefs)
                 {
                     if (ability.ReqSkill == SkillType.Gunnery)
@@ -142,8 +138,6 @@ namespace Abilifier
                             .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
-
-
             }
         }
 
