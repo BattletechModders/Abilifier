@@ -61,15 +61,15 @@ namespace Abilifier
                 {
                     bool flag2 = sim.CanPilotTakeAbility(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
                     bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
+                    //                    bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
-                    var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkillLevel == idx+1 && x.IsPrimaryAbility==true);
-                    bool flag4 = true;
-                    if (abilityDefs != null)
-                    {
-                        flag4 = true;
-                    }
-                    else
-                    { flag4 = false; }
+                    //think this might work, although may need to figure out how to get Traverse to run each time
+                    var type = pips[idx].Ability.ReqSkill; //maybe try Ability from pip
+                    var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
+                    && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility == true); ;
+                    //                   bool flag4 = false;
+                    bool flag4 = abilityDefs.Any();
+
 
 
                     pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
