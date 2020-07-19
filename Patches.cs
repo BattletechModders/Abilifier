@@ -187,7 +187,7 @@ namespace Abilifier
                         ___curPilot.pilotDef.abilityDefNames.Do(Trace);
                         Log("\n");
                         Helpers.ForceResetCharacter(__instance);
-                        Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
+                     //   Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
                         return false;
                     }
 
