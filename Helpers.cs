@@ -41,7 +41,15 @@ namespace Abilifier
         //        }
 
         // modified copy from assembly
-
+        private static bool HasExistingAbilityAtTier(PilotDef pilotDef, AbilityDef abilityToUse)
+        {
+            var result = pilotDef.AbilityDefs.Any(x =>
+                x.IsPrimaryAbility ==true &&
+                //x.ReqSkill != SkillType.NotSet &&
+                x.ReqSkill == abilityToUse.ReqSkill &&
+                x.ReqSkillLevel == abilityToUse.ReqSkillLevel);
+            return result;
+        }
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -68,50 +76,47 @@ namespace Abilifier
             var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
 
             var traverse = Traverse.Create(panel);
-            
-        //    var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
+
+            //    var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
             var curPilot = traverse.Field("curPilot").GetValue<Pilot>();
-            
+
             var pilotDef = curPilot.ToPilotDef(true);
             pilotDef.DataManager = sim.DataManager;
-        //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
+            //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
             var upgradedSkills = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
-            
-        //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+
+            //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
             var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
-            
+
             for (var i = 0; i < abilityTree.Count; i++)
             {
                 Trace($"Looping {type} {skill}: {abilityTree[i].Id}");
                 if (expAmount > 0)
                 {
-                //    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    //    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
                     var skillKey = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
-                    
+
                     if (!upgradedSkills.Contains(skillKey))
                     {
                         upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
                         Trace($"Add trait {abilityTree[i].Id}");
                     }
-                }
-                else
-                {
-                //    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
-                    var skillKey2 = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
-                    upgradedSkills.Remove(skillKey2);
-                    upgradedPrimarySkills.Remove(abilityTree[i]);
-                    Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
-                    return;
-                }
-
-                var abilityToUse = abilityDef ?? abilityTree[i];
+                    var abilityToUse = abilityDef ?? abilityTree[i];
                 Trace($"abilityToUse: {abilityToUse.Id}");
                 pilotDef.ForceRefreshAbilityDefs();
                 // extra condition blocks skills from being taken at incorrect location
-                if (expAmount > 0 &&
-                    abilityToUse.ReqSkillLevel == skill + 1 &&
-                    !pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
-                    sim.CanPilotTakeAbility(pilotDef, abilityToUse))
+
+// original before gnivler fix
+//                if (expAmount > 0 &&
+//                    abilityToUse.ReqSkillLevel == skill + 1 &&
+//                    !pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
+//                    sim.CanPilotTakeAbility(pilotDef, abilityToUse))
+
+//gnivler fix, results in assignment of default lvl5 on player reverting lvl6; relies on new method at top
+
+                if (!pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
+                sim.CanPilotTakeAbility(pilotDef, abilityToUse) &&
+                !HasExistingAbilityAtTier(pilotDef, abilityToUse))
                 {
                     Trace("Add primary " + abilityToUse.Id);
                     pilotDef.abilityDefNames.Add(abilityToUse.Id);
@@ -126,6 +131,18 @@ namespace Abilifier
                         pilotDef.abilityDefNames.Add(abilityToUse.Id);
                     }
                 }
+                }
+                else
+                {
+                    //    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
+                    var skillKey2 = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
+                    upgradedSkills.Remove(skillKey2);
+                    upgradedPrimarySkills.Remove(abilityTree[i]);
+                    Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
+                    return;
+                }
+
+                
             }
 
             Trace("\n");
@@ -146,34 +163,34 @@ namespace Abilifier
             callback.Invoke(pilot);
         }
 
- //       internal static void PreloadIcons()
- //       {
- //           var dm = UnityGameInstance.BattleTechGame.DataManager;
- //           var loadRequest = dm.CreateLoadRequest();
- //           foreach (var abilityDef in ModAbilities)
- //           {
- //               loadRequest.AddLoadRequest<SVGAsset>(BattleTechResourceType.SVGAsset, abilityDef.Description.Icon, null);
- //           }
+        //       internal static void PreloadIcons()
+        //       {
+        //           var dm = UnityGameInstance.BattleTechGame.DataManager;
+        //           var loadRequest = dm.CreateLoadRequest();
+        //           foreach (var abilityDef in ModAbilities)
+        //           {
+        //               loadRequest.AddLoadRequest<SVGAsset>(BattleTechResourceType.SVGAsset, abilityDef.Description.Icon, null);
+        //           }
 
-//            loadRequest.ProcessRequests();
-//        }
+        //            loadRequest.ProcessRequests();
+        //        }
 
-//        public static void InsertAbilities()
-//        {
-//            var dm = UnityGameInstance.BattleTechGame.DataManager;
-//            var sim = UnityGameInstance.BattleTechGame.Simulation;
+        //        public static void InsertAbilities()
+        //        {
+        //            var dm = UnityGameInstance.BattleTechGame.DataManager;
+        //            var sim = UnityGameInstance.BattleTechGame.Simulation;
 
-//            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").Field("items").GetValue<Dictionary<string,AbilityDef>>();
+        //            var abilityDefs = Traverse.Create(dm).Field("abilityDefs").Field("items").GetValue<Dictionary<string,AbilityDef>>();
 
-            
-//            foreach (var abilityDef in ModAbilities)
-//            {
-//                abilityDefs.Add(abilityDef.Id, abilityDef);
-//                var load = new DataManager.DependencyLoadRequest(dm);
-//                abilityDef.GatherDependencies(dm, load, 0);
-//                sim.AbilityTree[abilityDef.ReqSkill.ToString()][abilityDef.ReqSkillLevel].Add(abilityDef);
-//            }
-            //Traverse.Create(dm).Field("AbilityDefs").SetValue(abilityDefs);
-//        }
+
+        //            foreach (var abilityDef in ModAbilities)
+        //            {
+        //                abilityDefs.Add(abilityDef.Id, abilityDef);
+        //                var load = new DataManager.DependencyLoadRequest(dm);
+        //                abilityDef.GatherDependencies(dm, load, 0);
+        //                sim.AbilityTree[abilityDef.ReqSkill.ToString()][abilityDef.ReqSkillLevel].Add(abilityDef);
+        //            }
+        //Traverse.Create(dm).Field("AbilityDefs").SetValue(abilityDefs);
+        //        }
     }
 }

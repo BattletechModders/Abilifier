@@ -8,8 +8,7 @@ using Harmony;
 using SVGImporter;
 using static Abilifier.Mod;
 using HBS.Data;
-using UnityEngine.Events;
-
+using UnityEngine;
 using System.Reflection;
 
 // ReSharper disable InconsistentNaming
@@ -277,6 +276,59 @@ namespace Abilifier
                 return false;
             }
 
+        }
+
+        //this patch should hopefuly prevent AI generated (hiring hall) pilots from having too many abilities
+        [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
+        public static class PilotGenerator_SetPilotAbilities_Patch
+        {
+            public static bool Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value)
+            {
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                value--;
+                if (value < 0)
+                {
+                    return false;
+                }
+                if (!sim.AbilityTree.ContainsKey(type))
+                {
+                    return false;
+                }
+                if (sim.AbilityTree[type].Count <= value)
+                {
+                    return false;
+                }
+
+                List<AbilityDef> list = sim.AbilityTree[type][value];
+
+                if (list.Count == 0)
+                {
+                    return false;
+                }
+
+                else
+                {
+                    List<AbilityDef> listAbilities = list.FindAll(x => x.IsPrimaryAbility == true);//get primary abilities
+                    List<AbilityDef> listTraits = list.FindAll(x => x.IsPrimaryAbility != true);//need to keep all traits
+                    if (listAbilities.Count > 0)
+                    {
+                        int idx = UnityEngine.Random.Range(0, listAbilities.Count);//pick a random primary of the options
+                        listTraits.Add(listAbilities[idx]);//add only that random primary
+                    }
+                    pilot.DataManager = sim.DataManager;
+                    pilot.ForceRefreshAbilityDefs();
+                    for (int i = 0; i < listTraits.Count; i++)
+                    {
+                        if (sim.CanPilotTakeAbility(pilot, listTraits[i], false))
+                        {
+                            pilot.abilityDefNames.Add(listTraits[i].Description.Id);
+                        }
+                    }
+                    pilot.ForceRefreshAbilityDefs();
+                    return false;
+                }
+                
+            }
         }
     }
 }
