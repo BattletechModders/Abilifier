@@ -55,13 +55,28 @@ namespace Abilifier
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var traverse = Traverse.Create(panel);
             var orderedDictionary = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
-            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true);
+
+            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>(); //added 0726, isn't working but probably should?
+//            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true); //when removed, works but player won't get XP back reliably on revert. not sure why? //need to look at SetPilot and UnspentXP
+            
+            
             foreach (var obj in orderedDictionary.Values)
             {
                 var keyValuePair = (KeyValuePair<string, int>)obj;
-                Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
+                var abilityDef = upgradedPrimarySkills;//.FindAll(x => x.ReqSkill.ToString() == keyValuePair.Key && x.ReqSkillLevel == keyValuePair.Value); //more added 0726, although predicate is commented out for dummy check
+                if (abilityDef.Count > 0)
+                {
+                    Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
+                    // this is the only change - calling internal implementation
+                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), abilityDef[0]);
+                }
+                else
+                {
+                    Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                 // this is the only change - calling internal implementation
                 SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
+                }
+                
             }
 
             var callback = traverse.Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
@@ -87,7 +102,7 @@ namespace Abilifier
 
             //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
             var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
-
+            
             for (var i = 0; i < abilityTree.Count; i++)
             {
                 Trace($"Looping {type} {skill}: {abilityTree[i].Id}");
@@ -103,7 +118,7 @@ namespace Abilifier
                     }
                     var abilityToUse = abilityDef ?? abilityTree[i];
                 Trace($"abilityToUse: {abilityToUse.Id}");
-                pilotDef.ForceRefreshAbilityDefs();
+                pilotDef.ForceRefreshAbilityDefs();//moving this 072620
                 // extra condition blocks skills from being taken at incorrect location
 
 // original before gnivler fix
@@ -114,23 +129,23 @@ namespace Abilifier
 
 //gnivler fix, results in assignment of default lvl5 on player reverting lvl6; relies on new method at top
 
-                if (!pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
-                sim.CanPilotTakeAbility(pilotDef, abilityToUse) &&
-                !HasExistingAbilityAtTier(pilotDef, abilityToUse))
-                {
-                    Trace("Add primary " + abilityToUse.Id);
-                    pilotDef.abilityDefNames.Add(abilityToUse.Id);
-                    if (abilityToUse.IsPrimaryAbility)
+                    if (!pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
+                    sim.CanPilotTakeAbility(pilotDef, abilityToUse) &&
+                    !HasExistingAbilityAtTier(pilotDef, abilityToUse))
                     {
-                        upgradedPrimarySkills.Add(abilityToUse);
-                    }
-                    else
-                    {
-                        // still need to add it, even if it can't be a primary at location
-                        Trace("Add trait " + abilityToUse.Id);
+                        Trace("Add primary " + abilityToUse.Id);
                         pilotDef.abilityDefNames.Add(abilityToUse.Id);
+                        if (abilityToUse.IsPrimaryAbility)
+                        {
+                            upgradedPrimarySkills.Add(abilityToUse);
+                        }
+                        else
+                        {
+                            // still need to add it, even if it can't be a primary at location
+                            Trace("Add trait " + abilityToUse.Id);
+                            pilotDef.abilityDefNames.Add(abilityToUse.Id);
+                        }
                     }
-                }
                 }
                 else
                 {
@@ -141,8 +156,6 @@ namespace Abilifier
                     Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
                     return;
                 }
-
-                
             }
 
             Trace("\n");
