@@ -7,9 +7,6 @@ using BattleTech.UI.Tooltips;
 using Harmony;
 using SVGImporter;
 using static Abilifier.Mod;
-using HBS.Data;
-using UnityEngine;
-using System.Reflection;
 
 // ReSharper disable InconsistentNaming
 
@@ -179,8 +176,8 @@ namespace Abilifier
                         Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
                         ___curPilot.pilotDef.abilityDefNames.Do(Trace);
                         Log("\n");
-                        Helpers.ForceResetCharacter(__instance);
-                     //   Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
+                        Helpers.ForceResetCharacter(__instance); 
+                    //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
                         return false;
                     }
 
