@@ -1,13 +1,9 @@
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
 using BattleTech;
-using BattleTech.Data;
 using BattleTech.UI;
 using Harmony;
-using HBS.Data;
-using SVGImporter;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using static Abilifier.Mod;
@@ -56,14 +52,17 @@ namespace Abilifier
             var traverse = Traverse.Create(panel);
             var orderedDictionary = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
 
-            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>(); //added 0726, isn't working but probably should?
-//            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true); //when removed, works but player won't get XP back reliably on revert. not sure why? //need to look at SetPilot and UnspentXP
+            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            var upgradedAbilities = new List<AbilityDef>();
+            upgradedAbilities.AddRange(upgradedPrimarySkills);
             
+            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>(), true);
             
             foreach (var obj in orderedDictionary.Values)
             {
                 var keyValuePair = (KeyValuePair<string, int>)obj;
-                var abilityDef = upgradedPrimarySkills;//.FindAll(x => x.ReqSkill.ToString() == keyValuePair.Key && x.ReqSkillLevel == keyValuePair.Value); //more added 0726, although predicate is commented out for dummy check
+
+                var abilityDef = upgradedAbilities.FindAll(x => x.ReqSkill.ToString() == keyValuePair.Key && x.ReqSkillLevel == keyValuePair.Value + 1);
                 if (abilityDef.Count > 0)
                 {
                     Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
@@ -73,10 +72,9 @@ namespace Abilifier
                 else
                 {
                     Trace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
-                // this is the only change - calling internal implementation
-                SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
+                    // this is the only change - calling internal implementation
+                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
                 }
-                
             }
 
             var callback = traverse.Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
@@ -88,6 +86,7 @@ namespace Abilifier
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var abilityTree = sim.AbilityTree[type][skill];
+
             var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
 
             var traverse = Traverse.Create(panel);
@@ -102,7 +101,7 @@ namespace Abilifier
 
             //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
             var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
-            
+
             for (var i = 0; i < abilityTree.Count; i++)
             {
                 Trace($"Looping {type} {skill}: {abilityTree[i].Id}");
@@ -118,7 +117,8 @@ namespace Abilifier
                     }
                     var abilityToUse = abilityDef ?? abilityTree[i];
                 Trace($"abilityToUse: {abilityToUse.Id}");
-                pilotDef.ForceRefreshAbilityDefs();//moving this 072620
+                pilotDef.ForceRefreshAbilityDefs();
+
                 // extra condition blocks skills from being taken at incorrect location
 
 // original before gnivler fix
@@ -132,6 +132,7 @@ namespace Abilifier
                     if (!pilotDef.abilityDefNames.Contains(abilityToUse.Id) &&
                     sim.CanPilotTakeAbility(pilotDef, abilityToUse) &&
                     !HasExistingAbilityAtTier(pilotDef, abilityToUse))
+
                     {
                         Trace("Add primary " + abilityToUse.Id);
                         pilotDef.abilityDefNames.Add(abilityToUse.Id);
@@ -146,6 +147,7 @@ namespace Abilifier
                             pilotDef.abilityDefNames.Add(abilityToUse.Id);
                         }
                     }
+
                 }
                 else
                 {
@@ -153,6 +155,7 @@ namespace Abilifier
                     var skillKey2 = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
                     upgradedSkills.Remove(skillKey2);
                     upgradedPrimarySkills.Remove(abilityTree[i]);
+
                     Trace($"Removing {skillKey2}: {abilityTree[i].Id}");
                     return;
                 }
