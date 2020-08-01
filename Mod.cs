@@ -68,6 +68,9 @@ namespace Abilifier
             public bool enableLog;
             public bool usePopUpsForAbilityDesc = false;
             public bool debugXP = false;
+            public int extraFirstTierAbilities = 0;
+            public int extraAbilities = 0;
+            public int extraAbilitiesAllowedPerSkill = 0;
             public string modDirectory;
         }
     }

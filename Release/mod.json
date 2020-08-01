@@ -2,7 +2,7 @@
     "Name": "Abilifier",
     "DLL": "Abilifier.dll",
 
-    "Version": "1.0.3",
+    "Version": "1.0.4",
     "Description": "Allows for choices between abilities when leveling pilots.",
     "Author": "gnivler, T-Bone",
     "Website": "",
@@ -14,7 +14,10 @@
 	"enableTrace": false,
 	"enableLog": false,
 	"usePopUpsForAbilityDesc": false,
-	"debugXP": false
+	"debugXP": false,
+	"extraFirstTierAbilities": 1,
+	"extraAbilities": 0,
+	"extraAbilitiesAllowedPerSkill": 0
 	},
 
     "Manifest": [

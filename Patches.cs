@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using BattleTech;
 using BattleTech.UI;
@@ -26,10 +27,40 @@ namespace Abilifier
                 if (index != 4 && index != 7 && ability != null)
                 {
                     Trace($"nulling {ability.ReqSkill}|{index}");
-                    ability = null;
+  //                  ability = null;
                 }
             }
         }
+
+        [HarmonyPatch(typeof(SimGameState), "CanPilotTakeAbility")]
+        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
+        public static class SimGameState_CanPilotTakeAbility_Patch
+        {
+            public static bool Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
+            {
+                if (!newAbility.IsPrimaryAbility)
+                {
+                    __result = true;
+                    return false;
+                }
+                List<AbilityDef> primaryPilotAbilities = SimGameState.GetPrimaryPilotAbilities(p);
+                if (primaryPilotAbilities == null)
+                {
+                    __result = true;
+                    return false;
+                }
+                if (primaryPilotAbilities.Count >= 3 + modSettings.extraAbilities) //change max allowed abilities for pilot to take when lvling up
+                {
+                    __result = false;
+                    return false;
+                }
+                Dictionary<SkillType, int> sortedSkillCount = __instance.GetSortedSkillCount(p);
+                __result = (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities
+                    || sortedSkillCount.ContainsKey(newAbility.ReqSkill)) && (!sortedSkillCount.ContainsKey(newAbility.ReqSkill) || sortedSkillCount[newAbility.ReqSkill] <= 1 + modSettings.extraAbilitiesAllowedPerSkill) && (!checkSecondTier || sortedSkillCount.ContainsKey(newAbility.ReqSkill) || primaryPilotAbilities.Count <= 1 + modSettings.extraAbilitiesAllowedPerSkill); //change max # abilities per-skill type (default is 2, so only allowed to take if currently have <=1)
+                return false;
+            }
+        }
+
 
         //SetPips patch so that Icons for non-taken abilities do not show up after 3 primary abilities taken, AND to ensure that icons for TAKEN abilities DO show up
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
