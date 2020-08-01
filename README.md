@@ -51,11 +51,20 @@ Settings available in the mod.json:
 	"enableTrace": false,
 	"enableLog": false,
 	"usePopUpsForAbilityDesc": false,
-	"debugXP": true
+	"debugXP": true,
+	"extraFirstTierAbilities": 1,
+	"extraAbilities": 0,
+	"extraAbilitiesAllowedPerSkill": 0
 	},
 ```
-`enableTrace` and `enableLog` allow logging.
+`enableTrace` and `enableLog` (bools) allow logging.
 
-`usePopUpsForAbilityDesc` sets Abilifier to use hover tooltips for Ability descriptions as described above.
+`usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 
-`debugXP` grants 100000 XP when XP is spent (useful for testing newly added abilities).
+`debugXP` bool, grants 100000 XP when XP is spent (useful for testing newly added abilities).
+
+`extraFirstTierAbilities` int, allows players to take additional 1st tier abilities within the limit of total abilities.
+
+`extraAbilities` int, allows players to take additional (>3) abilities. <b>Currently, only the first 3 abilities selected will be visible and (if an activated ability) usable in combat. extra passive abilities will work, however. THIS IS VERY MUCH A WIP!</b>
+
+`extraAbilitiesAllowedPerSkill` int, allows players to take additional (>2) abilities within a given skill area. <b>Assumes developer has included new abilities at skill levels other than 5 and 8, also VERY MUCH A WIP.</b> Only 1 ability per-skill-level may be taken, however.
