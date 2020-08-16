@@ -54,7 +54,12 @@ Settings available in the mod.json:
 	"debugXP": true,
 	"extraFirstTierAbilities": 1,
 	"extraAbilities": 0,
-	"extraAbilitiesAllowedPerSkill": 0
+	"extraAbilitiesAllowedPerSkill": 0,
+	"abilityReqs":
+		{
+		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
+		"AbilityDefGu5a":["AbilityDefGu8a"]
+		}
 	},
 ```
 `enableTrace` and `enableLog` (bools) allow logging.
@@ -68,3 +73,6 @@ Settings available in the mod.json:
 `extraAbilities` int, allows players to take additional (>3) abilities. <b>Currently, only the first 3 abilities selected will be visible and (if an activated ability) usable in combat. extra passive abilities will work, however. THIS IS VERY MUCH A WIP!</b>
 
 `extraAbilitiesAllowedPerSkill` int, allows players to take additional (>2) abilities within a given skill area. <b>Assumes developer has included new abilities at skill levels other than 5 and 8, also VERY MUCH A WIP.</b> Only 1 ability per-skill-level may be taken, however.
+
+`abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available. Unavailable abilities will still be shown in the ability-chooser dialogue box, with text added indicating what missing ability is required, but they will not be selectable:
+![HoverPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/abilityReqs.png)
