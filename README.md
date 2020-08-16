@@ -77,4 +77,5 @@ Settings available in the mod.json:
 `abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available. At present, abilities with requirements must be of the same skill type as their required abilities (e.g., Gunnery8b cannot require Guts5c).
 
 Unavailable abilities will still be shown in the ability-chooser dialogue box, with text added indicating what missing ability is required, but they will not be selectable:
+
 ![HoverPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/abilityReqs.png)
