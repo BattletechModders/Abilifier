@@ -17,7 +17,12 @@
 	"debugXP": false,
 	"extraFirstTierAbilities": 1,
 	"extraAbilities": 0,
-	"extraAbilitiesAllowedPerSkill": 0
+	"extraAbilitiesAllowedPerSkill": 0,
+	"abilityReqs":
+		{
+		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
+		"AbilityDefGu5a":["AbilityDefGu8a"]
+		}
 	},
 
     "Manifest": [

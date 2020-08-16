@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Harmony;
@@ -72,6 +73,7 @@ namespace Abilifier
             public int extraAbilities = 0;
             public int extraAbilitiesAllowedPerSkill = 0;
             public string modDirectory;
+            public Dictionary<string, List<string>> abilityReqs;
         }
     }
 }

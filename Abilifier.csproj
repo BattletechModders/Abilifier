@@ -47,9 +47,6 @@
     <Reference Include="InControl, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\BattleTech_Data\Managed\InControl.dll</HintPath>
     </Reference>
-    <Reference Include="IRBTModUtils">
-      <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\Mods\IRBTModUtils\IRBTModUtils.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\BattleTech_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -71,6 +68,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="SelectionStateAbilifyAbilities.cs" />
+    <None Include="MoreAbilities.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Patches.cs" />
