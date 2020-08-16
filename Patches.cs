@@ -359,6 +359,20 @@ namespace Abilifier
                 else
                 {
                     List<AbilityDef> listAbilities = list.FindAll(x => x.IsPrimaryAbility == true);//get primary abilities
+
+                    List<string> pilotAbilityDefNames = pilot.abilityDefNames;
+                    var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                    List<AbilityDef> abilitiesWithReqs = listAbilities.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
+
+                    foreach (var abilityWithReq in abilitiesWithReqs)
+                    {
+                        if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
+                        {
+                            listAbilities.Remove(abilityWithReq);
+                        }
+                    }
+
                     List<AbilityDef> listTraits = list.FindAll(x => x.IsPrimaryAbility != true);//need to keep all traits
                     if (listAbilities.Count > 0)
                     {
