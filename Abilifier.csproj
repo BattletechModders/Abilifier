@@ -68,8 +68,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SelectionStateAbilifyAbilities.cs" />
-    <None Include="MoreAbilities.cs" />
+    <Compile Include="MoreAbilities.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Patches.cs" />
