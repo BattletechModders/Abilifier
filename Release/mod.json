@@ -18,7 +18,7 @@
 	"extraFirstTierAbilities": 1,
 	"extraAbilities": 0,
 	"extraAbilitiesAllowedPerSkill": 0,
-	"cleanUpCombatUI": false,
+	"cleanUpCombatUI": true,
 	"abilityReqs":
 		{
 		"AbilityDefG5":["AbilityDefG8","AbilityDefG8a"]
