@@ -4,7 +4,7 @@
 
     "Version": "1.0.6",
     "Description": "Allows for choices between abilities when leveling pilots.",
-    "Author": "gnivler, T-Bone",
+    "Author": "gnivler, T-Bone, thanks to kMiSSioN for allowing reuse of their code creating ability buttons",
     "Website": "",
 
     "ConflictsWith": [],
