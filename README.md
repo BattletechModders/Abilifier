@@ -1,6 +1,8 @@
 # Abilifier
 
-This is a mod for HBS Battletech that allows developers to give players <b>choices</b> when it comes to leveling up abilities. To use, place your new AbilityDefs in an appropriate subfolder, either in the Abilifier folder or elsewhere in your modpack, and ensure you have the appropriate manifest entry in your mod.json so modtek will load the new AbilityDefs, e.g.
+This is a mod for HBS Battletech that allows developers to give players <b>choices</b> when it comes to leveling up abilities. Special thanks to kMiSSioN for allowing the reuse of their code adding additional ability buttons to the Combat HUD.
+
+To use, place your new AbilityDefs in an appropriate subfolder, either in the Abilifier folder or elsewhere in your modpack, and ensure you have the appropriate manifest entry in your mod.json so modtek will load the new AbilityDefs, e.g.
 ```
  "Manifest": [
 		{ "Type": "AbilityDef", "Path": "Abilities" },
@@ -51,10 +53,11 @@ Settings available in the mod.json:
 	"enableTrace": false,
 	"enableLog": false,
 	"usePopUpsForAbilityDesc": false,
-	"debugXP": true,
+	"debugXP": false,
 	"extraFirstTierAbilities": 1,
 	"extraAbilities": 0,
 	"extraAbilitiesAllowedPerSkill": 0,
+	"cleanUpCombatUI": true,
 	"abilityReqs":
 		{
 		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
@@ -70,9 +73,13 @@ Settings available in the mod.json:
 
 `extraFirstTierAbilities` int, allows players to take additional 1st tier abilities within the limit of total abilities.
 
-`extraAbilities` int, allows players to take additional (>3) abilities. <b>Currently, only the first 3 abilities selected will be visible and (if an activated ability) usable in combat. extra passive abilities will work, however. THIS IS VERY MUCH A WIP!</b>
+`extraAbilities` int, allows players to take additional (>3) abilities. Theoretically only limited by screen space. Individual buttons get closer to eachother as more abilites are added, but usable with 5 additional abilities. Image below is with 5 additional abilities and `cleanUpCombatUI` set to true.
 
-`extraAbilitiesAllowedPerSkill` int, allows players to take additional (>2) abilities within a given skill area. <b>Assumes developer has included new abilities at skill levels other than 5 and 8, also VERY MUCH A WIP.</b> Only 1 ability per-skill-level may be taken, however.
+![HoverPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/alltheabilities.png)
+
+`extraAbilitiesAllowedPerSkill` int, allows players to take additional (>2) abilities within a given skill area. <b>Assumes developer has included new abilities at skill levels other than 5 and 8.</b> Only 1 ability per-skill-level may be taken, however.
+
+`cleanUpCombatUI` bool, if `true`, removes decorative chevrons and vertical bars from the ability tray in combat. Recommend setting to `true` unless NOT enabling CAC Attack Ground button AND `extraAbilities` <=1.
 
 `abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available. At present, abilities with requirements must be of the same skill type as their required abilities (e.g., Gunnery8b cannot require Guts5c).
 
