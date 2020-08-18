@@ -2,7 +2,7 @@
     "Name": "Abilifier",
     "DLL": "Abilifier.dll",
 
-    "Version": "1.0.4",
+    "Version": "1.0.6",
     "Description": "Allows for choices between abilities when leveling pilots.",
     "Author": "gnivler, T-Bone",
     "Website": "",
@@ -18,10 +18,10 @@
 	"extraFirstTierAbilities": 1,
 	"extraAbilities": 0,
 	"extraAbilitiesAllowedPerSkill": 0,
+	"cleanUpCombatUI": true,
 	"abilityReqs":
 		{
-		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
-		"AbilityDefGu5a":["AbilityDefGu8a"]
+		"AbilityDefG5":["AbilityDefG8","AbilityDefG8a"]
 		}
 	},
 
@@ -31,3 +31,5 @@
 
     ]
 }
+
+  

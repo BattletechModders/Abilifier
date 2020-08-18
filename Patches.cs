@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using BattleTech;
 using BattleTech.UI;
@@ -15,25 +14,6 @@ namespace Abilifier
 {
     public class Patches
     {
-
-        [HarmonyPatch(typeof(SGBarracksSkillPip), "Initialize")]
-        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
-        public static class SGBarracksSkillPip_Initialize_Patch
-        {
-            public static void Prefix(int index, ref AbilityDef ability)
-            {
-                // prevent Ability icons appearing at non-tier locations
-                // the actual AbilityDef is going to be provided later anyway
-                if (index != 4 && index != 7 && ability != null)
-                {
-                    Trace($"nulling {ability.ReqSkill}|{index}");
-  //                  ability = null;
-                }
-            }
-        }
-
-
-
         //SetPips patch so that Icons for non-taken abilities do not show up after 3 primary abilities taken, AND to ensure that icons for TAKEN abilities DO show up
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
         public static class SGBarracksAdvancementPanel_SetPips_Patch
@@ -422,5 +402,6 @@ namespace Abilifier
                 return false;
             }
         }
+       
     }
 }

@@ -16,6 +16,7 @@ namespace Abilifier
 
         public static void Init(string modDir, string settings)
         {
+            
             // read settings
             try
             {
@@ -34,7 +35,8 @@ namespace Abilifier
             }
 
             Trace("Starting up " + DateTime.Now.ToShortTimeString());
-//            Helpers.PopulateAbilities();
+            //            Helpers.PopulateAbilities();
+            HarmonyInstance.DEBUG = true;
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
@@ -73,6 +75,7 @@ namespace Abilifier
             public int extraAbilities = 0;
             public int extraAbilitiesAllowedPerSkill = 0;
             public string modDirectory;
+            public bool cleanUpCombatUI;
             public Dictionary<string, List<string>> abilityReqs;
         }
     }
