@@ -14,6 +14,7 @@ namespace Abilifier
 {
     public class Patches
     {
+
         //SetPips patch so that Icons for non-taken abilities do not show up after 3 primary abilities taken, AND to ensure that icons for TAKEN abilities DO show up
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
         public static class SGBarracksAdvancementPanel_SetPips_Patch
@@ -217,6 +218,7 @@ namespace Abilifier
                     //new code below//
                     //new code below for ability requirements
                     List<string> pilotAbilityDefNames = ___curPilot.pilotDef.abilityDefNames;
+                    
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
                     List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Harmony;
 using Newtonsoft.Json;
@@ -16,7 +17,7 @@ namespace Abilifier
 
         public static void Init(string modDir, string settings)
         {
-            
+
             // read settings
             try
             {
@@ -33,12 +34,14 @@ namespace Abilifier
             {
                 File.Delete(logFile);
             }
+            modSettings.abilityReqs = modSettings.abilityReqs ?? new Dictionary<string, List<string>> { { "potato", new List<string> { "potahto" } } };
+
 
             Trace("Starting up " + DateTime.Now.ToShortTimeString());
             //            Helpers.PopulateAbilities();
-            HarmonyInstance.DEBUG = true;
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
+
         }
 
         internal static void Log(object input)
@@ -76,7 +79,12 @@ namespace Abilifier
             public int extraAbilitiesAllowedPerSkill = 0;
             public string modDirectory;
             public bool cleanUpCombatUI;
+            public int skillLockThreshold = 0;
             public Dictionary<string, List<string>> abilityReqs;
-        }
+        };
+            
+       
+        
+        
     }
 }
