@@ -412,14 +412,15 @@ namespace Abilifier
                         __result = true;
                         return false;
                     }
-                    if (p.SkillGunnery >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Gunnery)
-                        __result = false;
-                    if (p.SkillPiloting >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Piloting)
-                        __result = false;
-                    if (p.SkillGuts >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Guts)
-                        __result = false;
-                    if (p.SkillTactics >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Tactics)
-                        __result = false;
+
+                    if (p.SkillGunnery >= modSettings.skillLockThreshold ||
+                    p.SkillPiloting >= modSettings.skillLockThreshold ||
+                    p.SkillGuts >= modSettings.skillLockThreshold ||
+                    p.SkillTactics >= modSettings.skillLockThreshold)
+                    { __result = false; }
+
+                    if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill && newAbility.ReqSkillLevel >= modSettings.skillLockThreshold)
+                    { __result = true; }
                 }
                 return false;
             }
