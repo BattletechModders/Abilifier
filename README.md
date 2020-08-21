@@ -84,6 +84,18 @@ Settings available in the mod.json:
 
 `skillLockThreshold` int, if set > 0, defines a threshold level for skills; once a pilot has reached that skill level, they can *only* take abilities above that level in that skill. Intended for use with additional lvl 10 abilities; in the settings above, once a pilot reaches lvl 8 (2nd tier ability by default), the only abilities at or above lvl 8 that they can take must be in that skill. However, pilots can always take abilities *below* the threshold (within the constraints of the above settings).
 
+To clarify: a pilot could, for example, have abilities at the following levels:
+```
+Gunnery: 5, 8, 10
+Guts: 5
+```
+but you could not have 
+```
+Gunnery: 5, 8
+Guts: 5, 8
+```
+
+
 `abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available. At present, abilities with requirements must be of the same skill type as their required abilities (e.g., Gunnery8b cannot require Guts5c).
 
 Unavailable abilities will still be shown in the ability-chooser dialogue box, with text added indicating what missing ability is required, but they will not be selectable:
