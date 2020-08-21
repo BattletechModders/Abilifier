@@ -407,6 +407,11 @@ namespace Abilifier
 
                 if (modSettings.skillLockThreshold > 0) //section allows you to set a threshold the "locks" the pilot into taking only abilities within that skill once the threshold has been reached.
                 {
+                    if (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities && newAbility.ReqSkillLevel < modSettings.skillLockThreshold)
+                    {
+                        __result = true;
+                        return false;
+                    }
                     if (p.SkillGunnery >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Gunnery)
                         __result = false;
                     if (p.SkillPiloting >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Piloting)
@@ -416,7 +421,6 @@ namespace Abilifier
                     if (p.SkillTactics >= modSettings.skillLockThreshold && newAbility.ReqSkill != SkillType.Tactics)
                         __result = false;
                 }
-
                 return false;
             }
         }
