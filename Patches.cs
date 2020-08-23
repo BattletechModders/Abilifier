@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BattleTech;
+using BattleTech.Save;
 using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using Harmony;
@@ -44,7 +45,7 @@ namespace Abilifier
                     bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
-                    var type = pips[idx].Ability.ReqSkill; 
+                    var type = pips[idx].Ability.ReqSkill;
                     var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
                     && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility == true);
                     bool flag4 = abilityDefs.Any();
@@ -76,14 +77,14 @@ namespace Abilifier
                 var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
 
 
-                var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility==true);
-                
+                var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility == true);
+
                 //loop through abilities the pilot has, and place those ability icons/tooltips in the appropriate pip slot.
-                foreach(AbilityDef ability in abilityDefs)
+                foreach (AbilityDef ability in abilityDefs)
                 {
                     if (ability.ReqSkill == SkillType.Gunnery)
                     {
-                        Traverse.Create(gunPips[ability.ReqSkillLevel-1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
                         Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
                             .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
@@ -160,8 +161,8 @@ namespace Abilifier
                         Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
                         ___curPilot.pilotDef.abilityDefNames.Do(Trace);
                         Log("\n");
-                        Helpers.ForceResetCharacter(__instance); 
-                    //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
+                        Helpers.ForceResetCharacter(__instance);
+                        //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
                         return false;
                     }
 
@@ -181,7 +182,7 @@ namespace Abilifier
                     //                    var abilityDefs = Helpers.ModAbilities
                     //                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
 
-                    
+
                     var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
 
                     //List<AbilityDef> abilityDefs = sim.GetAbilityDefFromTree(type, value); //does same thing as below?
@@ -191,7 +192,7 @@ namespace Abilifier
                         abilityDefs.AddRange(abilityDictionary[value].Where(x => x.ReqSkill.ToString() == type));
                     }
 
-                    
+
 
                     // don't create choice popups with 1 option
                     if (abilityDefs.Count <= 1)
@@ -218,7 +219,7 @@ namespace Abilifier
                     //new code below//
                     //new code below for ability requirements
                     List<string> pilotAbilityDefNames = ___curPilot.pilotDef.abilityDefNames;
-                    
+
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
                     List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
@@ -235,70 +236,70 @@ namespace Abilifier
 
                     //original code continues below//
                     string abilityDescs = null;
-                        foreach (var abilityDefDesc in abilityDefsForDesc)
+                    foreach (var abilityDefDesc in abilityDefsForDesc)
+                    {
+                        if (abilityDefs.Contains(abilityDefDesc))
                         {
-                            if (abilityDefs.Contains(abilityDefDesc))
+                            string abilityID = abilityDefDesc.Id + "Desc";
+                            string abilityName = abilityDefDesc.Description.Name;
+                            if (modSettings.usePopUpsForAbilityDesc == true)
                             {
-                                string abilityID = abilityDefDesc.Id + "Desc";
-                                string abilityName = abilityDefDesc.Description.Name;
-                                if (modSettings.usePopUpsForAbilityDesc == true)
-                                {
-                                    abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
-                                }
-                                else
-                                {
-                                    abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
-                                }
+                                abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
                             }
                             else
                             {
-                                var dm = UnityGameInstance.BattleTechGame.DataManager;
-                                string abilityID = abilityDefDesc.Id + "Desc";
-                                string abilityName = abilityDefDesc.Description.Name;
+                                abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                            }
+                        }
+                        else
+                        {
+                            var dm = UnityGameInstance.BattleTechGame.DataManager;
+                            string abilityID = abilityDefDesc.Id + "Desc";
+                            string abilityName = abilityDefDesc.Description.Name;
 
-                                var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
-                                var allAbilities = new List<AbilityDef>();
+                            var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
+                            var allAbilities = new List<AbilityDef>();
 
-                                allAbilities = sim.AbilityTree[type].SelectMany(x => x.Value).ToList();
+                            allAbilities = sim.AbilityTree[type].SelectMany(x => x.Value).ToList();
                             // allAbilities.AddRange(Traverse.Create(dm).Field("abilityDefs").GetValue<List<AbilityDef>>());
 
                             var reqAbility = allAbilities.Find(x => x.Id == reqAbilityName);
 
 
-                                if (modSettings.usePopUpsForAbilityDesc == true)
-                                {
-                                    //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
-                                    abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
-                                }
-                                else
-                                {
-                                    //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
-                                    abilityDescs += "<color=#FF0000> Requires <u>"+reqAbility.Description.Name+"</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
-                                }
-                        }
-                                
+                            if (modSettings.usePopUpsForAbilityDesc == true)
+                            {
+                                //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                            }
+                            else
+                            {
+                                //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                            }
                         }
 
-                        var popup = GenericPopupBuilder
-                            .Create("Select an ability",
-                            abilityDescs)
-                            .AddFader();
-                        popup.AlwaysOnTop = true;
-                        var pip = pips[type][value];
+                    }
+
+                    var popup = GenericPopupBuilder
+                        .Create("Select an ability",
+                        abilityDescs)
+                        .AddFader();
+                    popup.AlwaysOnTop = true;
+                    var pip = pips[type][value];
                     foreach (var abilityDef in abilityDefs)
                     {
                         popup.AddButton(abilityDef.Description.Name,
                             () =>
                             {
-                                    // have to change the Ability so SetPips later, SetActiveAbilityVisible works
-                                    Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
+                                // have to change the Ability so SetPips later, SetActiveAbilityVisible works
+                                Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
                                 Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
                                 Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>()
                                     .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
                                 Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
                             });
                     }
-                        popup.Render();
+                    popup.Render();
                 }
                 catch (Exception ex)
                 {
@@ -373,7 +374,7 @@ namespace Abilifier
                     pilot.ForceRefreshAbilityDefs();
                     return false;
                 }
-                
+
             }
         }
         [HarmonyPatch(typeof(SimGameState), "CanPilotTakeAbility")]
@@ -423,6 +424,18 @@ namespace Abilifier
                     { __result = true; }
                 }
                 return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
+        public static class SimGameState_Rehydrate_Patch
+        {
+            static void Postfix(SimGameState __instance, GameInstanceSave gameInstanceSave)
+            {
+                if (!__instance.CompanyTags.Contains("AbilifierLoaded"))
+                {
+                    __instance.CompanyTags.Add("AbilifierLoaded");
+                }
             }
         }
     }
