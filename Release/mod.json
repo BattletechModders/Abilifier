@@ -2,7 +2,7 @@
     "Name": "Abilifier",
     "DLL": "Abilifier.dll",
 
-    "Version": "1.0.8",
+    "Version": "1.0.9",
     "Description": "Allows for choices between abilities when leveling pilots.",
     "Author": "gnivler, T-Bone, thanks to kMiSSioN for allowing reuse of their code creating ability buttons",
     "Website": "",
@@ -19,6 +19,7 @@
 	"extraAbilities": 0,
 	"extraAbilitiesAllowedPerSkill": 0,
 	"cleanUpCombatUI": true,
+	"nonTreeAbilities": 1,
 	"skillLockThreshold":8,
 	"abilityReqs":
 		{
