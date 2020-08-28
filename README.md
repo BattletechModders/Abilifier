@@ -29,7 +29,7 @@ To use, place your new AbilityDefs in an appropriate subfolder, either in the Ab
 				"AbilityDefG5a"
 			],
 ```
-Using the above, a player reaching Gunnery 5 will have the choice between the abilities with Ids `AbilityDefG5` and `AbilityDefG5a`. Using the existing naming scheme (appending "a", "b", etc. for new abilities in a skill tree) is not required, but is recommended for potential future compatibiliy.
+Using the above, a player reaching Gunnery 5 will have the choice between the abilities with Ids `AbilityDefG5` and `AbilityDefG5a`. Using the existing naming scheme (appending "a", "b", etc. for new abilities in a skill tree) is not required, but is recommended for potential future compatibility.
 
 Lastly, developers have a choice between the display style for the ability selection pop-up. The default method is to display the entire body of the Ability details in the AbilityDef .json, e.g:
 ![TextPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/textpopup.png)
