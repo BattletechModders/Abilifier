@@ -77,6 +77,7 @@ namespace Abilifier
             public int extraFirstTierAbilities = 0;
             public int extraAbilities = 0;
             public int extraAbilitiesAllowedPerSkill = 0;
+            public int nonTreeAbilities = 0;
             public string modDirectory;
             public bool cleanUpCombatUI;
             public int skillLockThreshold = 0;

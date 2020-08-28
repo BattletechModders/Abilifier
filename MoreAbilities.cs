@@ -18,7 +18,7 @@ namespace Abilifier
 		{
 			public static void Postfix(CombatHUDMechwarriorTray __instance, CombatGameState Combat, CombatHUD HUD)
 			{
-				if (modSettings.extraAbilities > 0)
+				if (modSettings.extraAbilities > 0 || modSettings.nonTreeAbilities > 0)
 				{
                     if (modSettings.cleanUpCombatUI == true)
                     {
@@ -30,7 +30,7 @@ namespace Abilifier
 						GameObject.Find("actionButton_DLine2").SetActive(false);
 						GameObject.Find("actionButton_DLine3").SetActive(false);
 					}
-					for (int i = 1; i <= modSettings.extraAbilities; i++)
+					for (int i = 1; i <= modSettings.extraAbilities + modSettings.nonTreeAbilities; i++)
 					{//thanks to kmission for doing the hard part of writing all this, and letting me use my elite copypaste skills//
 						GameObject[] ActionButtonHolders = new GameObject[__instance.ActionButtonHolders.Length + 1];
 						__instance.ActionButtonHolders.CopyTo(ActionButtonHolders, 0);
