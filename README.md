@@ -60,6 +60,7 @@ Settings available in the mod.json:
 	"cleanUpCombatUI": true,
 	"nonTreeAbilities": 1,
 	"skillLockThreshold":8
+	"usingCACabilitySelector":false,
 	"abilityReqs":
 		{
 		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
@@ -98,6 +99,7 @@ Gunnery: 5, 8
 Guts: 5, 8
 ```
 
+`usingCACabilitySelector` bool. if true, makes Abilifier compatible with newer versions of CustomBundle/CAC that incorporate an "ability selector" for the combat UI. If false, Abilifer will create `extraAbilities + nonTreeAbilities` traditional ability button slots.
 
 `abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available. At present, abilities with requirements must be of the same skill type as their required abilities (e.g., Gunnery8b cannot require Guts5c).
 
