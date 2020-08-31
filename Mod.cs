@@ -81,6 +81,7 @@ namespace Abilifier
             public string modDirectory;
             public bool cleanUpCombatUI;
             public int skillLockThreshold = 0;
+            public bool usingCACabilitySelector = false;
             public Dictionary<string, List<string>> abilityReqs;
         };
             

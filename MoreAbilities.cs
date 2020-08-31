@@ -18,7 +18,7 @@ namespace Abilifier
 		{
 			public static void Postfix(CombatHUDMechwarriorTray __instance, CombatGameState Combat, CombatHUD HUD)
 			{
-				if (modSettings.extraAbilities > 0 || modSettings.nonTreeAbilities > 0)
+				if (modSettings.usingCACabilitySelector == false && (modSettings.extraAbilities > 0 || modSettings.nonTreeAbilities > 0))
 				{
                     if (modSettings.cleanUpCombatUI == true)
                     {
