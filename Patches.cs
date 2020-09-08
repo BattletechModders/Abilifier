@@ -438,5 +438,17 @@ namespace Abilifier
                 }
             }
         }
+
+        [HarmonyPatch(typeof(SimGameState), "Dehydrate")]
+        public static class SimGameState_Dehydrate_Patch
+        {
+            static void Prefix(SimGameState __instance)
+            {
+                if (!__instance.CompanyTags.Contains("AbilifierLoaded"))
+                {
+                    __instance.CompanyTags.Add("AbilifierLoaded");
+                }
+            }
+        }
     }
 }
