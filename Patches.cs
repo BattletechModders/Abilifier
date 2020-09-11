@@ -400,29 +400,38 @@ namespace Abilifier
                     return false;
                 }
                 Dictionary<SkillType, int> sortedSkillCount = __instance.GetSortedSkillCount(p);
+
                 __result = (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities
                     || sortedSkillCount.ContainsKey(newAbility.ReqSkill))
                     && (!sortedSkillCount.ContainsKey(newAbility.ReqSkill) || sortedSkillCount[newAbility.ReqSkill] <= 1 + modSettings.extraAbilitiesAllowedPerSkill)
                     && (!checkSecondTier || sortedSkillCount.ContainsKey(newAbility.ReqSkill) || primaryPilotAbilities.Count <= 1 + modSettings.extraAbilitiesAllowedPerSkill);                 //change max # abilities per-skill type (default is 2, so only allowed to take if currently have <=1)
                 //       && (modSettings.skillLockThreshold <= 0 || ((primaryPilotAbilities.Count == 2 + modSettings.extraAbilities) ? (newAbility.ReqSkillLevel > modSettings.skillLockThreshold && sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill) : true));//added part for skill locking?
 
-                if (modSettings.skillLockThreshold > 0) //section allows you to set a threshold the "locks" the pilot into taking only abilities within that skill once the threshold has been reached.
-                {
+
+                 //section allows you to set a threshold the "locks" the pilot into taking only abilities within that skill once the threshold has been reached.
+                
+                    if ((p.SkillGunnery >= modSettings.skillLockThreshold) ||
+                       (p.SkillPiloting >= modSettings.skillLockThreshold) ||
+                       (p.SkillGuts >= modSettings.skillLockThreshold) ||
+                       (p.SkillTactics >= modSettings.skillLockThreshold))
+
+                    { __result = false; }
+
                     if (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities && newAbility.ReqSkillLevel < modSettings.skillLockThreshold)
                     {
                         __result = true;
                         return false;
                     }
 
-                    if (p.SkillGunnery >= modSettings.skillLockThreshold ||
-                    p.SkillPiloting >= modSettings.skillLockThreshold ||
-                    p.SkillGuts >= modSettings.skillLockThreshold ||
-                    p.SkillTactics >= modSettings.skillLockThreshold)
-                    { __result = false; }
+                    if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] < 1 + modSettings.extraAbilitiesAllowedPerSkill) __result = true;
+
+                    var ct = sortedSkillCount.Where(x => x.Value >= 1 + modSettings.extraAbilitiesAllowedPerSkill);
+
+                    if (ct.Count() >= 1 + modSettings.extraPreCapStoneAbilities) __result = false;     
 
                     if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill && newAbility.ReqSkillLevel >= modSettings.skillLockThreshold)
                     { __result = true; }
-                }
+                
                 return false;
             }
         }

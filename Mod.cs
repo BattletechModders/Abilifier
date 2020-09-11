@@ -80,7 +80,8 @@ namespace Abilifier
             public int nonTreeAbilities = 0;
             public string modDirectory;
             public bool cleanUpCombatUI;
-            public int skillLockThreshold = 0;
+            public int skillLockThreshold = 10;
+            public int extraPreCapStoneAbilities = 0;
             public bool usingCACabilitySelector = false;
             public Dictionary<string, List<string>> abilityReqs;
         };
