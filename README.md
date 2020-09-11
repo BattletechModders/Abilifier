@@ -59,7 +59,8 @@ Settings available in the mod.json:
 	"extraAbilitiesAllowedPerSkill": 1,
 	"cleanUpCombatUI": true,
 	"nonTreeAbilities": 1,
-	"skillLockThreshold":8
+	"skillLockThreshold":8,
+	"extraPreCapStoneAbilities":0,
 	"usingCACabilitySelector":false,
 	"abilityReqs":
 		{
@@ -98,6 +99,8 @@ but you could not have
 Gunnery: 5, 8
 Guts: 5, 8
 ```
+
+`extraPreCapStoneAbilities` int. Decides additional number of skills allowed to give abilities before the CapStone ability (works in concert with skillLockThreshold).
 
 `usingCACabilitySelector` bool. if true, makes Abilifier compatible with newer versions of CustomBundle/CAC that incorporate an "ability selector" for the combat UI. If false, Abilifer will create `extraAbilities + nonTreeAbilities` traditional ability button slots.
 
