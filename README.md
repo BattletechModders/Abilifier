@@ -87,7 +87,7 @@ Settings available in the mod.json:
 
 `nonTreeAbilities` int; adds extra button slots in combat UI for abilities to be added to PilotDefs <i>independent</i> of the ability tree. Think Victoria's Fire and Steel ability, that sort of thing. Abilities added to pilots in this way <b>must not</b> have `IsPrimaryAbility`, `ReqSkill`, or `ReqSkillLevel` in their AbilityDefs. Likewise, they should <b>not</b> be added to the Progression section of SimGameConstants. They <b>do</b>, however need `"DisplayParams" : "ShowInMWTRay",` if you want to be able to see them in the ability tray in missions.
 
-`skillLockThreshold` int, if set > 0, defines a threshold level for skills; once a pilot has reached that skill level, they can *only* take abilities above that level in that skill. Intended for use with additional lvl 10 abilities; in the settings above, once a pilot reaches lvl 8 (2nd tier ability by default), the only abilities at or above lvl 8 that they can take must be in that skill. However, pilots can always take abilities *below* the threshold (within the constraints of the above settings).
+`skillLockThreshold` int, defines a threshold level for skills; once a pilot has reached that skill level, they can *only* take abilities above that level in that skill. Intended for use with additional lvl 10 abilities; in the settings above, once a pilot reaches lvl 8 (2nd tier ability by default), the only abilities at or above lvl 8 that they can take must be in that skill. However, pilots can always take abilities *below* the threshold (within the constraints of the above settings). Set to 10 (effectively nonfunctional) by default.
 
 To clarify: a pilot could, for example, have abilities at the following levels:
 ```
