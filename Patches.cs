@@ -47,7 +47,7 @@ namespace Abilifier
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
                     var type = pips[idx].Ability.ReqSkill;
                     var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
-                    && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility == true);
+                    && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility);
                     bool flag4 = abilityDefs.Any();
 
                     pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
@@ -277,7 +277,6 @@ namespace Abilifier
                                 abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
                             }
                         }
-
                     }
 
                     var popup = GenericPopupBuilder
@@ -310,6 +309,65 @@ namespace Abilifier
             }
 
         }
+
+        //lets try and see about displaying all available avbilities at a given level?
+        [HarmonyPatch(typeof(SGBarracksSkillPip), "Set",
+            new Type[]
+            {
+                typeof(SGBarracksSkillPip.PurchaseState), typeof(bool), typeof(bool), typeof(bool), typeof(bool)
+            })]
+
+        public static class SGBarracksSkillPip_Set_Patch
+        {
+            public static void Postfix(SGBarracksSkillPip __instance, SGBarracksSkillPip.PurchaseState purchaseState,
+                bool canClick, bool showXP, bool needXP, bool isLocked, int ___idx, string ___type, HBSTooltip ___AbilityTooltip)
+            {
+                if (purchaseState == SGBarracksSkillPip.PurchaseState.Unselected)
+                {
+                    var sim = UnityGameInstance.BattleTechGame.Simulation;
+                    var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+
+                    var abilityDefs = new List<AbilityDef>();
+                    foreach (var abilityDictionary in abilityDictionaries)
+                    {
+                        abilityDefs.AddRange(abilityDictionary[___idx].Where(x => x.ReqSkill.ToString() == ___type));
+                    }
+
+                    var title = $"{___type}: Level {___idx+1} Ability Options";
+
+                    var desc = "";
+                    
+
+                    foreach (var ability in abilityDefs)
+                    {
+                        var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                        List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
+
+                        if (abilitiesWithReqs.Contains(ability))
+                        {
+                            var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
+                            var allAbilities = new List<AbilityDef>();
+
+                            allAbilities = sim.AbilityTree[___type].SelectMany(x => x.Value).ToList();
+
+                            var reqAbility = allAbilities.Find(x => x.Id == reqAbilityName);
+                            //
+
+                            desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " + reqAbility.Description.Name + "\n\n" + ability.Description.Details + "\n\n\n";
+                        }
+                        else
+                        {
+                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + ability.Description.Details +"\n\n\n";
+                        }
+                    }
+
+                    var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
+                    ___AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
+                }
+            }
+        }
+
 
         //this patch should hopefuly prevent AI generated (hiring hall) pilots from having too many abilities
         [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
