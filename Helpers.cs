@@ -97,6 +97,8 @@ namespace Abilifier
             var pilotDef = curPilot.ToPilotDef(true);
             pilotDef.DataManager = sim.DataManager;
             //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
+
+
             var upgradedSkills = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
 
             //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
@@ -166,6 +168,7 @@ namespace Abilifier
             pilotDef.ForceRefreshAbilityDefs();
             var pilot = new Pilot(pilotDef, curPilot.GUID, true);
             pilot.pilotDef.DataManager = curPilot.pilotDef.DataManager;
+            pilot.FromPilotDef(pilotDef); // added this so RT CD can hook it?
             if (expAmount > 0)
             {
                 pilot.SpendExperience(0, "Advancement", (uint)expAmount);
