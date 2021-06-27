@@ -47,11 +47,62 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
 }
 ```
 
+## New Module - Resolverator!
+
+If enabled, this module tracks resolve separately per-pilot rather than as a team. In addition, <i>regular</i> abilities can now have a resolve cost associated with them. Abilities' resolve cost is dictated by adding a "ResolveCost" field to the AbilityDef:
+eg
+```
+{
+    "Description": {},
+    "DisplayParams": "ShowInMWTRay",
+    "ReqSkill": "Gunnery",
+    "ReqSkillLevel": 5,
+    "ActivationTime": "ConsumedByFiring",
+    "ActivationCooldown": 4,
+    "Targeting": "ActorSelf",
+    "ResolveCost": 25,
+```
+
+Tracking resolve costs per-pilot means a hefty rebalance of resolve generation will likely be needed. In addition to the values in CombatGameConstants under `"MoraleConstants": {`, other values that may need changing are:
+```
+    "MoraleCostAttackDescription": {
+      "Name": "PRECISION STRIKE COST",
+      "Details": "Cost: 30 Resolve"
+    },
+    "MoraleCostAttackDescriptionLow": {
+      "Name": "PRECISION STRIKE COST LOW",
+      "Details": "Cost: <color=#F04228FF>40 Resolve (this MechWarrior has Low Spirits)</color>"
+    },
+    "MoraleCostAttackDescriptionHigh": {
+      "Name": "PRECISION STRIKE COST HIGH",
+      "Details": "Cost: <color=#85DBF6FF>20 Resolve (this MechWarrior has High Spirits)</color>"
+    },
+    "MoraleCostDefendDescription": {
+      "Name": "VIGILANCE COST",
+      "Details": "Cost: 30 Resolve"
+    },
+    "MoraleCostDefendDescriptionLow": {
+      "Name": "VIGILANCE COST LOW",
+      "Details": "Cost: <color=#F04228FF>40 Resolve (this MechWarrior has Low Spirits)</color>"
+    },
+    "MoraleCostDefendDescriptionHigh": {
+      "Name": "VIGILANCE COST HIGH",
+      "Details": "Cost: <color=#85DBF6FF>20 Resolve (this MechWarrior has High Spirits)</color>"
+    },
+```
+
+### Settings
+
 Settings available in the mod.json:
 ```
   "Settings": {
 	"enableTrace": false,
 	"enableLog": false,
+	"enableResolverator": true,
+	"resolveGenTacticsMult": 0.1,
+	"resolveCostTacticsMult": 0.05,
+	"resolveGenBaseMult": 1.0,
+	"resolveCostBaseMult": 1.0,
 	"usePopUpsForAbilityDesc": false,
 	"debugXP": false,
 	"extraFirstTierAbilities": 0,
@@ -70,6 +121,16 @@ Settings available in the mod.json:
 	},
 ```
 `enableTrace` and `enableLog` (bools) allow logging.
+
+`enableResolverator` - bool, enables pilot resolve overhaul module
+
+`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill
+
+`resolveCostTacticsMult` - float, multiplier modifies resolve costs of abilities according to tactics skill
+
+`resolveGenBaseMult` - float, base multiplier for all resolve generation
+
+`resolveCostBaseMult` - float, base multiplier for all resolve costs
 
 `usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 
