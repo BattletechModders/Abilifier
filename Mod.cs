@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
+using Abilifier.Framework;
 using Harmony;
 using Newtonsoft.Json;
 
@@ -13,11 +12,15 @@ namespace Abilifier
 {
     public static class Mod
     {
+        internal static Logger modLog;
+        private static string modDir;
+
         internal static Settings modSettings;
 
-        public static void Init(string modDir, string settings)
+        public static void Init(string directory, string settings)
         {
-
+            modDir = directory;
+            modLog = new Logger(modDir, "Abilifier", true);
             // read settings
             try
             {
@@ -29,56 +32,33 @@ namespace Abilifier
                 modSettings = new Settings();
             }
 
-            var logFile = modSettings.modDirectory + "/log.txt";
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
             modSettings.abilityReqs = modSettings.abilityReqs ?? new Dictionary<string, List<string>> { { "potato", new List<string> { "potahto" } } };
 
 
-            Trace("Starting up " + DateTime.Now.ToShortTimeString());
+            Mod.modLog.LogMessage($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
             //            Helpers.PopulateAbilities();
+
+            PilotResolveTracker.HolderInstance.Initialize();
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         }
-
-        internal static void Log(object input)
-        {
-            if (modSettings.enableLog)
-            {
-                using (var writer = new StreamWriter(modSettings.modDirectory + "/log.txt"))
-                {
-                    writer.WriteLine($"[Abilifier] {input ?? "NULL"}");
-                }
-            }
-
-            if (modSettings.enableTrace)
-            {
-                Trace(input);
-            }
-        }
-
-        internal static void Trace(object input)
-        {
-            if (modSettings.enableTrace)
-            {
-                FileLog.Log($"[Abilifier] Trace: {input ?? "NULL"}");
-            }
-        }
-
         public class Settings
         {
             public bool enableTrace;
             public bool enableLog;
+            public string modDirectory;
             public bool usePopUpsForAbilityDesc = false;
             public bool debugXP = false;
+            public bool enableResolverator = true;
+            public float resolveGenTacticsMult = 0.1f;
+            public float resolveCostTacticsMult = 0.05f;
+            public float resolveGenBaseMult = 1.0f;
+            public float resolveCostBaseMult = 1.0f;
             public int extraFirstTierAbilities = 0;
             public int extraAbilities = 0;
             public int extraAbilitiesAllowedPerSkill = 0;
             public int nonTreeAbilities = 0;
-            public string modDirectory;
             public bool cleanUpCombatUI;
             public int skillLockThreshold = 10;
             public int extraPreCapStoneAbilities = 0;

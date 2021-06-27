@@ -68,15 +68,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MoreAbilities.cs" />
+    <Compile Include="Framework\Logger.cs" />
+    <Compile Include="Framework\Resolverator.cs" />
+    <Compile Include="Patches\ResolvePatches.cs" />
+    <Compile Include="Patches\MoreAbilities.cs" />
     <Compile Include="Mod.cs" />
-    <Compile Include="Helpers.cs" />
-    <Compile Include="Patches.cs" />
+    <Compile Include="Framework\Helpers.cs" />
+    <Compile Include="Patches\Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.json" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

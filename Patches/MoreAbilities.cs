@@ -13,9 +13,10 @@ namespace Abilifier
 		[HarmonyPatch(typeof(CombatHUDMechwarriorTray), "Init")]
 		[HarmonyPatch(MethodType.Normal)]
 		[HarmonyPatch(new Type[] { typeof(CombatGameState), typeof(CombatHUD) })]
-		[HarmonyAfter(new string[] { "io.mission.modrepuation" })]
-		public static class CombatHUDMechwarriorTray_Init_Patch
+        public static class CombatHUDMechwarriorTray_Init_Patch
 		{
+            [HarmonyAfter(new string[] { "io.mission.modrepuation" })]
+            public static bool Prepare() => modSettings.usingCACabilitySelector == false && (modSettings.extraAbilities > 0 || modSettings.nonTreeAbilities > 0);
 			public static void Postfix(CombatHUDMechwarriorTray __instance, CombatGameState Combat, CombatHUD HUD)
 			{
 				if (modSettings.usingCACabilitySelector == false && (modSettings.extraAbilities > 0 || modSettings.nonTreeAbilities > 0))
