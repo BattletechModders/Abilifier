@@ -634,28 +634,6 @@ namespace Abilifier.Patches
                 }
             }
 
-            [HarmonyPatch(typeof(AbstractActor), "InitStats")]
-            public static class AbstractActor_InitStats_Patch
-            {
-                public static bool Prepare() => Mod.modSettings.enableResolverator && 2<1;
-                public static void Postfix(AbstractActor __instance)
-                {
-                    var actorKey = __instance.GetPilot().Fetch_rGUID();
-
-                    if (PilotResolveTracker.HolderInstance.pilotResolveDict.ContainsKey(actorKey)) return;
-                    PilotResolveTracker.HolderInstance.pilotResolveDict.Add(actorKey, new PilotResolveInfo());
-                    Mod.modLog.LogMessage($"{__instance.GetPilot().Callsign} missing, added to pilotResolveDict and initialized at 0 resolve");
-
-                    var actorResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-
-                    actorResolveInfo.PilotMaxResolve = CombatGameConstants
-                                                           .GetInstance(UnityGameInstance.BattleTechGame)
-                                                           .MoraleConstants.MoraleMax +
-                                                       __instance.StatCollection.GetValue<int>("maxResolveMod");
-                }
-            }
-
-
             [HarmonyPatch(typeof(CombatHUDMoraleBar), "RefreshMoraleBarTarget", new Type[] {typeof(bool)})]
             public static class CombatHUDMoraleBar_RefreshMoraleBarTarget
             {
