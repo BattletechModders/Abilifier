@@ -775,9 +775,9 @@ namespace Abilifier.Patches
                             ___predicting = true;
                             Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.FireMorale (called shot): {___predictWidth}");
                         }
-                        else if (PilotResolveTracker.HolderInstance.selectedAbilityResolveCost > 0)
+                        else if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.MWInstant)
                         {
-                            ___predictWidth -= PilotResolveTracker.HolderInstance.selectedAbilityResolveCost / (float) ___maxMorale *
+                            ___predictWidth -= ___HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float) ___maxMorale *
                                                __instance.moraleBarMaxWidth;
                             ___predictWidth = Mathf.Max(0f, ___predictWidth);
                             ___predicting = true;
@@ -868,31 +868,6 @@ namespace Abilifier.Patches
                     __result = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat).UseOffensivePush &&
                                pilotResolveInfo.PilotResolve >= __instance.OffensivePushCost;
                     return false;
-                }
-            }
-
-            [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateAbility", new Type[]{})]
-            public static class CombatHUDActionButton_ActivateAbility_Invoked
-            {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
-
-                public static void Postfix(CombatHUDActionButton __instance)
-                {
-                    var cost = __instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    Mod.modLog.LogMessage($"Activating {__instance.Ability.Def.Description.Name} and setting predicted Resolve Cost to {cost}");
-                    PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = cost;
-                }
-            }
-
-            [HarmonyPatch(typeof(CombatHUDActionButton), "DeactivateAbility", new Type[]{})]
-            public static class CombatHUDActionButton_DeactivateAbility
-            {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
-
-                public static void Postfix(CombatHUDActionButton __instance)
-                {
-                    Mod.modLog.LogMessage($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
-                    PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = 0;
                 }
             }
 
