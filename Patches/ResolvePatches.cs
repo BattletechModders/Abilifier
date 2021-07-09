@@ -156,14 +156,16 @@ namespace Abilifier.Patches
 
                     if (PilotResolveTracker.HolderInstance.pilotResolveDict.ContainsKey(pKey)) return;
                     PilotResolveTracker.HolderInstance.pilotResolveDict.Add(pKey, new PilotResolveInfo());
-                    Mod.modLog.LogMessage($"{p.Name} missing, added to pilotResolveDict and initialized at 0 resolve");
+                    Mod.modLog.LogMessage($"{p.Callsign} missing, added to pilotResolveDict and initialized at 0 resolve");
 
                     var actorResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[pKey];
 
+                    var maxMod = unit.StatCollection.GetValue<int>("maxResolveMod");
                     actorResolveInfo.PilotMaxResolve = CombatGameConstants
-                                                           .GetInstance(UnityGameInstance.BattleTechGame)
-                                                           .MoraleConstants.MoraleMax +
-                                                       __instance.StatCollection.GetValue<int>("maxResolveMod");
+                        .GetInstance(UnityGameInstance.BattleTechGame)
+                        .MoraleConstants.MoraleMax + maxMod;
+
+                    Mod.modLog.LogMessage($"{p.Callsign} Max Resolve: {actorResolveInfo.PilotMaxResolve}. {maxMod} from maxResolveMod");
                 }
             }
 
@@ -631,6 +633,8 @@ namespace Abilifier.Patches
                         Mod.modSettings.resolveCostBaseMult);
 
                     __instance.StatCollection.AddStatistic<int>("maxResolveMod", 0);
+
+                    Mod.modLog.LogMessage($"Added actor stats to {__instance.GetPilot().Callsign}: resolveGenTacticsMult, resolveCostTacticsMult, resolveGenBaseMult, resolveCostBaseMult, maxResolveMod");
                 }
             }
 
