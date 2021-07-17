@@ -1007,7 +1007,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, SelectionType SelectionType, Ability Ability, SVGAsset Icon, string GUID, string Tooltip, AbstractActor actor)
                 {
-                    if (actor.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || __instance.Ability == null) return;
                     if (SelectionType == SelectionType.FireMorale ||
                         SelectionType == SelectionType.ConfirmMorale) return;
