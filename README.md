@@ -1,4 +1,6 @@
 # Abilifier
+**This Branch Depends on CustomActivatableEquipment**
+**The only difference between this branch and the Master Branch is Resolverator! Master does not have CustomActivatableEquipment dependency**
 
 This is a mod for HBS Battletech that allows developers to give players <b>choices</b> when it comes to leveling up abilities. Special thanks to kMiSSioN for allowing the reuse of their code adding additional ability buttons to the Combat HUD.
 
