@@ -70,6 +70,7 @@ namespace Abilifier.Patches
                 public static void Postfix(SGCharacterCreationCareerBackgroundSelectionPanel __instance)
                 {
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
+                    if (sim == null) return;
 
                     if (!sim.Commander.pilotDef.PilotTags.Any(x => x.StartsWith(rGUID)))
                     {
@@ -142,6 +143,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Postfix(Team __instance, AbstractActor unit)
                 {
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     //still need to make AI GUID end with aiPilotFlag
                     var p = unit.GetPilot();
 
@@ -178,6 +180,7 @@ namespace Abilifier.Patches
                 public static bool Prefix(AttackDirector __instance, string VOQueueId,
                     AttackDirector.AttackSequence sequence)
                 {
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                     var attacker = sequence.attacker;
                     var dictionary = new Dictionary<AbstractActor, int> {{attacker, 0}};
                     Team team = attacker.team;
@@ -448,8 +451,8 @@ namespace Abilifier.Patches
                 public static bool Prefix(Team __instance, ref List<IStackSequence> __result)
                 {
                     {
-                        var combat = UnityGameInstance.BattleTechGame.Combat;
-
+                        var combat = __instance.Combat;
+                        if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                         List<IStackSequence> list = new List<IStackSequence>();
                         if (combat.TurnDirector.IsInterleaved &&
                             (combat.Constants.GetActiveMoraleDef(combat).CanAIBeInspired ||
@@ -498,6 +501,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Postfix(CombatHUD __instance, AbstractActor actor)
                 {
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var tray = __instance.MechWarriorTray;
                     CombatHUDMoraleBarInstance.CHMB = Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
 //                    var CHMB = Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
@@ -539,7 +543,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
-
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
@@ -558,7 +562,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
-
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
@@ -578,7 +582,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
-
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
@@ -597,6 +601,7 @@ namespace Abilifier.Patches
                 public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor,
                     CombatGameState ___Combat)
                 {
+                    if (___Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null) return;
                     var abilityButtons = Traverse.Create(__instance).Property("AbilityButtons").GetValue<CombatHUDActionButton[]>();
                     var moraleButtons = Traverse.Create(__instance).Property("MoraleButtons").GetValue<CombatHUDActionButton[]>();
@@ -662,6 +667,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Prefix(AbstractActor __instance)
                 {
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     __instance.StatCollection.AddStatistic<float>("resolveGenTacticsMult",
                         Mod.modSettings.resolveGenTacticsMult);
                     __instance.StatCollection.AddStatistic<float>("resolveCostTacticsMult",
@@ -690,6 +696,7 @@ namespace Abilifier.Patches
                     RectTransform ___moraleBar, HBSDOTweenButton ___moraleTweens, float ___moraleBarMaxWidth,
                     LocalizableText ___HoverText, ILog ___uiLogger)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                     var selectedUnitFromTraverse =
                         Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
                     if (selectedUnitFromTraverse == null)
@@ -765,6 +772,7 @@ namespace Abilifier.Patches
                     ref bool ___predicting, ref int ___maxMorale, ref Color ___predictColor,
                     Graphic ___moralePredictGraphic, CombatGameState ___Combat)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                     var selectedUnitFromTraverse =
                         Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
                     if (selectedUnitFromTraverse == null)
@@ -878,6 +886,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Prefix(MoraleDefendSequence __instance)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var actor = __instance.owningActor;
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance
                         .pilotResolveDict[actor.GetPilot().Fetch_rGUID()];
@@ -899,6 +908,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Prefix(AttackStackSequence __instance)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (!__instance.isMoraleAttack) return;
                     var actor = __instance.owningActor;
 
@@ -915,6 +925,7 @@ namespace Abilifier.Patches
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static bool Prefix(AbstractActor __instance, ref bool __result)
                 {
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance
                         .pilotResolveDict[__instance.GetPilot().Fetch_rGUID()];
                     __result = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat).UseOffensivePush &&
@@ -930,6 +941,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
@@ -945,6 +957,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
@@ -961,6 +974,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
@@ -976,6 +990,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
@@ -992,6 +1007,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, SelectionType SelectionType, Ability Ability, SVGAsset Icon, string GUID, string Tooltip, AbstractActor actor)
                 {
+                    if (actor.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || __instance.Ability == null) return;
                     if (SelectionType == SelectionType.FireMorale ||
                         SelectionType == SelectionType.ConfirmMorale) return;
@@ -1007,6 +1023,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var cost = __instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     Mod.modLog.LogMessage($"Activating {__instance.Ability.Def.Description.Name} and setting predicted Resolve Cost to {cost}");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = cost;
@@ -1020,6 +1037,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
+                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = 0;
                 }
