@@ -9,6 +9,7 @@ using BattleTech.Save;
 using BattleTech.Save.Test;
 using BattleTech.UI;
 using BattleTech.UI.TMProWrapper;
+using CustomActivatableEquipment;
 using Harmony;
 using HBS.Logging;
 using Newtonsoft.Json.Linq;
@@ -536,7 +537,46 @@ namespace Abilifier.Patches
             {
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
 
-                public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive, CombatGameState ___Combat)
+                public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
+                {
+
+                    if (actor == null || ability == null) return;
+                    var actorKey = actor.GetPilot().Fetch_rGUID();
+                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                    if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                    {
+                        button.DisableButton();
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(CombatHUDWeaponPanel), "ResetAbilityButton",
+                new Type[] { typeof(AbstractActor), typeof(CombatHUDActionButton), typeof(Ability), typeof(bool) })]
+            public static class CombatHUDWeaponPanel_ResetAbilityButton_Patch
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
+                {
+
+                    if (actor == null || ability == null) return;
+                    var actorKey = actor.GetPilot().Fetch_rGUID();
+                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                    if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                    {
+                        button.DisableButton();
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(CombatHUDEquipmentSlotEx), "ResetAbilityButton",
+                new Type[] { typeof(AbstractActor), typeof(CombatHUDActionButton), typeof(Ability), typeof(bool) })]
+            public static class CombatHUDEquipmentSlotEx_ResetAbilityButton_Patch
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
 
                     if (actor == null || ability == null) return;
@@ -787,6 +827,14 @@ namespace Abilifier.Patches
                             ___predicting = true;
                             Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {___predictWidth}");
                         }
+                        else if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandTargetTwoPoints || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandSpawnTarget || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandBase || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandInstant)
+                        {
+                            ___predictWidth -= ___HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float)___maxMorale *
+                                               __instance.moraleBarMaxWidth;
+                            ___predictWidth = Mathf.Max(0f, ___predictWidth);
+                            ___predicting = true;
+                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {___predictWidth}");
+                        }
                     }
 
                     if (___predicting)
@@ -890,6 +938,52 @@ namespace Abilifier.Patches
                 }
             }
 
+            [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
+            public static class CombatHUDActionButton_ActivateCommandAbility_Confirmed
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
+                {
+                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var theActor = HUD.SelectedActor;
+                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    theActor.ModifyResolve(amt);
+                }
+            }
+
+
+            [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateAbility", new Type[] { typeof(string), typeof(string) })]
+            public static class CombatHUDEquipmentSlot_ActivateAbility_Confirmed
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
+                {
+                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var theActor = HUD.SelectedActor;
+                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    theActor.ModifyResolve(amt);
+                }
+            }
+
+            [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
+            public static class CombatHUDEquipmentSlot_ActivateCommandAbility_Confirmed
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
+                {
+                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var theActor = HUD.SelectedActor;
+                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    theActor.ModifyResolve(amt);
+                }
+            }
+
             [HarmonyPatch(typeof(CombatHUDActionButton), "InitButton",
                 new Type[] {typeof(SelectionType), typeof(Ability), typeof(SVGAsset), typeof(string), typeof(string), typeof(AbstractActor)})]
             public static class CombatHUDActionButton_InitButton
@@ -909,7 +1003,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateAbility", new Type[]{})]
             public static class CombatHUDEquipmentSlot_ActivateAbility_Invoked
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static bool Prepare() => Mod.modSettings.enableResolverator && false; //disabled for now
 
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
@@ -922,27 +1016,12 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "DeactivateAbility", new Type[]{})]
             public static class CombatHUDEquipmentSlot_DeactivateAbility
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static bool Prepare() => Mod.modSettings.enableResolverator && false; //disabled for now
 
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
                     Mod.modLog.LogMessage($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = 0;
-                }
-            }
-
-            [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateAbility", new Type[]{typeof(string), typeof(string)})]
-            public static class CombatHUDEquipmentSlot_ActivateAbility_Confirmed
-            {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
-
-                public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
-                {
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
-                    var theActor = HUD.SelectedActor;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
                 }
             }
         }

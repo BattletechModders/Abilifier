@@ -44,6 +44,9 @@
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\BattleTech_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
+    <Reference Include="CustomActivatableEquipment">
+      <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\Mods\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
+    </Reference>
     <Reference Include="InControl, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>F:\Steam Library\steamapps\common\BATTLETECH\BattleTech_Data\Managed\InControl.dll</HintPath>
     </Reference>
