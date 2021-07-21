@@ -63,7 +63,10 @@ eg
     "ActivationCooldown": 4,
     "Targeting": "ActorSelf",
     "ResolveCost": 25,
+    "CBillCost": 5000
 ```
+In addition, a further optional new field "CBillCost" defines a per-use cbill cost for using the ability. Does not need to be paired with ResolveCost.
+
 
 Tracking resolve costs per-pilot means a hefty rebalance of resolve generation will likely be needed. In addition to the values in CombatGameConstants under `"MoraleConstants": {`, other values that may need changing are:
 ```
