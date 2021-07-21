@@ -58,8 +58,6 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(AbilityDef), "FromJSON")]
         public static class AbilityDef_FromJSON
         {
-            public static bool Prepare() => Mod.modSettings.enableResolverator;
-
             public static void Prefix(AbilityDef __instance, string json, ref AbilityDefExtension __state)
             {
                 var abilityDefJO = JObject.Parse(json);
