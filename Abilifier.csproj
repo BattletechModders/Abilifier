@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="Framework\Logger.cs" />
     <Compile Include="Framework\Resolverator.cs" />
+    <Compile Include="Patches\AbilityExtension.cs" />
     <Compile Include="Patches\ResolvePatches.cs" />
     <Compile Include="Patches\MoreAbilities.cs" />
     <Compile Include="Mod.cs" />

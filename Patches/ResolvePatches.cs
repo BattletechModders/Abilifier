@@ -19,46 +19,6 @@ using UnityEngine.UI;
 
 namespace Abilifier.Patches
 {
-    public static class AbilityExtensions
-    {
-        private static Dictionary<string, AbilityDefExtension> abilityDefExtensionDict = new Dictionary<string, AbilityDefExtension>();
-        
-        public static AbilityDefExtension getAbilityDefExtension(this AbilityDef abilityDef)
-        {
-            return abilityDefExtensionDict.ContainsKey(abilityDef.Id) ? abilityDefExtensionDict[abilityDef.Id] : new AbilityDefExtension();
-        }
-
-        [HarmonyPatch(typeof(AbilityDef), "FromJSON")]
-        public static class AbilityDef_FromJSON
-        {
-            public static bool Prepare() => Mod.modSettings.enableResolverator;
-
-            public static void Prefix(AbilityDef __instance, string json, ref AbilityDefExtension __state)
-            {
-                var abilityDefJO = JObject.Parse(json);
-                __state = new AbilityDefExtension {CBillCost = 0, ResolveCost = 0};
-                if (abilityDefJO["CBillCost"] != null)
-                {
-                    __state.CBillCost = (int)abilityDefJO["CBillCost"];
-                }
-                if (abilityDefJO["ResolveCost"] != null)
-                {
-                    __state.ResolveCost = (int)abilityDefJO["ResolveCost"];
-                }
-            }
-
-            public static void Postfix(AbilityDef __instance, string json, AbilityDefExtension __state)
-            {
-                if (abilityDefExtensionDict.ContainsKey(__instance.Id))
-                {
-                    abilityDefExtensionDict[__instance.Id] = __state;
-                    return;
-                }
-
-                abilityDefExtensionDict.Add(__instance.Id, __state);
-            }
-        }
-    }
     internal class ResolvePatches
     {
         internal class Resolve_StatePatches
