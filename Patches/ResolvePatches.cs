@@ -12,16 +12,15 @@ using BattleTech.UI.TMProWrapper;
 using CustomActivatableEquipment;
 using Harmony;
 using HBS.Logging;
-using Newtonsoft.Json.Linq;
 using SVGImporter;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Abilifier.Patches
 {
-    internal class ResolvePatches
+    public class ResolvePatches
     {
-        internal class Resolve_StatePatches
+        public class Resolve_StatePatches
         {
             [HarmonyPatch(typeof(SGCharacterCreationCareerBackgroundSelectionPanel), "Done")]
             public static class SGCharacterCreationCareerBackgroundSelectionPanel_Done_Patch
@@ -95,7 +94,7 @@ namespace Abilifier.Patches
             }
         }
 
-        internal class Resolve_CombatPatches
+        public class Resolve_CombatPatches
         {
             [HarmonyPatch(typeof(Team), "AddUnit", new Type[] {typeof(AbstractActor)})]
             public static class Team_AddUnit

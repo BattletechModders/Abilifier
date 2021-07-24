@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Abilifier.Patches;
 using BattleTech;
 using BattleTech.UI;
 using Harmony;
 using HBS.Logging;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 using static Abilifier.Framework.GlobalVars;
 

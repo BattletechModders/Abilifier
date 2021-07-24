@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Framework;
 using BattleTech.UI;
 using Harmony;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 
 namespace Abilifier.Patches
 {
