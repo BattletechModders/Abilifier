@@ -150,7 +150,7 @@ namespace Abilifier.Patches
                 var addObjectiveMethod = Traverse.Create(__instance).Method("AddObjective", new Type[] { typeof(MissionObjectiveResult) });
                 foreach (var abilityUse in ModState.AbilityUses)
                 {
-                    if (abilityUse.TotalCost <= 0) break;
+                    if (abilityUse.TotalCost <= 0) continue;
                     var abilityUseCost = $"Ability Costs for {abilityUse.AbilityName}: {abilityUse.UseCount} Uses x {abilityUse.UseCost} ea. = ¢-{abilityUse.TotalCost}";
 
                     var abilityUseCostResult = new MissionObjectiveResult($"{abilityUseCost}", Guid.NewGuid().ToString(), false, true, ObjectiveStatus.Ignored, false);
