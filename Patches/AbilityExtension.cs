@@ -140,7 +140,6 @@ namespace Abilifier.Patches
             }
         }
 
-
         [HarmonyPatch(typeof(AAR_ContractObjectivesWidget), "FillInObjectives")]
         public static class AAR_ContractObjectivesWidget_FillInObjectives_Patch
         {
@@ -151,10 +150,10 @@ namespace Abilifier.Patches
                 var addObjectiveMethod = Traverse.Create(__instance).Method("AddObjective", new Type[] { typeof(MissionObjectiveResult) });
                 foreach (var abilityUse in ModState.AbilityUses)
                 {
+                    if (abilityUse.TotalCost <= 0) break;
                     var abilityUseCost = $"Ability Costs for {abilityUse.AbilityName}: {abilityUse.UseCount} Uses x {abilityUse.UseCost} ea. = ¢-{abilityUse.TotalCost}";
 
-                    var abilityUseCostResult = new MissionObjectiveResult($"{abilityUseCost}", Guid.NewGuid().ToString(), false, true, ObjectiveStatus.Failed, false);
-
+                    var abilityUseCostResult = new MissionObjectiveResult($"{abilityUseCost}", Guid.NewGuid().ToString(), false, true, ObjectiveStatus.Ignored, false);
                     addObjectiveMethod.GetValue(abilityUseCostResult);
                 }
             }
@@ -178,6 +177,5 @@ namespace Abilifier.Patches
                 Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);
             }
         }
-
     }
 }

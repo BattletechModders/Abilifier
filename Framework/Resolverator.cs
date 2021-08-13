@@ -42,13 +42,13 @@ namespace Abilifier.Framework
             }
         }
 
-        internal void Initialize()
+        public void Initialize()
         {
             pilotResolveDict = new Dictionary<string, PilotResolveInfo>();
             selectedAbilityResolveCost = 0;
         }
 
-        internal void ModifyPendingMoraleOverride(ref Dictionary<AbstractActor, int> moraleChanges, AbstractActor attacker, AbstractActor target, int enemyAmount, int allyAmount, bool targetAlliedToAttacker, bool isSameTeam)
+        public void ModifyPendingMoraleOverride(ref Dictionary<AbstractActor, int> moraleChanges, AbstractActor attacker, AbstractActor target, int enemyAmount, int allyAmount, bool targetAlliedToAttacker, bool isSameTeam)
         {
             if (!targetAlliedToAttacker && !isSameTeam)
             {
@@ -64,7 +64,7 @@ namespace Abilifier.Framework
             }
         }
 
-        internal void ModifyPendingMoraleForUnit(ref Dictionary<AbstractActor, int> moraleChanges, AbstractActor unit, int amount)
+        public void ModifyPendingMoraleForUnit(ref Dictionary<AbstractActor, int> moraleChanges, AbstractActor unit, int amount)
         {
             moraleChanges.TryGetValue(unit, out var num);
             Mod.modLog.LogMessage($"Tried to get current moraleChanges for unit {unit.DisplayName}: {num} to add {amount}");
@@ -83,7 +83,7 @@ namespace Abilifier.Framework
             return 1f + combat.TurnDirector.NumInspiredActionsTaken * activeMoraleDef.InspirationAccelerationMultiplier;
         }
 
-        internal static void ModifyResolve(this AbstractActor actor, int amt)
+        public static void ModifyResolve(this AbstractActor actor, int amt)
         {
             if (amt > 0)
             {
@@ -92,13 +92,13 @@ namespace Abilifier.Framework
             actor.ModifyResolve("", -1, amt);
         }
 
-        internal static void ModifyResolve(this AbstractActor actor, AttackDirector.AttackSequence sequence, int amt)
+        public static void ModifyResolve(this AbstractActor actor, AttackDirector.AttackSequence sequence, int amt)
         {
             amt = (int)(amt * actor.getTeamMoraleMultiplier());
             actor.ModifyResolve(sequence.id.ToString(), sequence.stackItemUID, amt);
         }
 
-        internal static void ModifyResolve(this AbstractActor actor, string id, int stackItemUID, int amt)
+        public static void ModifyResolve(this AbstractActor actor, string id, int stackItemUID, int amt)
         {
             var actorKey = actor.GetPilot().Fetch_rGUID();
             var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
@@ -203,7 +203,7 @@ namespace Abilifier.Framework
 
     public static class PilotExtensions
     {
-        internal static string Fetch_rGUID(this Pilot pilot)
+        public static string Fetch_rGUID(this Pilot pilot)
         {
             var guid = pilot.pilotDef.PilotTags.FirstOrDefault(x => x.StartsWith(rGUID));
             if (string.IsNullOrEmpty(guid))
