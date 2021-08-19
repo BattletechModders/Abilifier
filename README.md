@@ -49,6 +49,14 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
 }
 ```
 
+### CBill Costs
+
+An optional new field in AbilityDefs "CBillCost" defines a per-use cbill cost for using the ability. Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
+
+### Ability Single Targeting Fix
+
+An optional new field in AbilityDefs "TargetFriendlyUnit" allows abilities with `"Targeting": "ActorTarget",` and `"effectTargetType": "SingleTarget",` to target friendly units if set to true. Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
+
 ## New Module - Resolverator!
 
 If enabled, this module tracks resolve separately per-pilot rather than as a team. In addition, <i>regular</i> abilities can now have a resolve cost associated with them. Abilities' resolve cost is dictated by adding a "ResolveCost" field to the AbilityDef:
@@ -65,8 +73,6 @@ eg
     "ResolveCost": 25,
     "CBillCost": 5000
 ```
-In addition, a further optional new field "CBillCost" defines a per-use cbill cost for using the ability. Does not need to be paired with ResolveCost.
-
 
 Tracking resolve costs per-pilot means a hefty rebalance of resolve generation will likely be needed. In addition to the values in CombatGameConstants under `"MoraleConstants": {`, other values that may need changing are:
 ```
