@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Framework;
 using BattleTech.UI;
@@ -26,6 +27,7 @@ namespace Abilifier.Patches
             public int ResolveCost = 0;
             public int CBillCost = 0;
             public string CMDPilotOverride = "";
+            public bool TargetFriendlyUnit;
         }
 
         public class AbilityUseInfo
@@ -42,6 +44,39 @@ namespace Abilifier.Patches
                 this.AbilityName = abilityName;
                 this.UseCost = useCost;
                 this.UseCount = 1;
+            }
+        }
+
+        public class SelectionStateMWTargetSingle : SelectionStateMWTargetSingleBase
+        {
+            public SelectionStateMWTargetSingle(CombatGameState Combat, CombatHUD HUD, CombatHUDActionButton FromButton) : base(Combat, HUD, FromButton)
+            {
+                var abilityDef = FromButton.Ability.Def;
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit)
+                {
+                    this.abilitySelectionText = HUD.MechWarriorTray.targetAlliedAbilityText;
+                    return;
+                }
+                this.abilitySelectionText = HUD.MechWarriorTray.targetEnemyAbilityText;
+            }
+            protected override bool CanTargetCombatant(ICombatant potentialTarget)
+            {
+                var abilityDef = FromButton.Ability.Def;
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit && potentialTarget.team.IsFriendly(base.Combat.LocalPlayerTeam))
+                {
+                    return true;
+                }
+                else if (!abilityDef.getAbilityDefExtension().TargetFriendlyUnit &&
+                         !potentialTarget.team.IsFriendly(base.Combat.LocalPlayerTeam))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+                // will need to patch  SelectionState GetNewSelectionStateByType to return custom selection state for case SelectionType.TargetSingleEnemy:
             }
         }
 
@@ -70,6 +105,10 @@ namespace Abilifier.Patches
                 {
                     __state.CMDPilotOverride = (string)abilityDefJO["CMDPilotOverride"];
                 }
+                if (abilityDefJO["TargetFriendlyUnit"] != null)
+                {
+                    __state.TargetFriendlyUnit = (bool)abilityDefJO["TargetFriendlyUnit"];
+                }
             }
 
             public static void Postfix(AbilityDef __instance, string json, AbilityDefExtension __state)
@@ -83,6 +122,20 @@ namespace Abilifier.Patches
             }
         }
 
+        [HarmonyPatch(typeof(SelectionState), "GetNewSelectionStateByType", new Type[] {typeof(SelectionType), typeof(CombatGameState), typeof(CombatHUD), typeof(CombatHUDActionButton), typeof(AbstractActor)})]
+        public static class SelectionState_GetNewSelectionStateByType
+        {
+            public static bool Prefix(SelectionState __instance, SelectionType type, CombatGameState Combat, CombatHUD HUD, CombatHUDActionButton FromButton, AbstractActor actor, ref SelectionState __result)
+            {
+
+                if (type == SelectionType.TargetSingleEnemy || type == SelectionType.TargetSingleAlly)
+                {
+                    __result = new SelectionStateMWTargetSingle(Combat, HUD, FromButton);
+                    return false;
+                }
+                return true;
+            }
+        }
 
         [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateAbility", new Type[] {typeof(string), typeof(string)})]
         public static class CombatHUDActionButton_ActivateAbility_Confirmed
@@ -172,9 +225,11 @@ namespace Abilifier.Patches
                     finalAbilityCosts += abilityUse.TotalCost;
                     Mod.modLog.LogMessage($"{abilityUse.TotalCost} in command costs for {abilityUse.AbilityName}: {abilityUse.UseCost}. Current Total Command Cost: {finalAbilityCosts}");
                 }
-
                 var moneyResults = __instance.MoneyResults - finalAbilityCosts;
                 Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);
+
+                PilotResolveTracker.HolderInstance.pilotResolveDict = new Dictionary<string, PilotResolveInfo>();
+
             }
         }
     }

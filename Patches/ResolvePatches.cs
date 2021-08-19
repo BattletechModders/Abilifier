@@ -933,10 +933,15 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
                 {
-                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
+                    if (theActor == null)
+                    {
+                        theActor = combat.FindActorByGUID(creatorGUID);
+                    }
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     theActor.ModifyResolve(amt);
                 }
@@ -949,7 +954,8 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
                 {
-                    if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;

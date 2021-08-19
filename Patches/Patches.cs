@@ -217,18 +217,22 @@ namespace Abilifier.Patches
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
                     List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
-
-                    var abilityDefsForDesc = new List<AbilityDef>();
-                    abilityDefsForDesc.AddRange(abilityDefs);
-                    foreach (var abilityWithReq in abilitiesWithReqs)
-                    {
-                        if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
+              
+                        var abilityDefsForDesc = new List<AbilityDef>();
+                        abilityDefsForDesc.AddRange(abilityDefs);
+                        if (abilitiesWithReqs.Count > 0)
                         {
-                            abilityDefs.Remove(abilityWithReq);
+                            foreach (var abilityWithReq in abilitiesWithReqs)
+                            {
+                                if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
+                                    .FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
+                                {
+                                    abilityDefs.Remove(abilityWithReq);
+                                }
+                            }
                         }
-                    }
 
-                    //original code continues below//
+                        //original code continues below//
                     string abilityDescs = null;
                     foreach (var abilityDefDesc in abilityDefsForDesc)
                     {
@@ -366,6 +370,15 @@ namespace Abilifier.Patches
         {
             public static bool Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value)
             {
+                foreach (var tagKVP in Mod.modSettings.tagTraitForTree)
+                {
+                    if (pilot.PilotTags.Contains(tagKVP.Key))
+                    {
+                        pilot.abilityDefNames.Add(tagKVP.Value);
+                        pilot.ForceRefreshAbilityDefs();
+                    }
+                }
+
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 value--;
                 if (value < 0)
@@ -432,6 +445,23 @@ namespace Abilifier.Patches
         {
             public static bool Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
             {
+
+                List<string> pilotAbilityDefNames = p.abilityDefNames;
+
+                var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                var abilityReq = abilityFilter.FirstOrDefault(x => x == newAbility.Id);
+
+                if (!string.IsNullOrEmpty(abilityReq))
+                {
+                    if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
+                        .FirstOrDefault(x => x.Value.Contains(abilityReq)).Key))
+                    {
+                        __result = false;
+                        return false;
+                    }
+                }
+
                 if (!newAbility.IsPrimaryAbility)
                 {
                     __result = true;
