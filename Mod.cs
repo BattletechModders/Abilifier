@@ -46,7 +46,6 @@ namespace Abilifier
         public class Settings
         {
             public bool enableTrace;
-            public bool enableLog;
             public string modDirectory;
             public bool usePopUpsForAbilityDesc = false;
             public bool debugXP = false;

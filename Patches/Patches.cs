@@ -344,10 +344,7 @@ namespace Abilifier.Patches
                         {
                             var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
 
-                            var allAbilities = sim.AbilityTree[___type].SelectMany(x => x.Value).ToList();
-
-                            var reqAbility = allAbilities.Find(x => x.Id == reqAbilityName);
-                            
+                            sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
 
                             desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " + reqAbility.Description.Name + "\n\n" + ability.Description.Details + "\n\n\n";
                         }

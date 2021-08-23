@@ -127,7 +127,7 @@ namespace Abilifier.Patches
         {
             public static bool Prefix(SelectionState __instance, SelectionType type, CombatGameState Combat, CombatHUD HUD, CombatHUDActionButton FromButton, AbstractActor actor, ref SelectionState __result)
             {
-
+                if (!FromButton || FromButton.Ability == null) return true;
                 if (type == SelectionType.TargetSingleEnemy || type == SelectionType.TargetSingleAlly)
                 {
                     __result = new SelectionStateMWTargetSingle(Combat, HUD, FromButton);
