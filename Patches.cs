@@ -15,7 +15,6 @@ namespace Abilifier
 {
     public class Patches
     {
-
         //SetPips patch so that Icons for non-taken abilities do not show up after 3 primary abilities taken, AND to ensure that icons for TAKEN abilities DO show up
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
         public static class SGBarracksAdvancementPanel_SetPips_Patch
@@ -41,7 +40,7 @@ namespace Abilifier
                 }
                 if (pips[idx].Ability != null)
                 {
-                    bool flag2 = sim.CanPilotTakeAbility(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
+                    bool flag2 = CanPilotTakesadfasdfAbilityPip(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
                     bool flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true

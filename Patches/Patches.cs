@@ -38,7 +38,7 @@ namespace Abilifier.Patches
                 var flag = isLocked && (idx + 1 == pips.Count || curSkill == idx + 1);
                 if (pips[idx].Ability != null)
                 {
-                    var flag2 = sim.CanPilotTakeAbility(___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
+                    var flag2 = Helpers.CanPilotTakeAbilityPip(sim, ___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
                     var flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
@@ -256,11 +256,7 @@ namespace Abilifier.Patches
 
                             var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
 
-                            var allAbilities = sim.AbilityTree[type].SelectMany(x => x.Value).ToList();
-                            // allAbilities.AddRange(Traverse.Create(dm).Field("abilityDefs").GetValue<List<AbilityDef>>());
-
-                            var reqAbility = allAbilities.Find(x => x.Id == reqAbilityName);
-
+                            sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
 
                             if (modSettings.usePopUpsForAbilityDesc)
                             {

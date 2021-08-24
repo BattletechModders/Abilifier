@@ -45,6 +45,56 @@ namespace Abilifier.Framework
                 x.ReqSkillLevel == abilityToUse.ReqSkillLevel);
             return result;
         }
+
+        public static bool CanPilotTakeAbilityPip(SimGameState sim, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
+        {
+
+            if (!newAbility.IsPrimaryAbility)
+            {
+                return true;
+            }
+
+            List<AbilityDef> primaryPilotAbilities = SimGameState.GetPrimaryPilotAbilities(p);
+            if (primaryPilotAbilities == null)
+            {
+                return true;
+            }
+            if (primaryPilotAbilities.Count >= 3 + Mod.modSettings.extraAbilities) //change max allowed abilities for pilot to take when lvling up
+            {
+                return false;
+            }
+            Dictionary<SkillType, int> sortedSkillCount = sim.GetSortedSkillCount(p);
+
+            var tempResult = (sortedSkillCount.Count <= 1 + Mod.modSettings.extraFirstTierAbilities
+                              || sortedSkillCount.ContainsKey(newAbility.ReqSkill))
+                             && (!sortedSkillCount.ContainsKey(newAbility.ReqSkill) ||
+                                 sortedSkillCount[newAbility.ReqSkill] <= 1 + Mod.modSettings.extraAbilitiesAllowedPerSkill)
+                             && (!checkSecondTier || sortedSkillCount.ContainsKey(newAbility.ReqSkill) ||
+                                 primaryPilotAbilities.Count <= 1 + Mod.modSettings.extraAbilitiesAllowedPerSkill);
+
+            if ((p.SkillGunnery >= Mod.modSettings.skillLockThreshold) ||
+                (p.SkillPiloting >= Mod.modSettings.skillLockThreshold) ||
+                (p.SkillGuts >= Mod.modSettings.skillLockThreshold) ||
+                (p.SkillTactics >= Mod.modSettings.skillLockThreshold))
+
+            { tempResult = false; }
+
+            if (sortedSkillCount.Count <= 1 + Mod.modSettings.extraFirstTierAbilities && newAbility.ReqSkillLevel < Mod.modSettings.skillLockThreshold)
+            {
+                return true;
+            }
+
+            if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] < 1 + Mod.modSettings.extraAbilitiesAllowedPerSkill) tempResult = true;
+
+            var ct = sortedSkillCount.Where(x => x.Value >= 1 + Mod.modSettings.extraAbilitiesAllowedPerSkill);
+
+            if (ct.Count() >= 1 + Mod.modSettings.extraPreCapStoneAbilities) tempResult = false;
+
+            if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] == 1 + Mod.modSettings.extraAbilitiesAllowedPerSkill && newAbility.ReqSkillLevel >= Mod.modSettings.skillLockThreshold)
+            { tempResult = true; }
+
+            return tempResult;
+        }
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
