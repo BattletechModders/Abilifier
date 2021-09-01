@@ -55,7 +55,15 @@ An optional new field in AbilityDefs "CBillCost" defines a per-use cbill cost fo
 
 ### Ability Single Targeting Fix
 
-An optional new field in AbilityDefs "TargetFriendlyUnit" allows abilities with `"Targeting": "ActorTarget",` and `"effectTargetType": "SingleTarget",` to target friendly units if set to true. Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
+An optional new field in AbilityDefs "TargetFriendlyUnit" allows abilities with `"Targeting": "ActorTarget",` and `"effectTargetType": "SingleTarget",` to target friendly units, enemies, or both. 
+
+`"TargetFriendlyUnit": "BOTH",` - ability can target both Friendly and Enemy units
+
+`"TargetFriendlyUnit": "FRIENDLY",` - ability can target only Friendly units
+
+`"TargetFriendlyUnit": "ENEMY",` - ability can target only Enemy units
+
+Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
 
 ## New Module - Resolverator!
 
