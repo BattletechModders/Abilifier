@@ -7,6 +7,7 @@ using BattleTech.Framework;
 using BattleTech.UI;
 using Harmony;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace Abilifier.Patches
 {
@@ -27,7 +28,7 @@ namespace Abilifier.Patches
             public int ResolveCost = 0;
             public int CBillCost = 0;
             public string CMDPilotOverride = "";
-            public bool TargetFriendlyUnit;
+            public string TargetFriendlyUnit = "ENEMY"; //"FRIENDLY" "ENEMY" "BOTH"
         }
 
         public class AbilityUseInfo
@@ -52,31 +53,69 @@ namespace Abilifier.Patches
             public SelectionStateMWTargetSingle(CombatGameState Combat, CombatHUD HUD, CombatHUDActionButton FromButton) : base(Combat, HUD, FromButton)
             {
                 var abilityDef = FromButton.Ability.Def;
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit)
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "BOTH")
+                {
+                    this.abilitySelectionText = "SELECT A TARGET";
+                    return;
+                }
+                else if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "FRIENDLY")
+
                 {
                     this.abilitySelectionText = HUD.MechWarriorTray.targetAlliedAbilityText;
                     return;
                 }
                 this.abilitySelectionText = HUD.MechWarriorTray.targetEnemyAbilityText;
             }
+
             protected override bool CanTargetCombatant(ICombatant potentialTarget)
             {
+                if (potentialTarget is AbstractActor actor)
+                {
+                    if (this.SelectedActor == actor)
+                    {
+                        return false;
+                    }
+                }
                 var abilityDef = FromButton.Ability.Def;
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit && potentialTarget.team.IsFriendly(base.Combat.LocalPlayerTeam))
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "BOTH")
                 {
                     return true;
                 }
-                else if (!abilityDef.getAbilityDefExtension().TargetFriendlyUnit &&
-                         !potentialTarget.team.IsFriendly(base.Combat.LocalPlayerTeam))
-                {
-                    return true;
-                }
-                else
+
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "ENEMY" &&
+                    this.SelectedActor.team.IsFriendly(potentialTarget.team))
                 {
                     return false;
                 }
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "FRIENDLY" &&
+                    this.SelectedActor.team.IsEnemy(potentialTarget.team))
+                {
+                    return false;
+                }
+                return true;
+            }
 
-                // will need to patch  SelectionState GetNewSelectionStateByType to return custom selection state for case SelectionType.TargetSingleEnemy:
+            public override bool ProcessClickedCombatant(ICombatant combatant)
+            {
+                var distance = Mathf.RoundToInt(Vector3.Distance(this.HUD.SelectedActor.CurrentPosition, combatant.CurrentPosition));
+                var jumpdist = 0f;
+                if (this.HUD.SelectedActor is Mech mech)
+                {
+                    jumpdist = mech.JumpDistance;
+                }
+
+                var ranges = new List<float>()
+                {
+                    this.HUD.SelectedActor.MaxWalkDistance,
+                    this.HUD.SelectedActor.MaxSprintDistance,
+                    jumpdist
+                };
+                var maxRange = ranges.Max();
+                if (distance > maxRange)
+                {
+                    return false;
+                }
+                return base.ProcessClickedCombatant(combatant);
             }
         }
 
@@ -107,7 +146,7 @@ namespace Abilifier.Patches
                 }
                 if (abilityDefJO["TargetFriendlyUnit"] != null)
                 {
-                    __state.TargetFriendlyUnit = (bool)abilityDefJO["TargetFriendlyUnit"];
+                    __state.TargetFriendlyUnit = (string)abilityDefJO["TargetFriendlyUnit"];
                 }
             }
 
