@@ -132,6 +132,10 @@ Settings available in the mod.json:
 	"skillLockThreshold":8,
 	"extraPreCapStoneAbilities":0,
 	"usingCACabilitySelector":false,
+	"tagTraitForTree": {
+            "ThisIsAPilotTag": "ThisIsATraitID",
+            "thisIsAnotherPilotTag": "ThisIsADifferentTraitID"
+        },
 	"abilityReqs":
 		{
 		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
