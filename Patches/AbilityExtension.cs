@@ -108,7 +108,8 @@ namespace Abilifier.Patches
                 {
                     this.HUD.SelectedActor.MaxWalkDistance,
                     this.HUD.SelectedActor.MaxSprintDistance,
-                    jumpdist
+                    jumpdist,
+                    this.FromButton.Ability.Def.IntParam2
                 };
                 var maxRange = ranges.Max();
                 if (distance > maxRange)
