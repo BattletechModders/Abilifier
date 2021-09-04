@@ -32,9 +32,6 @@ namespace Abilifier
                 modSettings = new Settings();
             }
 
-            modSettings.abilityReqs = modSettings.abilityReqs ?? new Dictionary<string, List<string>> { { "potato", new List<string> { "potahto" } } };
-
-
             Mod.modLog.LogMessage($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
             //            Helpers.PopulateAbilities();
 
@@ -62,12 +59,9 @@ namespace Abilifier
             public int skillLockThreshold = 10;
             public int extraPreCapStoneAbilities = 0;
             public bool usingCACabilitySelector = false;
+            public bool usingHumanResources = false;
             public Dictionary<string, List<string>> abilityReqs = new Dictionary<string, List<string>>();
             public Dictionary<string, string> tagTraitForTree = new Dictionary<string, string>(); // key will be pilot tag (e.g vehicle_crew), value is trait or ability which will be prereq for subsequent abilities.
-        };
-            
-       
-        
-        
+        }
     }
 }

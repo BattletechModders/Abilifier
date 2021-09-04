@@ -8,7 +8,9 @@ using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using Harmony;
 using SVGImporter;
+using UnityEngine;
 using static Abilifier.Mod;
+using Logger = Abilifier.Framework.Logger;
 
 // ReSharper disable InconsistentNaming
 
@@ -356,18 +358,54 @@ namespace Abilifier.Patches
             }
         }
 
+        [HarmonyPatch(typeof(PilotGenerator), "GeneratePilots")]
+        public static class PilotGenerator_GeneratePilots_Patch
+        {
+            public static bool Prepare() => !Mod.modSettings.usingHumanResources;
+            public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty, float roninChance, List<PilotDef> __result)
+            {// this patch can probably be disabled once we include HR?
+                var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
+                for (int i = 0; i < __result.Count; i++)
+                {
+                    __result[i].abilityDefNames.Clear();
+
+                    for (int l = 1; l <= __result[i].BaseGunnery; l++)
+                    {
+                        SetPilotAbilitiesMethod.GetValue(__result[i], "Gunnery", l);
+                    }
+                    for (int l = 1; l <= __result[i].BaseGuts; l++)
+                    {
+                        SetPilotAbilitiesMethod.GetValue(__result[i], "Guts", l);
+                    }
+                    for (int l = 1; l <= __result[i].BasePiloting; l++)
+                    {
+                        SetPilotAbilitiesMethod.GetValue(__result[i], "Piloting", l);
+                    }
+                    for (int l = 1; l <= __result[i].BaseTactics; l++)
+                    {
+                        SetPilotAbilitiesMethod.GetValue(__result[i], "Tactics", l);
+                    }
+                }
+            }
+        }
+
+
+
 
         //this patch should hopefuly prevent AI generated (hiring hall) pilots from having too many abilities
-        [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
+                [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
         public static class PilotGenerator_SetPilotAbilities_Patch
         {
             public static bool Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value)
             {
-                foreach (var tagKVP in Mod.modSettings.tagTraitForTree)
+
+                if (pilot.PilotTags == null) return true;
+
+                foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
                 {
-                    if (pilot.PilotTags.Contains(tagKVP.Key))
+                    if (pilot.PilotTags.Contains(tagK))
                     {
-                        pilot.abilityDefNames.Add(tagKVP.Value);
+                        pilot.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
                         pilot.ForceRefreshAbilityDefs();
                     }
                 }
