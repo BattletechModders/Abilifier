@@ -498,10 +498,110 @@ namespace Abilifier.Patches
                 new Type[] { typeof(AbstractActor), typeof(CombatHUDActionButton), typeof(Ability), typeof(bool) })]
             public static class CombatHUDMechwarriorTray_ResetAbilityButton_Patch
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static bool Prefix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
+                {
+                    bool flag = ability == null;
+                    if (!flag)
+                    {
+                        if (forceInactive)
+                        {
+                            button.DisableButton();
+                        }
+                        else
+                        {
+                            bool isAbilityActivated = button.IsAbilityActivated;
+                            if (isAbilityActivated)
+                            {
+                                button.ResetButtonIfNotActive(actor);
+                            }
+                            else
+                            {
+                                bool flag2 = !ability.IsAvailable;
+                                if (flag2)
+                                {
+                                    button.DisableButton();
+                                }
+                                else
+                                {
+                                    bool flag3 = false;
+                                    bool flag4 = false;
+                                    bool flag5 = ability.Def.ActivationTime == AbilityDef.ActivationTiming.ConsumedByFiring;
+                                    bool flag6 = actor.HasActivatedThisRound || (!actor.IsAvailableThisPhase && actor.Combat.TurnDirector.IsInterleaved) || actor.MovingToPosition != null || (actor.Combat.StackManager.IsAnyOrderActive && actor.Combat.TurnDirector.IsInterleaved);
+                                    if (flag6)
+                                    {
+                                        button.DisableButton();
+                                    }
+                                    else
+                                    {
+                                        bool isShutDown = actor.IsShutDown;
+                                        if (isShutDown)
+                                        {
+                                            bool flag7 = !flag3;
+                                            if (flag7)
+                                            {
+                                                button.DisableButton();
+                                            }
+                                            else
+                                            {
+                                                button.ResetButtonIfNotActive(actor);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            bool isProne = actor.IsProne;
+                                            if (isProne)
+                                            {
+                                                bool flag8 = !flag4;
+                                                if (flag8)
+                                                {
+                                                    button.DisableButton();
+                                                }
+                                                else
+                                                {
+                                                    button.ResetButtonIfNotActive(actor);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                bool flag9 = (actor.HasFiredThisRound) && ability.Def.ActivationTime == AbilityDef.ActivationTiming.ConsumedByFiring;
+                                                if (flag9)
+                                                {
+                                                    button.DisableButton();
+                                                }
+                                                else
+                                                {
+                                                    bool hasMovedThisRound = actor.HasMovedThisRound;
+                                                    if (hasMovedThisRound)
+                                                    {
+                                                        bool flag10 = flag5;
+                                                        if (flag10)
+                                                        {
+                                                            button.ResetButtonIfNotActive(actor);
+                                                        }
+                                                        else
+                                                        {
+                                                            button.DisableButton();
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        button.ResetButtonIfNotActive(actor);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
 
                 public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
+                    if (!Mod.modSettings.enableResolverator) return;
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
                     var actorKey = actor.GetPilot().Fetch_rGUID();
@@ -517,10 +617,109 @@ namespace Abilifier.Patches
                 new Type[] { typeof(AbstractActor), typeof(CombatHUDActionButton), typeof(Ability), typeof(bool) })]
             public static class CombatHUDWeaponPanel_ResetAbilityButton_Patch
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
-
+                
+                public static bool Prefix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
+                {
+                    bool flag = ability == null;
+                    if (!flag)
+                    {
+                        if (forceInactive)
+                        {
+                            button.DisableButton();
+                        }
+                        else
+                        {
+                            bool isAbilityActivated = button.IsAbilityActivated;
+                            if (isAbilityActivated)
+                            {
+                                button.ResetButtonIfNotActive(actor);
+                            }
+                            else
+                            {
+                                bool flag2 = !ability.IsAvailable;
+                                if (flag2)
+                                {
+                                    button.DisableButton();
+                                }
+                                else
+                                {
+                                    bool flag3 = false;
+                                    bool flag4 = false;
+                                    bool flag5 = ability.Def.ActivationTime == AbilityDef.ActivationTiming.ConsumedByFiring;
+                                    bool flag6 = actor.HasActivatedThisRound || (!actor.IsAvailableThisPhase && actor.Combat.TurnDirector.IsInterleaved) || actor.MovingToPosition != null || (actor.Combat.StackManager.IsAnyOrderActive && actor.Combat.TurnDirector.IsInterleaved);
+                                    if (flag6)
+                                    {
+                                        button.DisableButton();
+                                    }
+                                    else
+                                    {
+                                        bool isShutDown = actor.IsShutDown;
+                                        if (isShutDown)
+                                        {
+                                            bool flag7 = !flag3;
+                                            if (flag7)
+                                            {
+                                                button.DisableButton();
+                                            }
+                                            else
+                                            {
+                                                button.ResetButtonIfNotActive(actor);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            bool isProne = actor.IsProne;
+                                            if (isProne)
+                                            {
+                                                bool flag8 = !flag4;
+                                                if (flag8)
+                                                {
+                                                    button.DisableButton();
+                                                }
+                                                else
+                                                {
+                                                    button.ResetButtonIfNotActive(actor);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                bool flag9 = (actor.HasFiredThisRound) && ability.Def.ActivationTime == AbilityDef.ActivationTiming.ConsumedByFiring;
+                                                if (flag9)
+                                                {
+                                                    button.DisableButton();
+                                                }
+                                                else
+                                                {
+                                                    bool hasMovedThisRound = actor.HasMovedThisRound;
+                                                    if (hasMovedThisRound)
+                                                    {
+                                                        bool flag10 = flag5;
+                                                        if (flag10)
+                                                        {
+                                                            button.ResetButtonIfNotActive(actor);
+                                                        }
+                                                        else
+                                                        {
+                                                            button.DisableButton();
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        button.ResetButtonIfNotActive(actor);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
                 public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
+                    if (!Mod.modSettings.enableResolverator) return;
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
                     var actorKey = actor.GetPilot().Fetch_rGUID();
