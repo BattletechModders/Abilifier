@@ -389,9 +389,6 @@ namespace Abilifier.Patches
             }
         }
 
-
-
-
         //this patch should hopefuly prevent AI generated (hiring hall) pilots from having too many abilities
                 [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
         public static class PilotGenerator_SetPilotAbilities_Patch
@@ -400,16 +397,21 @@ namespace Abilifier.Patches
             {
 
                 if (pilot.PilotTags == null) return true;
-
+                var needsDefault = true;
                 foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
                 {
                     if (pilot.PilotTags.Contains(tagK))
                     {
                         pilot.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
                         pilot.ForceRefreshAbilityDefs();
+                        needsDefault = false;
                     }
                 }
-
+                if (needsDefault)
+                {
+                    pilot.abilityDefNames.Add(Mod.modSettings.defaultTagTrait);
+                    pilot.ForceRefreshAbilityDefs();
+                }
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 value--;
                 if (value < 0)

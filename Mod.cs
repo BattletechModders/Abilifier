@@ -62,6 +62,7 @@ namespace Abilifier
             public bool usingHumanResources = false;
             public Dictionary<string, List<string>> abilityReqs = new Dictionary<string, List<string>>();
             public Dictionary<string, string> tagTraitForTree = new Dictionary<string, string>(); // key will be pilot tag (e.g vehicle_crew), value is trait or ability which will be prereq for subsequent abilities.
+            public string defaultTagTrait = ""; // if none of the tags in tagTraitForTree are present on the pilot, this trait will be added.
         }
     }
 }
