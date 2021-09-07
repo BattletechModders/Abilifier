@@ -133,10 +133,14 @@ Settings available in the mod.json:
 	"extraPreCapStoneAbilities":0,
 	"usingCACabilitySelector":false,
 	"usingHumanResources": false,
-	"tagTraitForTree": {
-            "ThisIsAPilotTag": "ThisIsATraitID",
-            "thisIsAnotherPilotTag": "ThisIsADifferentTraitID"
-        },
+	"tagTraitForTree": 
+		{	
+			"pilot_vehicle_crew": "TraitDefIAmTank",
+			"pilot_mechwarrior": "TraitDefIAmMech",
+			"pilot_defaultTree": "TraitDefIAmMech"
+		},
+	"defaultTagTraitForTree": {"pilot_defaultTree": "TraitDefIAmMech"},
+	"defaultTagTraitException": "pilot_nomech_crew",
 	"abilityReqs":
 		{
 		"AbilityDefG5a":["AbilityDefG8a","AbilityDefG8b"],
@@ -206,6 +210,10 @@ Guts: 5, 8
 	"EffectData" : []
 }
 ```
+
+`defaultTagTraitForTree`: dictionary, string, string - ALL pilots will recieve this tag and trait unless they have the tag defined in `defaultTagTraitException`
+
+`defaultTagTraitException`: see above
 
 `abilityReqs` dictionary, strings. new in 1.05, allows devs to set up true ability "trees", where the 1st ability (dictionary key) is required for the player to take any of the subsequently listed abilities (dictionary value, list of strings). For example, in the above settings, a player can <i>only</i> take `AbilityDefG8a` or `AbilityDefG8b` if they had previously taken `AbilityDefG5a`; all other abilities for this level will be available.
 
