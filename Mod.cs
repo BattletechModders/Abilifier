@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Abilifier.Framework;
+using CustomActivatableEquipment;
 using Harmony;
 using Newtonsoft.Json;
 
@@ -62,7 +63,8 @@ namespace Abilifier
             public bool usingHumanResources = false;
             public Dictionary<string, List<string>> abilityReqs = new Dictionary<string, List<string>>();
             public Dictionary<string, string> tagTraitForTree = new Dictionary<string, string>(); // key will be pilot tag (e.g vehicle_crew), value is trait or ability which will be prereq for subsequent abilities.
-            public string defaultTagTrait = ""; // if none of the tags in tagTraitForTree are present on the pilot, this trait will be added.
+            public Dictionary<string, string> defaultTagTraitForTree = new Dictionary<string, string>(); // if none of the tags in tagTraitForTree are present on the pilot, this tag and trait will be added
+            public string defaultTagTraitException = ""; //except if this is present
         }
     }
 }
