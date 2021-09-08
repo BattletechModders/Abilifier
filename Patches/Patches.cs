@@ -398,22 +398,30 @@ namespace Abilifier.Patches
 
                 if (pilot.PilotTags == null) return true;
 
-                foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
+                if (Mod.modSettings.tagTraitForTree.Count > 0)
                 {
-                    if (pilot.PilotTags.Contains(tagK) && !pilot.abilityDefNames.Contains(Mod.modSettings.tagTraitForTree[tagK]))
-                    {
-                        pilot.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
-                        pilot.ForceRefreshAbilityDefs();
-                    }
-                }
 
-                if (!pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.First().Key) && !pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
-                {
+                    foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
                     {
-                        pilot.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.First().Key);
-                        pilot.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.First().Value);
-                        pilot.ForceRefreshAbilityDefs();
+                        if (pilot.PilotTags.Contains(tagK) &&
+                            !pilot.abilityDefNames.Contains(Mod.modSettings.tagTraitForTree[tagK]))
+                        {
+                            pilot.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
+                            pilot.ForceRefreshAbilityDefs();
+                        }
                     }
+
+                    if (!pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key) &&
+                        !pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
+                    {
+                        {
+                            pilot.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key);
+                            pilot.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
+                                .Value);
+                            pilot.ForceRefreshAbilityDefs();
+                        }
+                    }
+                    
                 }
 
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -562,23 +570,30 @@ namespace Abilifier.Patches
                     __instance.CompanyTags.Add("AbilifierLoaded");
                 }
 
-                foreach (var pilot in __instance.PilotRoster)
+                if (Mod.modSettings.tagTraitForTree.Count > 0)
                 {
-                    foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
+                    foreach (var pilot in __instance.PilotRoster)
                     {
-                        if (pilot.pilotDef.PilotTags.Contains(tagK) && !pilot.pilotDef.abilityDefNames.Contains(Mod.modSettings.tagTraitForTree[tagK]))
-                        {
-                            pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
-                            pilot.pilotDef.ForceRefreshAbilityDefs();
-                        }
-                    }
 
-                    if (!pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.First().Key) && !pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
-                    {
+                        foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
                         {
-                            pilot.pilotDef.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.First().Key);
-                            pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.First().Value);
-                            pilot.pilotDef.ForceRefreshAbilityDefs();
+                            if (pilot.pilotDef.PilotTags.Contains(tagK) &&
+                                !pilot.pilotDef.abilityDefNames.Contains(Mod.modSettings.tagTraitForTree[tagK]))
+                            {
+                                pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.tagTraitForTree[tagK]);
+                                pilot.pilotDef.ForceRefreshAbilityDefs();
+                            }
+                        }
+
+                        if (!pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key) &&
+                            !pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
+                        {
+                            {
+                                pilot.pilotDef.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key);
+                                pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
+                                    .Value);
+                                pilot.pilotDef.ForceRefreshAbilityDefs();
+                            }
                         }
                     }
                 }
