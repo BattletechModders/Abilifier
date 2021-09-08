@@ -411,17 +411,19 @@ namespace Abilifier.Patches
                         }
                     }
 
-                    if (!pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key) &&
-                        !pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
+                    if (Mod.modSettings.defaultTagTraitForTree.Count > 0)
                     {
+                        if (!pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key) &&
+                            !pilot.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
                         {
-                            pilot.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key);
-                            pilot.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
-                                .Value);
-                            pilot.ForceRefreshAbilityDefs();
+                            {
+                                pilot.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key);
+                                pilot.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
+                                    .Value);
+                                pilot.ForceRefreshAbilityDefs();
+                            }
                         }
                     }
-                    
                 }
 
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -585,14 +587,20 @@ namespace Abilifier.Patches
                             }
                         }
 
-                        if (!pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key) &&
-                            !pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
+                        if (Mod.modSettings.defaultTagTraitForTree.Count > 0)
                         {
+                            if (!pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitForTree
+                                    .FirstOrDefault().Key) &&
+                                !pilot.pilotDef.PilotTags.Contains(Mod.modSettings.defaultTagTraitException))
                             {
-                                pilot.pilotDef.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault().Key);
-                                pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
-                                    .Value);
-                                pilot.pilotDef.ForceRefreshAbilityDefs();
+                                {
+                                    pilot.pilotDef.PilotTags.Add(Mod.modSettings.defaultTagTraitForTree.FirstOrDefault()
+                                        .Key);
+                                    pilot.pilotDef.abilityDefNames.Add(Mod.modSettings.defaultTagTraitForTree
+                                        .FirstOrDefault()
+                                        .Value);
+                                    pilot.pilotDef.ForceRefreshAbilityDefs();
+                                }
                             }
                         }
                     }
