@@ -133,6 +133,7 @@ Settings available in the mod.json:
 	"extraPreCapStoneAbilities":0,
 	"usingCACabilitySelector":false,
 	"usingHumanResources": false,
+	"disableCalledShotExploit": false,
 	"tagTraitForTree": 
 		{	
 			"pilot_vehicle_crew": "TraitDefIAmTank",
@@ -194,6 +195,8 @@ Guts: 5, 8
 `usingCACabilitySelector` bool. if true, makes Abilifier compatible with newer versions of CustomBundle/CAC that incorporate an "ability selector" for the combat UI. If false, Abilifer will create `extraAbilities + nonTreeAbilities` traditional ability button slots.
 
 `usingHumanResources` bool. if true, Abilifier will let HR handle adding tags for below.
+
+`disableCalledShotExploit` - new setting, optionally disabled "called shot exploit" where a player can activate called shot, back out, activate another ability, and then use called shot regardless of available resolve. downside is that in order to legitimately back out of called shot and get the resolve back, player must hit Esc a few times.
 
 `tagTraitForTree` dictionary<string, string> - further supports ability "tree" restrictions for procedurally generated piots. the "key" in this case is a Pilot Tag (primarily added by Human Resources mod. If the pilot in question has the "key", then the ability/trait ID indicated in the "value" is given to the pilot. The intent is for this "trait" to be the required prereq for subsequent abilities in the "tree". This ability/trait can simply be a "dummy" trait as in the following:
 ```
