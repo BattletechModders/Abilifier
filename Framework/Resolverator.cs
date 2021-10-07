@@ -23,8 +23,9 @@ namespace Abilifier.Framework
     {
         public int PilotResolve;
         public bool CanInspire;
+        public bool Predicting;
         public int PilotMaxResolve;
-
+        public int PredictedResolve;
     }
 
     public class PilotResolveTracker
@@ -174,7 +175,7 @@ namespace Abilifier.Framework
                 combat.MessageCenter.PublishMessage(new ReportMoraleMaxMessage());
             }
 
-            if (pilotResolveInfo.PilotResolve >= activeMoraleDef.CanUseInspireLevel)
+            if (pilotResolveInfo.PilotResolve >= activeMoraleDef.CanUseInspireLevel || activeMoraleDef.CanUseInspireLevel <= 0)
             {
                 pilotResolveInfo.CanInspire = true;
             }
