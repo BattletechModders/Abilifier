@@ -1213,7 +1213,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUD), "ShowCalledShotPopUp", new Type[] {typeof(AbstractActor), typeof(AbstractActor) })]
             public static class CombatHUD_ShowCalledShotPopUp
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator; //disabled for now
+                public static bool Prepare() => Mod.modSettings.enableResolverator && Mod.modSettings.disableCalledShotExploit; //disabled for now
 
                 public static void Prefix(CombatHUD __instance)
                 {
