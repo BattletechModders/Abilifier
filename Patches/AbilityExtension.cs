@@ -258,6 +258,7 @@ namespace Abilifier.Patches
             public static void Postfix(Contract __instance, MissionResult result, bool isGoodFaithEffort)
             {
                 if (UnityGameInstance.BattleTechGame.Simulation == null) return;
+                PilotResolveTracker.HolderInstance.pilotResolveDict = new Dictionary<string, PilotResolveInfo>();
                 if (ModState.AbilityUses.Count <= 0) return;
                 var finalAbilityCosts = 0;
                 foreach (var abilityUse in ModState.AbilityUses)
@@ -267,9 +268,6 @@ namespace Abilifier.Patches
                 }
                 var moneyResults = __instance.MoneyResults - finalAbilityCosts;
                 Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);
-
-                PilotResolveTracker.HolderInstance.pilotResolveDict = new Dictionary<string, PilotResolveInfo>();
-
             }
         }
     }
