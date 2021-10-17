@@ -361,7 +361,7 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(PilotGenerator), "GeneratePilots")]
         public static class PilotGenerator_GeneratePilots_Patch
         {
-            public static bool Prepare() => !Mod.modSettings.usingHumanResources;
+            
             public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty, float roninChance, List<PilotDef> __result)
             {
 
@@ -381,7 +381,7 @@ namespace Abilifier.Patches
                     }
                 }
 
-
+                if (Mod.modSettings.usingHumanResources) return;
                 // this below can probably be disabled once we include HR?
                 var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
                 for (int i = 0; i < __result.Count; i++)
