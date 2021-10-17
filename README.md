@@ -198,6 +198,15 @@ Guts: 5, 8
 
 `disableCalledShotExploit` - new setting, optionally disabled "called shot exploit" where a player can activate called shot, back out, activate another ability, and then use called shot regardless of available resolve. downside is that in order to legitimately back out of called shot and get the resolve back, player must hit Esc a few times.
 
+`proceduralTagCleanup` - Dictionary <string, List<string>> - new setting, can remove certain pilot tags from procedurally generated pilots if they have other specified tags. if the pilot contains a tag with the "key", then all tags in the "value" list will be removed. i.e. below, any pilot with `pilot_nomech_crew` will have `pilot_mechwarrior` removed.
+```
+"proceduralTagCleanup": {
+			"pilot_nomech_crew": [
+				"pilot_mechwarrior"
+			]
+		},
+```
+
 `tagTraitForTree` dictionary<string, string> - further supports ability "tree" restrictions for procedurally generated piots. the "key" in this case is a Pilot Tag (primarily added by Human Resources mod. If the pilot in question has the "key", then the ability/trait ID indicated in the "value" is given to the pilot. The intent is for this "trait" to be the required prereq for subsequent abilities in the "tree". This ability/trait can simply be a "dummy" trait as in the following:
 ```
 {
