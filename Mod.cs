@@ -62,6 +62,7 @@ namespace Abilifier
             public bool usingCACabilitySelector = false;
             public bool usingHumanResources = false;
             public bool disableCalledShotExploit = false;
+            public Dictionary<string, List<string>> proceduralTagCleanup = new Dictionary<string, List<string>>(); // units with "key" will have tags in "Value" removed before any tags for abilityReqs, tagTraitForTree, etc, are processed.
             public Dictionary<string, List<string>> abilityReqs = new Dictionary<string, List<string>>();
             public Dictionary<string, string> tagTraitForTree = new Dictionary<string, string>(); // key will be pilot tag (e.g vehicle_crew), value is trait or ability which will be prereq for subsequent abilities.
             public Dictionary<string, string> defaultTagTraitForTree = new Dictionary<string, string>(); // if none of the tags in tagTraitForTree are present on the pilot, this tag and trait will be added

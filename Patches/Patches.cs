@@ -398,9 +398,20 @@ namespace Abilifier.Patches
 
                 if (pilot.PilotTags == null) return true;
 
+                foreach (var tagClean in Mod.modSettings.proceduralTagCleanup.Keys)
+                {
+                    if (pilot.PilotTags.All(x => x != tagClean)) continue;
+                    foreach (var removal in Mod.modSettings.proceduralTagCleanup[tagClean])
+                    {
+                        if (pilot.PilotTags.Remove(removal))
+                        {
+                            Mod.modLog.LogMessage($"Removed {removal} from {pilot.Description.Callsign} due to proceduralTagCleanup");
+                        }
+                    }
+                }
+
                 if (Mod.modSettings.tagTraitForTree.Count > 0)
                 {
-
                     foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
                     {
                         if (pilot.PilotTags.Contains(tagK) &&
