@@ -363,7 +363,26 @@ namespace Abilifier.Patches
         {
             public static bool Prepare() => !Mod.modSettings.usingHumanResources;
             public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty, float roninChance, List<PilotDef> __result)
-            {// this patch can probably be disabled once we include HR?
+            {
+
+                foreach (var pilot in __result)
+                {
+                    foreach (var tagClean in Mod.modSettings.proceduralTagCleanup.Keys)
+                    {
+                        if (pilot.PilotTags.All(x => x != tagClean)) continue;
+                        foreach (var removal in Mod.modSettings.proceduralTagCleanup[tagClean])
+                        {
+                            if (pilot.PilotTags.Remove(removal))
+                            {
+                                Mod.modLog.LogMessage(
+                                    $"Removed {removal} from {pilot.Description.Callsign} due to proceduralTagCleanup");
+                            }
+                        }
+                    }
+                }
+
+
+                // this below can probably be disabled once we include HR?
                 var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
                 for (int i = 0; i < __result.Count; i++)
                 {
@@ -397,18 +416,6 @@ namespace Abilifier.Patches
             {
 
                 if (pilot.PilotTags == null) return true;
-
-                foreach (var tagClean in Mod.modSettings.proceduralTagCleanup.Keys)
-                {
-                    if (pilot.PilotTags.All(x => x != tagClean)) continue;
-                    foreach (var removal in Mod.modSettings.proceduralTagCleanup[tagClean])
-                    {
-                        if (pilot.PilotTags.Remove(removal))
-                        {
-                            Mod.modLog.LogMessage($"Removed {removal} from {pilot.Description.Callsign} due to proceduralTagCleanup");
-                        }
-                    }
-                }
 
                 if (Mod.modSettings.tagTraitForTree.Count > 0)
                 {
