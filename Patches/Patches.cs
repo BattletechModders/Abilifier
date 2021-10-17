@@ -364,7 +364,9 @@ namespace Abilifier.Patches
             
             public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty, float roninChance, List<PilotDef> __result)
             {
-
+                //               if (Mod.modSettings.usingHumanResources) return;
+                // this below can probably be disabled once we include HR? maybe not since i think CU adds its tonk tag too late.
+                var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
                 foreach (var pilot in __result)
                 {
                     foreach (var tagClean in Mod.modSettings.proceduralTagCleanup.Keys)
@@ -379,30 +381,24 @@ namespace Abilifier.Patches
                             }
                         }
                     }
-                }
 
-                if (Mod.modSettings.usingHumanResources) return;
-                // this below can probably be disabled once we include HR?
-                var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
-                for (int i = 0; i < __result.Count; i++)
-                {
-                    __result[i].abilityDefNames.Clear();
+                    pilot.abilityDefNames.Clear();
 
-                    for (int l = 1; l <= __result[i].BaseGunnery; l++)
+                    for (int l = 1; l <= pilot.BaseGunnery; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(__result[i], "Gunnery", l);
+                        SetPilotAbilitiesMethod.GetValue(pilot, "Gunnery", l);
                     }
-                    for (int l = 1; l <= __result[i].BaseGuts; l++)
+                    for (int l = 1; l <= pilot.BaseGuts; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(__result[i], "Guts", l);
+                        SetPilotAbilitiesMethod.GetValue(pilot, "Guts", l);
                     }
-                    for (int l = 1; l <= __result[i].BasePiloting; l++)
+                    for (int l = 1; l <= pilot.BasePiloting; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(__result[i], "Piloting", l);
+                        SetPilotAbilitiesMethod.GetValue(pilot, "Piloting", l);
                     }
-                    for (int l = 1; l <= __result[i].BaseTactics; l++)
+                    for (int l = 1; l <= pilot.BaseTactics; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(__result[i], "Tactics", l);
+                        SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
                     }
                 }
             }
