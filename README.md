@@ -134,6 +134,11 @@ Settings available in the mod.json:
 	"usingCACabilitySelector":false,
 	"usingHumanResources": false,
 	"disableCalledShotExploit": false,
+	"proceduralTagCleanup": {
+			"pilot_nomech_crew": [
+				"pilot_mechwarrior"
+			]
+		},
 	"tagTraitForTree": 
 		{	
 			"pilot_vehicle_crew": "TraitDefIAmTank",
