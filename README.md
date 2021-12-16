@@ -65,6 +65,10 @@ An optional new field in AbilityDefs "TargetFriendlyUnit" allows abilities with 
 
 Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
 
+### TriggersUniversalCooldown
+
+An optional new field in AbilityDefs "TriggersUniversalCooldown" determines whether an ability triggers the vanilla "mini cooldown" when activated. Vanilla behavior = true, where activating an ability makes all other abilities unavailable for that activation. Adding this field and setting it to false in the AbilityDef will prevent that ability from triggering a mini cooldown for all other abilities.
+
 ## New Module - Resolverator!
 
 If enabled, this module tracks resolve separately per-pilot rather than as a team. In addition, <i>regular</i> abilities can now have a resolve cost associated with them. Abilities' resolve cost is dictated by adding a "ResolveCost" field to the AbilityDef:
