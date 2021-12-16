@@ -65,9 +65,11 @@ An optional new field in AbilityDefs "TargetFriendlyUnit" allows abilities with 
 
 Does not need to be paired with ResolveCost or use the Resolverator module as discussed below.
 
-### TriggersUniversalCooldown
+### Universal Cooldown Tweaks
 
-An optional new field in AbilityDefs "TriggersUniversalCooldown" determines whether an ability triggers the vanilla "mini cooldown" when activated. Vanilla behavior = true, where activating an ability makes all other abilities unavailable for that activation. Adding this field and setting it to false in the AbilityDef will prevent that ability from triggering a mini cooldown for all other abilities.
+An optional new field in AbilityDefs "TriggersUniversalCooldown" determines whether an ability triggers the vanilla "universal cooldown" when activated. Vanilla behavior = true, where activating an ability makes all other abilities unavailable for that activation. Adding this field and setting it to false in the AbilityDef will prevent that ability from triggering the universal cooldown for all other abilities.
+
+Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" determines whether <i>that specific ability</i> is subject to the universal cooldown. Adding this field and setting it to true in the AbilityDef will prevent this ability from being subject to the universal cooldown.
 
 ## New Module - Resolverator!
 
