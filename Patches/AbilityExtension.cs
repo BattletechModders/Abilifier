@@ -176,8 +176,7 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(Ability), "ActivateMiniCooldown")]
         public static class Ability_ActivateMiniCooldown
         {
-            public static bool Prefix(Ability __instance, AbstractActor pilotedActor, string abilityName,
-                string targetGUID)
+            public static bool Prefix(Ability __instance)
             {
                 return !__instance.Def.getAbilityDefExtension().IgnoresUniversalCooldown;
             }
