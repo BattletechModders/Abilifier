@@ -30,6 +30,7 @@ namespace Abilifier.Patches
             public string CMDPilotOverride = "";
             public string TargetFriendlyUnit = "ENEMY"; //"FRIENDLY" "ENEMY" "BOTH"
             public bool TriggersUniversalCooldown = true;
+            public bool IgnoresUniversalCooldown = false;
         }
 
         public class AbilityUseInfo
@@ -150,9 +151,14 @@ namespace Abilifier.Patches
                 {
                     __state.TargetFriendlyUnit = (string)abilityDefJO["TargetFriendlyUnit"];
                 }
+
                 if (abilityDefJO["TriggersUniversalCooldown"] != null)
                 {
-                    __state.TriggersUniversalCooldown = (bool)abilityDefJO["TriggersUniversalCooldown"];
+                    __state.TriggersUniversalCooldown = (bool) abilityDefJO["TriggersUniversalCooldown"];
+                }
+                if (abilityDefJO["IgnoresUniversalCooldown"] != null)
+                {
+                    __state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
                 }
             }
 
@@ -166,6 +172,59 @@ namespace Abilifier.Patches
                 abilityDefExtensionDict.Add(__instance.Id, __state);
             }
         }
+
+        [HarmonyPatch(typeof(Ability), "ActivateMiniCooldown")]
+        public static class Ability_ActivateMiniCooldown
+        {
+            public static bool Prefix(Ability __instance, AbstractActor pilotedActor, string abilityName,
+                string targetGUID)
+            {
+                return !__instance.Def.getAbilityDefExtension().IgnoresUniversalCooldown;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(Pilot), "ConfirmAbility", new Type[] { typeof(AbstractActor), typeof(string), typeof(string) })]
+        public static class Pilot_ConfirmAbility
+        {
+            public static bool Prefix(Pilot __instance, AbstractActor pilotedActor, string abilityName, string targetGUID)
+            {
+                if (pilotedActor == null || string.IsNullOrEmpty(abilityName))
+                {
+                    Mod.modLog.LogMessage("[ERROR] Invalid parameters passes to ConfirmAbility");
+                    return false;
+                }
+                Ability ability = __instance.Abilities.Find((Ability x) => x.Def.Id == abilityName);
+                if (ability == null)
+                {
+                    Mod.modLog.LogMessage("[ERROR] ConfirmAbility: pilot " + __instance.Description.Name + " does not have ability " + abilityName);
+                    return false;
+                }
+
+                if (!ability.Def.getAbilityDefExtension().TriggersUniversalCooldown)
+                {
+                    if (targetGUID == pilotedActor.GUID)
+                    {
+                        ability.Confirm(pilotedActor, pilotedActor);
+                        return false;
+                    }
+
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    ICombatant combatant = combat.FindCombatantByGUID(targetGUID, false);
+                    if (combatant == null)
+                    {
+                        Mod.modLog.LogMessage("[ERROR] ConfirmAbility: no valid target found for id " + targetGUID);
+                        return false;
+                    }
+
+                    ability.Confirm(pilotedActor, combatant);
+                    return false;
+                }
+                return true;
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(AbstractActor), "ConfirmAbility", new Type[]{typeof(AbstractActor), typeof(string), typeof(string)})]
         public static class AbstractActor_ConfirmAbility
