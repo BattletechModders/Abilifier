@@ -29,6 +29,7 @@ namespace Abilifier.Patches
             public int CBillCost = 0;
             public string CMDPilotOverride = "";
             public string TargetFriendlyUnit = "ENEMY"; //"FRIENDLY" "ENEMY" "BOTH"
+            public bool TriggersUniversalCooldown = true;
         }
 
         public class AbilityUseInfo
@@ -149,6 +150,10 @@ namespace Abilifier.Patches
                 {
                     __state.TargetFriendlyUnit = (string)abilityDefJO["TargetFriendlyUnit"];
                 }
+                if (abilityDefJO["TriggersUniversalCooldown"] != null)
+                {
+                    __state.TriggersUniversalCooldown = (bool)abilityDefJO["TriggersUniversalCooldown"];
+                }
             }
 
             public static void Postfix(AbilityDef __instance, string json, AbilityDefExtension __state)
@@ -159,6 +164,43 @@ namespace Abilifier.Patches
                     return;
                 }
                 abilityDefExtensionDict.Add(__instance.Id, __state);
+            }
+        }
+
+        [HarmonyPatch(typeof(AbstractActor), "ConfirmAbility", new Type[]{typeof(AbstractActor), typeof(string), typeof(string)})]
+        public static class AbstractActor_ConfirmAbility
+        {
+            public static bool Prefix(AbstractActor __instance, AbstractActor pilotedActor, string abilityName, string targetGUID)
+            {
+                if (pilotedActor == null || string.IsNullOrEmpty(abilityName))
+                {
+                    AbstractActor.activationLogger.LogError("Invalid parameters passes to ConfirmAbility");
+                    return false;
+                }
+                Ability ability = __instance.ComponentAbilities.Find((Ability x) => x.Def.Id == abilityName);
+                if (ability == null)
+                {
+                    AbstractActor.activationLogger.LogError("ConfirmAbility: pilot " + __instance.Description.Name + " does not have ability " + abilityName);
+                    return false;
+                }
+
+                if (!ability.Def.getAbilityDefExtension().TriggersUniversalCooldown)
+                {
+                    if (targetGUID == pilotedActor.GUID)
+                    {
+                        ability.Confirm(pilotedActor, pilotedActor);
+                        return false;
+                    }
+                    ICombatant combatant = __instance.Combat.FindCombatantByGUID(targetGUID, false);
+                    if (combatant == null)
+                    {
+                        AbstractActor.activationLogger.LogError("ConfirmAbility: no valid target found for id " + targetGUID);
+                        return false;
+                    }
+                    ability.Confirm(pilotedActor, combatant);
+                    return false;
+                }
+                return true;
             }
         }
 
