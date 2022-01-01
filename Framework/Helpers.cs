@@ -164,8 +164,14 @@ namespace Abilifier.Framework
                         upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
                         Logger.LogTrace($"Add trait {abilityTree[i].Id}");
                     }
+
+                    if (!pilotDef.abilityDefNames.Contains(abilityTree[i].Id) && !abilityTree[i].IsPrimaryAbility && sim.CanPilotTakeAbility(pilotDef, abilityTree[i]))
+                    {
+                        Logger.LogTrace("SAFETY FALLBACK Add trait " + abilityTree[i].Id);
+                        pilotDef.abilityDefNames.Add(abilityTree[i].Id);
+                    }
                     var abilityToUse = abilityDef ?? abilityTree[i];
-                Logger.LogTrace($"abilityToUse: {abilityToUse.Id}");
+                    Logger.LogTrace($"abilityToUse: {abilityToUse.Id}");
                 pilotDef.ForceRefreshAbilityDefs();
 
                 // extra condition blocks skills from being taken at incorrect location
