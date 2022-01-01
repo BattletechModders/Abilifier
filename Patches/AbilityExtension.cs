@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Abilifier.Framework;
@@ -122,7 +123,7 @@ namespace Abilifier.Patches
             }
         }
 
-        private static Dictionary<string, AbilityDefExtension> abilityDefExtensionDict = new Dictionary<string, AbilityDefExtension>();
+        private static ConcurrentDictionary<string, AbilityDefExtension> abilityDefExtensionDict = new ConcurrentDictionary<string, AbilityDefExtension>();
         public static AbilityDefExtension getAbilityDefExtension(this AbilityDef abilityDef)
         {
             return abilityDefExtensionDict.ContainsKey(abilityDef.Id) ? abilityDefExtensionDict[abilityDef.Id] : new AbilityDefExtension();
@@ -164,12 +165,12 @@ namespace Abilifier.Patches
 
             public static void Postfix(AbilityDef __instance, string json, AbilityDefExtension __state)
             {
-                if (abilityDefExtensionDict.ContainsKey(__instance.Id))
-                {
-                    abilityDefExtensionDict[__instance.Id] = __state;
-                    return;
-                }
-                abilityDefExtensionDict.Add(__instance.Id, __state);
+                //if (abilityDefExtensionDict.ContainsKey(__instance.Id))
+                //{
+                //    abilityDefExtensionDict[__instance.Id] = __state;
+                //    return;
+                //}
+                abilityDefExtensionDict.AddOrUpdate(__instance.Id, __state, (k,v)=> { return __state; });
             }
         }
 
