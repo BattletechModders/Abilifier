@@ -9,6 +9,7 @@ using BattleTech.UI;
 using Harmony;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using Logger = Abilifier.Framework.Logger;
 
 namespace Abilifier.Patches
 {
@@ -174,12 +175,51 @@ namespace Abilifier.Patches
             }
         }
 
-        [HarmonyPatch(typeof(Ability), "ActivateMiniCooldown")]
-        public static class Ability_ActivateMiniCooldown
+        [HarmonyPatch(typeof(AbstractActor), "CooldownAllAbilities")]
+        public static class AbstractActor_CooldownAllAbilities
         {
-            public static bool Prefix(Ability __instance)
+            public static bool Prefix(AbstractActor __instance)
             {
-                return !__instance.Def.getAbilityDefExtension().IgnoresUniversalCooldown;
+                foreach (var ability in __instance.ComponentAbilities)
+                {
+                    if (!ability.Def.getAbilityDefExtension().IgnoresUniversalCooldown)
+                    {
+                        ability.ActivateMiniCooldown();
+                    }
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Pilot), "CooldownAllAbilities")]
+        public static class Pilot_CooldownAllAbilities
+        {
+            public static bool Prefix(Pilot __instance)
+            {
+                foreach (var ability in __instance.ActiveAbilities)
+                {
+                    if (!ability.Def.getAbilityDefExtension().IgnoresUniversalCooldown)
+                    {
+                        ability.ActivateMiniCooldown();
+                    }
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Team), "CooldownAllAbilities")]
+        public static class Team_CooldownAllAbilities
+        {
+            public static bool Prefix(Team __instance)
+            {
+                foreach (var ability in __instance.CommandAbilities)
+                {
+                    if (!ability.Def.getAbilityDefExtension().IgnoresUniversalCooldown)
+                    {
+                        ability.ActivateMiniCooldown();
+                    }
+                }
+                return false;
             }
         }
 
