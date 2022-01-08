@@ -1,6 +1,4 @@
 # Abilifier
-**This Branch Depends on CustomActivatableEquipment**
-**The only difference between this branch and the Master Branch is Resolverator! Master does not have CustomActivatableEquipment dependency**
 
 This is a mod for HBS Battletech that allows developers to give players <b>choices</b> when it comes to leveling up abilities. Special thanks to kMiSSioN for allowing the reuse of their code adding additional ability buttons to the Combat HUD.
 
@@ -48,6 +46,66 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
     "Icon" : ""
 }
 ```
+
+### StatisticEffectData Extensions
+
+Abilifier now ships with an additional config .json called `EffectDataExtensions.json`. This file defines optional new capabilities and restrictions for EffectData affecting StatCollections in game. The config comprises a Dictionary, where the "key" is equal to the EffectData.Description.Id for which you want to impose additional restrictions.
+
+For example, in `EffectDataExtensions.json` I have:
+
+```
+{
+	"StatusEffect-PotatoAccuracy": {
+		"TargetComponentTagMatch": [
+			"Potato_Gun"
+		]
+	}
+}
+```
+
+On its own this will do nothing, but lets say I have an AbilityDef that contains EffectData of the following:
+
+```
+{
+	"durationData": {
+		"duration": 1,
+		"stackLimit": 1
+	},
+	"targetingData": {
+		"effectTriggerType": "OnActivation",
+		"effectTargetType": "Creator",
+		"showInStatusPanel": true
+	},
+	"effectType": "StatisticEffect",
+	"Description": {
+		"Id": "StatusEffect-PotatoAccuracy",
+		"Name": "Overcharged Targeting",
+		"Details": "+20 Accuracy",
+		"Icon": "uixSvgIcon_PotatoGun"
+	},
+	"nature": "Buff",
+	"statisticData": {
+		"statName": "AccuracyModifier",
+		"operation": "Float_Add",
+		"modValue": "-20",
+		"modType": "System.Single",
+		"additionalRules": "NotSet",
+		"targetCollection": "Weapon",
+		"targetWeaponCategory": "NotSet",
+		"targetWeaponType": "NotSet",
+		"targetAmmoCategory": "NotSet",
+		"targetWeaponSubType": "NotSet"
+	}
+}
+```
+Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because the `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
+
+Note: this function still respects the existing restrictions of targetCollection, targetAmmoCategory, etc., etc, with a few differences based on what TargetCollection, if any, is selected. For example, the above is using `"targetCollection": "Weapon",`, so only Weapons are available to be used here, and are just filtered further by the TargetComponentTagMatch match requirement.
+
+If targetCollection = NotSet (or missing from the EffectData), TargetComponentTagMatch searches the unit tags of the target if it is a valid AbstractActor. So if it is a Mech, it will search for a matching MechDef tag, Vehicle: VehicleDef Tag, and Turret: TurretDef Tag.
+
+If targetCollection = Pilot, TargetComponentTagMatch searches the pilotTags of the targets pilot.
+
 
 ### CBill Costs
 
