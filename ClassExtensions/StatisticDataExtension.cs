@@ -187,14 +187,22 @@ namespace Abilifier.Patches
                     WeaponType targetWeaponType = effectData.statisticData.targetWeaponType;
                     WeaponCategoryValue targetWeaponCategoryValue = effectData.statisticData.TargetWeaponCategoryValue;
                     AmmoCategoryValue targetAmmoCategoryValue = effectData.statisticData.TargetAmmoCategoryValue;
-                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet)
-                    {
-                        return true;
-                    }
 
                     if (effectData.getStatDataExtension().TargetComponentTagMatch.Count <= 0)
                     {
                         return true;
+                    }
+
+                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && !(target is AbstractActor))
+                    {
+                        return true;
+                    }
+
+                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet &&
+                        target is AbstractActor actor)
+                    {
+                        if (effectData.getStatDataExtension().TargetComponentTagMatch.Overlaps(actor.GetTags()))
+                            list.Add(target.StatCollection);
                     }
 
                     if (targetCollection == StatisticEffectData.TargetCollection.Pilot)
