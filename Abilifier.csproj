@@ -43,16 +43,11 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-	<Reference Include="CustomActivatableEquipment">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\Mods\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
-    </Reference>
-	</ItemGroup>
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-NoCAE|AnyCPU' ">
-	<Reference Include="CustomActivatableEquipment">
+    <Reference Include="CustomActivatableEquipment">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\Mods\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
     </Reference>
-	</ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\BattleTech_Data\Managed\0Harmony.dll</HintPath>
@@ -62,6 +57,9 @@
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\BattleTech_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomActivatableEquipment">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\Mods\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
     </Reference>
     <Reference Include="InControl, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\BattleTech_Data\Managed\InControl.dll</HintPath>
