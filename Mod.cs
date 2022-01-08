@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Abilifier.Framework;
-using CustomActivatableEquipment;
+using Abilifier.Patches;
 using Harmony;
 using Newtonsoft.Json;
 
@@ -14,7 +14,7 @@ namespace Abilifier
     public static class Mod
     {
         internal static Logger modLog;
-        private static string modDir;
+        internal static string modDir;
 
         internal static Settings modSettings;
 
@@ -37,6 +37,7 @@ namespace Abilifier
             //            Helpers.PopulateAbilities();
 
             PilotResolveTracker.HolderInstance.Initialize();
+            EffectDataExtensionManager.ManagerInstance.Initialize();
             var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 

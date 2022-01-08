@@ -34,6 +34,15 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-NoCAE|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-NoCAE\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NO_CAE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\BattleTech_Data\Managed\0Harmony.dll</HintPath>
@@ -73,7 +82,9 @@
   <ItemGroup>
     <Compile Include="Framework\Logger.cs" />
     <Compile Include="Framework\Resolverator.cs" />
-    <Compile Include="Patches\AbilityExtension.cs" />
+    <Compile Include="ClassExtensions\AbilityExtension.cs" />
+    <Compile Include="ClassExtensions\StatisticDataExtension.cs" />
+    <Compile Include="Patches\ResolvePatch_CAE.cs" />
     <Compile Include="Patches\ResolvePatches.cs" />
     <Compile Include="Patches\MoreAbilities.cs" />
     <Compile Include="Mod.cs" />
