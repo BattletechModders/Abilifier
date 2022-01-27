@@ -102,58 +102,6 @@ namespace Abilifier.Patches
                 }
                 return true;
             }
-
-            public override bool ProcessClickedCombatant(ICombatant combatant)
-            {
-                var distance = Mathf.RoundToInt(Vector3.Distance(this.HUD.SelectedActor.CurrentPosition, combatant.CurrentPosition));
-                var jumpdist = 0f;
-                if (this.HUD.SelectedActor is Mech mech)
-                {
-                    jumpdist = mech.JumpDistance;
-                    if (float.IsNaN(jumpdist)) jumpdist = 0f;
-                }
-
-                var ranges = new List<float>()
-                {
-                    this.HUD.SelectedActor.MaxWalkDistance,
-                    this.HUD.SelectedActor.MaxSprintDistance,
-                    jumpdist,
-                    this.FromButton.Ability.Def.IntParam2
-                };
-                var maxRange = ranges.Max();
-                if (distance > maxRange)
-                {
-                    return false;
-                }
-                return base.ProcessClickedCombatant(combatant);
-            }
-
-            public override void ProcessMousePos(Vector3 worldPos)
-            {
-                base.ProcessMousePos(worldPos);
-                var jumpdist = 0f;
-                if (this.HUD.SelectedActor is Mech mech)
-                {
-                    jumpdist = mech.JumpDistance;
-                }
-
-                var ranges = new List<float>()
-                {
-                    this.HUD.SelectedActor.MaxWalkDistance,
-                    this.HUD.SelectedActor.MaxSprintDistance,
-                    jumpdist,
-                    this.FromButton.Ability.Def.IntParam2
-                };
-                var maxRange = ranges.Max();
-                CombatTargetingReticle.Instance.ShowReticle();
-                CombatTargetingReticle.Instance.ShowRangeIndicators(this.HUD.SelectedActor.CurrentPosition, 0f, maxRange, true, true);
-            }
-
-            public override void OnInactivate()
-            {
-                base.OnInactivate();
-                CombatTargetingReticle.Instance.HideReticle();
-            }
         }
 
         private static ConcurrentDictionary<string, AbilityDefExtension> abilityDefExtensionDict = new ConcurrentDictionary<string, AbilityDefExtension>();
