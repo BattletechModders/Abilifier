@@ -18,8 +18,18 @@ namespace Abilifier.Patches
 {
     public class EffectDataExtensionManager
     {
+        public enum EffectTargetTagSet
+        {
+            NotSet,
+            Component,
+            Pilot,
+            Unit
+        }
+
         public class EffectDataExtension
         {
+            public EffectTargetTagSet TargetCollectionForSearch = EffectTargetTagSet.NotSet;
+            public TagSet TargetCollectionTagMatch = new TagSet();
             public TagSet TargetComponentTagMatch = new TagSet();
         }
 
@@ -181,6 +191,7 @@ namespace Abilifier.Patches
                 public static bool Prefix(EffectManager __instance, EffectData effectData, ICombatant target,
                     ref List<StatCollection> __result)
                 {
+                    if (__result == null) __result = new List<StatCollection>();
                     List<StatCollection> list = new List<StatCollection>();
                     StatisticEffectData.TargetCollection targetCollection = effectData.statisticData.targetCollection;
                     WeaponSubType targetWeaponSubType = effectData.statisticData.targetWeaponSubType;
@@ -188,20 +199,65 @@ namespace Abilifier.Patches
                     WeaponCategoryValue targetWeaponCategoryValue = effectData.statisticData.TargetWeaponCategoryValue;
                     AmmoCategoryValue targetAmmoCategoryValue = effectData.statisticData.TargetAmmoCategoryValue;
 
+                    var targetCollectionForSearch = effectData.getStatDataExtension().TargetCollectionForSearch;
+
+                    var targetActor = target as AbstractActor;
+
+                    if (targetCollectionForSearch > 0)
+                    {
+                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Component)
+                        {
+                            if (targetActor == null)
+                            {
+                                return false;
+                            }
+
+                            var foundMatch = false;
+                            for (int i = 0; i < targetActor.allComponents.Count; i++)
+                            {
+                                if (effectData.getStatDataExtension().TargetCollectionTagMatch
+                                    .Overlaps(targetActor.allComponents[i].componentDef.ComponentTags))
+                                {
+                                    foundMatch = true;
+                                    break;
+                                }
+                            }
+
+                            if (!foundMatch) return false;
+                        }
+
+                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Pilot)
+                        {
+                            if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
+                                    .Overlaps(targetActor.GetPilot().pilotDef.PilotTags))
+                            {
+                                return false;
+                            }
+                        }
+
+                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Unit)
+                        {
+                            if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
+                                    .Overlaps(targetActor.GetTags()))
+                            {
+                                return false;
+                            }
+                        }
+
+                    }
                     if (effectData.getStatDataExtension().TargetComponentTagMatch.Count <= 0)
                     {
                         return true;
                     }
 
-                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && !(target is AbstractActor))
+                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
                     {
                         return true;
                     }
 
-                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet &&
-                        target is AbstractActor actor)
+                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor != null)
                     {
-                        if (effectData.getStatDataExtension().TargetComponentTagMatch.Overlaps(actor.GetTags()))
+                        if (effectData.getStatDataExtension().TargetComponentTagMatch.Overlaps(targetActor.GetTags()))
                             list.Add(target.StatCollection);
                     }
 

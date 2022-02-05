@@ -8,11 +8,18 @@ using BattleTech.Framework;
 using BattleTech.UI;
 using Harmony;
 using Newtonsoft.Json.Linq;
+using TB.ComponentModel;
 using UnityEngine;
 using Logger = Abilifier.Framework.Logger;
 
 namespace Abilifier.Patches
 {
+    public enum TargetTeam
+    {
+        ENEMY,
+        FRIENDLY,
+        BOTH
+    }
     public static class AbilityExtensions
     {
         public static class ModState
@@ -30,10 +37,10 @@ namespace Abilifier.Patches
             public int ResolveCost = 0;
             public int CBillCost = 0;
             public string CMDPilotOverride = "";
-            public string TargetFriendlyUnit = "ENEMY"; //"FRIENDLY" "ENEMY" "BOTH"
+            public TargetTeam TargetFriendlyUnit = TargetTeam.ENEMY;
             public bool TriggersUniversalCooldown = true;
             public bool IgnoresUniversalCooldown = false;
-            public List<string> TargetCollectionTagMatch = new List<string>();
+            public bool StartsInCooldown = false;
         }
 
         public class AbilityUseInfo
@@ -61,12 +68,12 @@ namespace Abilifier.Patches
                 base.PriorityLevel = SelectionPriorityLevel.Ability;
 
                 var abilityDef = FromButton.Ability.Def;
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "BOTH")
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.BOTH)
                 {
                     this.abilitySelectionText = "SELECT A TARGET";
                     return;
                 }
-                else if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "FRIENDLY")
+                else if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.FRIENDLY)
 
                 {
                     this.abilitySelectionText = HUD.MechWarriorTray.targetAlliedAbilityText;
@@ -85,17 +92,17 @@ namespace Abilifier.Patches
                     }
                 }
                 var abilityDef = FromButton.Ability.Def;
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "BOTH")
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.BOTH)
                 {
                     return true;
                 }
 
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "ENEMY" &&
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.ENEMY &&
                     this.SelectedActor.team.IsFriendly(potentialTarget.team))
                 {
                     return false;
                 }
-                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == "FRIENDLY" &&
+                if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.FRIENDLY &&
                     this.SelectedActor.team.IsEnemy(potentialTarget.team))
                 {
                     return false;
@@ -133,7 +140,7 @@ namespace Abilifier.Patches
                     }
                     if (abilityDefJO["TargetFriendlyUnit"] != null)
                     {
-                        __state.TargetFriendlyUnit = (string)abilityDefJO["TargetFriendlyUnit"];
+                        __state.TargetFriendlyUnit = (TargetTeam) Enum.Parse(typeof(TargetTeam), (string)abilityDefJO["TargetFriendlyUnit"]);
                     }
 
                     if (abilityDefJO["TriggersUniversalCooldown"] != null)
@@ -143,6 +150,10 @@ namespace Abilifier.Patches
                     if (abilityDefJO["IgnoresUniversalCooldown"] != null)
                     {
                         __state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
+                    }
+                    if (abilityDefJO["StartsInCooldown"] != null)
+                    {
+                        __state.StartsInCooldown = (bool)abilityDefJO["StartsInCooldown"];
                     }
                 }
 
@@ -154,6 +165,27 @@ namespace Abilifier.Patches
                     //    return;
                     //}
                     abilityDefExtensionDict.AddOrUpdate(__instance.Id, __state, (k, v) => { return __state; });
+                }
+            }
+
+            [HarmonyPatch(typeof(Ability), "Init", new Type[] { typeof(CombatGameState) })]
+            public static class Init
+            {
+                public static void Postfix(Ability __instance, CombatGameState Combat)
+                {
+                    if (__instance.Def.getAbilityDefExtension().StartsInCooldown)
+                    {
+                        if (Combat.TurnDirector.CurrentRound < 1)
+                        {
+                            Traverse.Create(__instance).Property("CurrentCooldown")
+                                .SetValue(__instance.Def.ActivationCooldown + 1);
+                        }
+                        else
+                        {
+                            Traverse.Create(__instance).Property("CurrentCooldown")
+                                .SetValue(__instance.Def.ActivationCooldown);
+                        }
+                    }
                 }
             }
 
