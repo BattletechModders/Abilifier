@@ -51,11 +51,17 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
 
 Abilifier now ships with an additional config .json called `EffectDataExtensions.json`. This file defines optional new capabilities and restrictions for EffectData affecting StatCollections in game. The config comprises a Dictionary, where the "key" is equal to the EffectData.Description.Id for which you want to impose additional restrictions.
 
+**Formatting change in 1.1.2.4**
+
 For example, in `EffectDataExtensions.json` I have:
 
 ```
 {
 	"StatusEffect-PotatoAccuracy": {
+		"TargetCollectionForSearch": "Unit",
+		"TargetCollectionTagMatch": [
+			"ImADumbUnitTag"
+		],
 		"TargetComponentTagMatch": [
 			"Potato_Gun"
 		]
@@ -98,7 +104,11 @@ On its own this will do nothing, but lets say I have an AbilityDef that contains
 	}
 }
 ```
-Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because the `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
+Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because the `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, the following restrictions are in place:
+
+Because TargetCollectionForSearch is set to "Unit" and TargetCollectionTagMatch contains "ImADumbUnitTag", only Units with the MechDef or VehicleDef tag of ImADumbUnitTag will be affected. Furthermore, because TargetComponentTagMatch contains "Potato_Gun", only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
+
+Valid values for TargetCollectionForSearch are: `Unit` (search unitDef tags for match), `Pilot` (search PilotDef for match), and `Component` (searches all unit components ComponentDef tags for match)
 
 Note: this function still respects the existing restrictions of targetCollection, targetAmmoCategory, etc., etc, with a few differences based on what TargetCollection, if any, is selected. For example, the above is using `"targetCollection": "Weapon",`, so only Weapons are available to be used here, and are just filtered further by the TargetComponentTagMatch match requirement.
 
@@ -128,6 +138,10 @@ Does not need to be paired with ResolveCost or use the Resolverator module as di
 An optional new field in AbilityDefs "TriggersUniversalCooldown" determines whether an ability triggers the vanilla "universal cooldown" when activated. Vanilla behavior = true, where activating an ability makes all other abilities unavailable for that activation. Adding this field and setting it to false in the AbilityDef will prevent that ability from triggering the universal cooldown for all other abilities.
 
 Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" determines whether <i>that specific ability</i> is subject to the universal cooldown. Adding this field and setting it to true in the AbilityDef will prevent this ability from being subject to the universal cooldown.
+
+### Start in Cooldown
+
+Abilities with an optional new field "StartsInCooldown" set to true will start the contract in their cooldown period.
 
 ## New Module - Resolverator!
 
