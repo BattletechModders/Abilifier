@@ -141,7 +141,7 @@ Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" de
 
 ### Start in Cooldown
 
-Abilities with an optional new field "StartsInCooldown" set to true will start the contract in their cooldown period.
+Abilities with an optional new field "StartInCooldown" set to true will start the contract in their cooldown period.
 
 ## New Module - Resolverator!
 
