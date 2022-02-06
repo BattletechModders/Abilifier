@@ -54,7 +54,7 @@ namespace Abilifier.Patches
                 string jdata = reader.ReadToEnd(); //dictionary key should match EffectData.Description.Id of whatever Effect you want to, ahem, affect.
                 ExtendedEffectDataDict = JsonConvert.DeserializeObject<ConcurrentDictionary<string, EffectDataExtension>>(jdata);
                 //deser separate setting thing here
-                Mod.modLog.LogMessage($"Adding effectData restriction for {ExtendedEffectDataDict}!");
+                Mod.modLog.LogMessage($"Adding effectData restriction for ExtendedEffectDataDict!");
             }
         }
     }

@@ -40,7 +40,7 @@ namespace Abilifier.Patches
             public TargetTeam TargetFriendlyUnit = TargetTeam.ENEMY;
             public bool TriggersUniversalCooldown = true;
             public bool IgnoresUniversalCooldown = false;
-            public bool StartsInCooldown = false;
+            public bool StartInCooldown = false;
         }
 
         public class AbilityUseInfo
@@ -151,9 +151,9 @@ namespace Abilifier.Patches
                     {
                         __state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
                     }
-                    if (abilityDefJO["StartsInCooldown"] != null)
+                    if (abilityDefJO["StartInCooldown"] != null)
                     {
-                        __state.StartsInCooldown = (bool)abilityDefJO["StartsInCooldown"];
+                        __state.StartInCooldown = (bool)abilityDefJO["StartInCooldown"];
                     }
                 }
 
@@ -169,11 +169,12 @@ namespace Abilifier.Patches
             }
 
             [HarmonyPatch(typeof(Ability), "Init", new Type[] { typeof(CombatGameState) })]
-            public static class Init
+            public static class Ability_Init
             {
+                public static bool Prepare() => true;
                 public static void Postfix(Ability __instance, CombatGameState Combat)
                 {
-                    if (__instance.Def.getAbilityDefExtension().StartsInCooldown)
+                    if (Combat != null && __instance.Def.getAbilityDefExtension().StartInCooldown)
                     {
                         if (Combat.TurnDirector.CurrentRound < 1)
                         {
