@@ -1106,6 +1106,17 @@ namespace Abilifier.Patches
                     theActor.ModifyResolve(amt);
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
                 }
             }
 
@@ -1127,6 +1138,17 @@ namespace Abilifier.Patches
                     //var states = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
                 }
             }
 
@@ -1148,6 +1170,17 @@ namespace Abilifier.Patches
                     theActor.ModifyResolve(amt);
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
                 }
             }
 
@@ -1170,6 +1203,17 @@ namespace Abilifier.Patches
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
                     //clear SelectionStateMoraleAttack if present? force OnInactivate
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
                 }
             }
 
@@ -1193,7 +1237,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUD), "ShowCalledShotPopUp", new Type[] {typeof(AbstractActor), typeof(AbstractActor) })]
             public static class CombatHUD_ShowCalledShotPopUp
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator && Mod.modSettings.disableCalledShotExploit; //disabled for now
+                public static bool Prepare() => Mod.modSettings.enableResolverator && Mod.modSettings.disableCalledShotExploit && false; //disabled for now
 
                 public static void Prefix(CombatHUD __instance)
                 {
@@ -1205,7 +1249,7 @@ namespace Abilifier.Patches
                 new Type[] {typeof(bool)})]
             public static class CombatSelectionHandler_BackOutOneStep
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator && Mod.modSettings.disableCalledShotExploit; //disabled for now
+                public static bool Prepare() => Mod.modSettings.enableResolverator && Mod.modSettings.disableCalledShotExploit && false; //disabled for now
 
                 public static void Postfix(CombatSelectionHandler __instance)
                 {
