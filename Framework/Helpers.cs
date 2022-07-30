@@ -12,7 +12,7 @@ using UnityEngine.Events;
 
 namespace Abilifier.Framework
 {
-    public class Helpers
+    public static class Helpers
     {
         //        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
 
@@ -36,6 +36,13 @@ namespace Abilifier.Framework
         //        }
 
         // modified copy from assembly
+
+        public static List<Ability> FetchAllActorAbilities(this AbstractActor @this)
+        {
+            var abilities = @this.ComponentAbilities;
+            abilities.AddRange(@this.GetPilot().Abilities);
+            return abilities;
+        }
         private static bool HasExistingAbilityAtTier(PilotDef pilotDef, AbilityDef abilityToUse)
         {
             var result = pilotDef.AbilityDefs.Any(x =>
@@ -48,7 +55,6 @@ namespace Abilifier.Framework
 
         public static bool CanPilotTakeAbilityPip(SimGameState sim, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
         {
-
             if (!newAbility.IsPrimaryAbility)
             {
                 return true;

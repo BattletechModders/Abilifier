@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Save;
@@ -631,6 +632,26 @@ namespace Abilifier.Patches
                 {
                     __instance.CompanyTags.Add("AbilifierLoaded");
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(ActiveProbeSequence), "OnAdded")]
+        public static class ActiveProbeSequence_OnAdded_Patch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+//                var codes = instructions.ToList();
+//                for (var index = 0; index < codes.Count; index++)
+//                {
+//                    if (codes[index].opcode == OpCodes.Ldfld)
+//                    {
+                        return instructions.MethodReplacer(
+                            AccessTools.Property(typeof(AbstractActor), nameof(AbstractActor.ComponentAbilities)).GetGetMethod(),
+                            AccessTools.Method(typeof(Helpers), nameof(Helpers.FetchAllActorAbilities))
+                        );
+//                    }
+//                }
+//                return codes.AsEnumerable();
             }
         }
     }

@@ -1120,6 +1120,37 @@ namespace Abilifier.Patches
                 }
             }
 
+            [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateAbility", new Type[] {})]
+            public static class CombatHUDActionButton_ActivateAbility_noparams
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator && false;
+
+                public static void Postfix(CombatHUDActionButton __instance)
+                {
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var theActor = HUD.SelectedActor;
+                    if (theActor == null) return;
+                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    theActor.ModifyResolve(amt);
+
+                    HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
+                }
+            }
+
             [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
             public static class CombatHUDActionButton_ActivateCommandAbility_Confirmed
             {
@@ -1183,6 +1214,38 @@ namespace Abilifier.Patches
                     }
                 }
             }
+
+            [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateAbility", new Type[] {})]
+            public static class CombatHUDEquipmentSlot_ActivateAbility_noparams
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator && false;
+
+                public static void Postfix(CombatHUDActionButton __instance)
+                {
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var theActor = HUD.SelectedActor;
+                    if (theActor == null) return;
+                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    theActor.ModifyResolve(amt);
+
+                    HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                    if (!Mod.modSettings.disableCalledShotExploit) return;
+                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                        .GetValue<List<SelectionState>>();
+                    var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                    if (moraleState != null)
+                    {
+                        moraleState.OnInactivate();
+                        moraleState.OnRemoveFromStack();
+                        selectionStack.Remove(moraleState);
+                    }
+                }
+            }
+
 
             [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
             public static class CombatHUDEquipmentSlot_ActivateCommandAbility_Confirmed
@@ -1282,6 +1345,41 @@ namespace Abilifier.Patches
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = 0;
+                }
+            }
+
+            [HarmonyPatch(typeof(SelectionStateActiveProbe), "CreateFiringOrders")]
+            public static class SelectionStateActiveProbe_CreateFiringOrders
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static void Postfix(SelectionStateActiveProbe __instance, string button)
+                {
+                    if (button == "BTN_FireConfirm")
+                    {
+                        var combat = UnityGameInstance.BattleTechGame.Combat;
+                        if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                        var abilityDef = __instance.FromButton?.Ability?.Def;
+                        if (abilityDef == null) return;
+                        Mod.modLog.LogMessage($"Processing resolve costs for {abilityDef.Description.Name}");
+                        var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                        var theActor = HUD.SelectedActor;
+                        if (theActor == null) return;
+                        var amt = -abilityDef.getAbilityDefExtension().ResolveCost;
+                        theActor.ModifyResolve(amt);
+
+                        HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                        if (!Mod.modSettings.disableCalledShotExploit) return;
+                        var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
+                            .GetValue<List<SelectionState>>();
+                        var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                        if (moraleState != null)
+                        {
+                            moraleState.OnInactivate();
+                            moraleState.OnRemoveFromStack();
+                            selectionStack.Remove(moraleState);
+                        }
+                    }
                 }
             }
         }
