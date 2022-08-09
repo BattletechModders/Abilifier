@@ -84,14 +84,19 @@ namespace Abilifier.Patches
 
             protected override bool CanTargetCombatant(ICombatant potentialTarget)
             {
+                var abilityDef = FromButton.Ability.Def;
                 if (potentialTarget is AbstractActor actor)
                 {
                     if (this.SelectedActor == actor)
                     {
                         return false;
                     }
+
+                    var distance = Vector3.Distance(potentialTarget.CurrentPosition,
+                        this.SelectedActor.CurrentPosition);
+                    if (distance > abilityDef.IntParam2) return false;
                 }
-                var abilityDef = FromButton.Ability.Def;
+                
                 if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.BOTH)
                 {
                     return true;
