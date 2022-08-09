@@ -92,9 +92,12 @@ namespace Abilifier.Patches
                         return false;
                     }
 
-                    var distance = Vector3.Distance(potentialTarget.CurrentPosition,
-                        this.SelectedActor.CurrentPosition);
-                    if (distance > abilityDef.IntParam2) return false;
+                    if (abilityDef.IntParam2 > 0)
+                    {
+                        var distance = Vector3.Distance(potentialTarget.CurrentPosition,
+                            this.SelectedActor.CurrentPosition);
+                        if (distance > abilityDef.IntParam2) return false;
+                    }
                 }
                 
                 if (abilityDef.getAbilityDefExtension().TargetFriendlyUnit == TargetTeam.BOTH)
