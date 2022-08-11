@@ -144,6 +144,7 @@ Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" de
 Abilities with an optional new field "StartInCooldown" set to true will start the contract in their cooldown period.
 
 ## New Module - Resolverator!
+**This module depends on CustomActivateableEquipment**
 
 If enabled, this module tracks resolve separately per-pilot rather than as a team. In addition, <i>regular</i> abilities can now have a resolve cost associated with them. Abilities' resolve cost is dictated by adding a "ResolveCost" field to the AbilityDef:
 eg
