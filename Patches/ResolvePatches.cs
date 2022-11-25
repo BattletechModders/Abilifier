@@ -600,19 +600,41 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
-                    if (!Mod.modSettings.enableResolverator) return;
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
-                    var actorKey = actor.GetPilot().Fetch_rGUID();
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                    if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                    if (!Mod.modSettings.enableResolverator)
                     {
-                        button.DisableButton();
+                        if (actor.team.Morale < ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
+
+                        var moraleBar = Traverse.Create(__instance).Property("moraleDisplay")
+                            .GetValue<CombatHUDMoraleBar>();
+                        var predicting = Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
+                        if (predicting)
+                        {
+                            var predictWidth = Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
+                            if (Mathf.RoundToInt(predictWidth) < ability.Def.getAbilityDefExtension().ResolveCost)
+                            {
+                                button.DisableButton();
+                            }
+                        }
                     }
-                    if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                        ability.Def.getAbilityDefExtension().ResolveCost)
+                    else
                     {
-                        button.DisableButton();
+                        var actorKey = actor.GetPilot().Fetch_rGUID();
+                        var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
+
+                        if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
+                            ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
                     }
                 }
             }
@@ -723,19 +745,41 @@ namespace Abilifier.Patches
                 }
                 public static void Postfix(CombatHUDWeaponPanel __instance, AbstractActor actor, CombatHUDActionButton button, Ability ability, bool forceInactive)
                 {
-                    if (!Mod.modSettings.enableResolverator) return;
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
-                    var actorKey = actor.GetPilot().Fetch_rGUID();
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                    if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                    if (!Mod.modSettings.enableResolverator)
                     {
-                        button.DisableButton();
+                        if (actor.team.Morale < ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
+
+                        var moraleBar = Traverse.Create(__instance).Property("moraleDisplay")
+                            .GetValue<CombatHUDMoraleBar>();
+                        var predicting = Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
+                        if (predicting)
+                        {
+                            var predictWidth = Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
+                            if (Mathf.RoundToInt(predictWidth) < ability.Def.getAbilityDefExtension().ResolveCost)
+                            {
+                                button.DisableButton();
+                            }
+                        }
                     }
-                    if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                        ability.Def.getAbilityDefExtension().ResolveCost)
+                    else
                     {
-                        button.DisableButton();
+                        var actorKey = actor.GetPilot().Fetch_rGUID();
+                        var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
+
+                        if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
+                            ability.Def.getAbilityDefExtension().ResolveCost)
+                        {
+                            button.DisableButton();
+                        }
                     }
                 }
             }
@@ -912,7 +956,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDMoraleBar), "UpdateMoraleBar")]
             public static class CombatHUDMoraleBar_UpdateMoraleBar
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static bool Prefix(CombatHUDMoraleBar __instance, CombatHUD ___HUD, ref float ___width,
                     float ___moraleBarTargetWidth, ref bool ___lerping, ref float ___moraleBarTimeLerping,
                     ref float ___timeFactor, float ___moraleBarPreviousWidth, ref float ___predictWidth,
@@ -926,9 +970,14 @@ namespace Abilifier.Patches
                     {
                         return true; // display not changing for some damn reason, but morale tracking internally is working. wtf.
                     }
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance
-                        .pilotResolveDict[selectedUnitFromTraverse.GetPilot().Fetch_rGUID()];
-                    ___maxMorale = pilotResolveInfo.PilotMaxResolve;
+
+                    PilotResolveInfo pilotResolveInfo = new PilotResolveInfo();
+                    if (Mod.modSettings.enableResolverator)
+                    {
+                        pilotResolveInfo = PilotResolveTracker.HolderInstance
+                            .pilotResolveDict[selectedUnitFromTraverse.GetPilot().Fetch_rGUID()];
+                        ___maxMorale = pilotResolveInfo.PilotMaxResolve;
+                    }
 
                     ___width = ___moraleBarTargetWidth;
 
@@ -956,8 +1005,12 @@ namespace Abilifier.Patches
 
                     ___predictWidth = ___width;
                     ___predicting = false;
-                    pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
-                    pilotResolveInfo.Predicting = false;
+                    if (Mod.modSettings.enableResolverator)
+                    {
+                        pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
+                        pilotResolveInfo.Predicting = false;
+                    }
+                    
 
                     if (___HUD.SelectionHandler.ActiveState != null)
                     {
@@ -1005,8 +1058,12 @@ namespace Abilifier.Patches
                         {
                             __instance.moralePrediction.gameObject.SetActive(true);
                         }
-                        pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
-                        pilotResolveInfo.Predicting = true;
+
+                        if (Mod.modSettings.enableResolverator)
+                        {
+                            pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
+                            pilotResolveInfo.Predicting = true;
+                        }
                         ___predictColor = ___moralePredictGraphic.color;
                         ___predictColor.a = Mathf.Sin(Time.realtimeSinceStartup * 5f) * 0.35f + 0.65f;
                         ___moralePredictGraphic.color = ___predictColor;
@@ -1092,7 +1149,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateAbility", new Type[]{typeof(string), typeof(string)})]
             public static class CombatHUDActionButton_ActivateAbility_Confirmed
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
 
                 public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
                 {
@@ -1103,7 +1160,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
@@ -1134,7 +1198,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
@@ -1154,7 +1225,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDActionButton), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
             public static class CombatHUDActionButton_ActivateCommandAbility_Confirmed
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
 
                 public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
                 {
@@ -1165,7 +1236,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
                     //var states = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
@@ -1187,7 +1265,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateAbility", new Type[] { typeof(string), typeof(string) })]
             public static class CombatHUDEquipmentSlot_ActivateAbility_Confirmed
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
 
                 public static void Postfix(CombatHUDActionButton __instance, string creatorGUID, string targetGUID)
                 {
@@ -1198,7 +1276,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
@@ -1229,7 +1314,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
@@ -1250,7 +1342,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(CombatHUDEquipmentSlot), "ActivateCommandAbility", new Type[] { typeof(string), typeof(Vector3), typeof(Vector3) })]
             public static class CombatHUDEquipmentSlot_ActivateCommandAbility_Confirmed
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
 
                 public static void Postfix(CombatHUDActionButton __instance, string teamGUID, Vector3 positionA, Vector3 positionB)
                 {
@@ -1262,7 +1354,14 @@ namespace Abilifier.Patches
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    theActor.ModifyResolve(amt);
+                    if (!Mod.modSettings.enableResolverator)
+                    {
+                        theActor.team.ModifyMorale(amt);
+                    }
+                    else
+                    {
+                        theActor.ModifyResolve(amt);
+                    }
 
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
                     //clear SelectionStateMoraleAttack if present? force OnInactivate
@@ -1284,7 +1383,7 @@ namespace Abilifier.Patches
                 new Type[] {typeof(SelectionType), typeof(Ability), typeof(SVGAsset), typeof(string), typeof(string), typeof(AbstractActor)})]
             public static class CombatHUDActionButton_InitButton
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator ;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator ;
 
                 public static void Postfix(CombatHUDActionButton __instance, SelectionType SelectionType, Ability Ability, SVGAsset Icon, string GUID, string Tooltip, AbstractActor actor)
                 {
@@ -1351,7 +1450,7 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(SelectionStateActiveProbe), "CreateFiringOrders")]
             public static class SelectionStateActiveProbe_CreateFiringOrders
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Postfix(SelectionStateActiveProbe __instance, string button)
                 {
                     if (button == "BTN_FireConfirm")
@@ -1365,8 +1464,14 @@ namespace Abilifier.Patches
                         var theActor = HUD.SelectedActor;
                         if (theActor == null) return;
                         var amt = -abilityDef.getAbilityDefExtension().ResolveCost;
-                        theActor.ModifyResolve(amt);
-
+                        if (!Mod.modSettings.enableResolverator)
+                        {
+                            theActor.team.ModifyMorale(amt);
+                        }
+                        else
+                        {
+                            theActor.ModifyResolve(amt);
+                        }
                         HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                         if (!Mod.modSettings.disableCalledShotExploit) return;
