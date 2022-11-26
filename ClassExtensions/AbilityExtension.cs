@@ -39,7 +39,7 @@ namespace Abilifier.Patches
         {
             public int ResolveCost { get; set; } = 0;
             public int CBillCost { get; set; } = 0;
-            public string CMDPilotOverride { get; set; }
+            public string CMDPilotOverride { get; set; } = "";
             public TargetTeam TargetFriendlyUnit { get; set; } = TargetTeam.ENEMY;
             public bool TriggersUniversalCooldown { get; set; } = true;
             public bool IgnoresUniversalCooldown { get; set; } = false;
