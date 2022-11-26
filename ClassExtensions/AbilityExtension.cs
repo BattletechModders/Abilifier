@@ -7,6 +7,7 @@ using BattleTech;
 using BattleTech.Framework;
 using BattleTech.UI;
 using Harmony;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TB.ComponentModel;
 using UnityEngine;
@@ -24,23 +25,25 @@ namespace Abilifier.Patches
     {
         public static class ModState
         {
+            public static AbilityDefExtension PendingAbilityDefExtension = new AbilityDefExtension();
             public static List<AbilityUseInfo> AbilityUses = new List<AbilityUseInfo>();
 
             public static void Reset()
             {
                 AbilityUses = new List<AbilityUseInfo>();
+                PendingAbilityDefExtension = new AbilityDefExtension();
             }
         }
 
         public class AbilityDefExtension
         {
-            public int ResolveCost = 0;
-            public int CBillCost = 0;
-            public string CMDPilotOverride = "";
-            public TargetTeam TargetFriendlyUnit = TargetTeam.ENEMY;
-            public bool TriggersUniversalCooldown = true;
-            public bool IgnoresUniversalCooldown = false;
-            public bool StartInCooldown = false;
+            public int ResolveCost { get; set; } = 0;
+            public int CBillCost { get; set; } = 0;
+            public string CMDPilotOverride { get; set; }
+            public TargetTeam TargetFriendlyUnit { get; set; } = TargetTeam.ENEMY;
+            public bool TriggersUniversalCooldown { get; set; } = true;
+            public bool IgnoresUniversalCooldown { get; set; } = false;
+            public bool StartInCooldown { get; set; } = false;
         }
 
         public class AbilityUseInfo
@@ -122,57 +125,75 @@ namespace Abilifier.Patches
         private static ConcurrentDictionary<string, AbilityDefExtension> abilityDefExtensionDict = new ConcurrentDictionary<string, AbilityDefExtension>();
         public static AbilityDefExtension getAbilityDefExtension(this AbilityDef abilityDef)
         {
-            return abilityDefExtensionDict.ContainsKey(abilityDef.Id) ? abilityDefExtensionDict[abilityDef.Id] : new AbilityDefExtension();
+            if (abilityDefExtensionDict.TryGetValue(abilityDef.Id, out var abilityDefExtension))
+            {
+                return abilityDefExtension;
+            }
+
+            return new AbilityDefExtension();
         }
 
         public class AbilityExtensionPatches
         {
             [HarmonyPatch(typeof(AbilityDef), "FromJSON")]
-            public static class AbilityDef_FromJSON
+            public static class AbilityDef_FromJSON_ABILIFIER
             {
-                public static void Prefix(AbilityDef __instance, string json, ref AbilityDefExtension __state)
+                public static void Prefix(AbilityDef __instance, ref string json)
                 {
                     var abilityDefJO = JObject.Parse(json);
-                    __state = new AbilityDefExtension { CBillCost = 0, ResolveCost = 0 };
+                    var state = new AbilityDefExtension();
+                    ModState.PendingAbilityDefExtension = new AbilityDefExtension();
                     if (abilityDefJO["CBillCost"] != null)
                     {
-                        __state.CBillCost = (int)abilityDefJO["CBillCost"];
+                        state.CBillCost = (int)abilityDefJO["CBillCost"];
+                        abilityDefJO.Remove("CBillCost");
                     }
                     if (abilityDefJO["ResolveCost"] != null)
                     {
-                        __state.ResolveCost = (int)abilityDefJO["ResolveCost"];
+                        state.ResolveCost = (int)abilityDefJO["ResolveCost"];
+                        abilityDefJO.Remove("ResolveCost");
                     }
                     if (abilityDefJO["CMDPilotOverride"] != null)
                     {
-                        __state.CMDPilotOverride = (string)abilityDefJO["CMDPilotOverride"];
+                        state.CMDPilotOverride = (string)abilityDefJO["CMDPilotOverride"];
+                        abilityDefJO.Remove("CMDPilotOverride");
                     }
                     if (abilityDefJO["TargetFriendlyUnit"] != null)
                     {
-                        __state.TargetFriendlyUnit = (TargetTeam) Enum.Parse(typeof(TargetTeam), (string)abilityDefJO["TargetFriendlyUnit"]);
+                        state.TargetFriendlyUnit = (TargetTeam) Enum.Parse(typeof(TargetTeam), (string)abilityDefJO["TargetFriendlyUnit"]);
+                        abilityDefJO.Remove("TargetFriendlyUnit");
                     }
 
                     if (abilityDefJO["TriggersUniversalCooldown"] != null)
                     {
-                        __state.TriggersUniversalCooldown = (bool)abilityDefJO["TriggersUniversalCooldown"];
+                        state.TriggersUniversalCooldown = (bool)abilityDefJO["TriggersUniversalCooldown"];
+                        abilityDefJO.Remove("TriggersUniversalCooldown");
                     }
                     if (abilityDefJO["IgnoresUniversalCooldown"] != null)
                     {
-                        __state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
+                        state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
+                        abilityDefJO.Remove("IgnoresUniversalCooldown");
                     }
                     if (abilityDefJO["StartInCooldown"] != null)
                     {
-                        __state.StartInCooldown = (bool)abilityDefJO["StartInCooldown"];
+                        state.StartInCooldown = (bool)abilityDefJO["StartInCooldown"];
+                        abilityDefJO.Remove("StartInCooldown");
                     }
+
+                    ModState.PendingAbilityDefExtension = state;
+                    json = abilityDefJO.ToString(Formatting.Indented);
+                    //Mod.modLog.LogMessage($"[INFO] AbilityDef_FromJSON PREFIX RAN");
                 }
 
-                public static void Postfix(AbilityDef __instance, string json, AbilityDefExtension __state)
+                public static void Postfix(AbilityDef __instance, string json)
                 {
                     //if (abilityDefExtensionDict.ContainsKey(__instance.Id))
                     //{
                     //    abilityDefExtensionDict[__instance.Id] = __state;
                     //    return;
                     //}
-                    abilityDefExtensionDict.AddOrUpdate(__instance.Id, __state, (k, v) => { return __state; });
+                    abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
+                    //Mod.modLog.LogMessage($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost{ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown{ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
                 }
             }
 
@@ -423,6 +444,7 @@ namespace Abilifier.Patches
                     if (UnityGameInstance.BattleTechGame.Simulation == null) return;
                     PilotResolveTracker.HolderInstance.pilotResolveDict = new Dictionary<string, PilotResolveInfo>();
                     if (ModState.AbilityUses.Count <= 0) return;
+                    ModState.Reset();
                     var finalAbilityCosts = 0;
                     foreach (var abilityUse in ModState.AbilityUses)
                     {
