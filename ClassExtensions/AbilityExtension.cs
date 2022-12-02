@@ -182,7 +182,7 @@ namespace Abilifier.Patches
 
                     ModState.PendingAbilityDefExtension = state;
                     json = abilityDefJO.ToString(Formatting.Indented);
-                    //Mod.modLog.LogMessage($"[INFO] AbilityDef_FromJSON PREFIX RAN");
+                    Logger.LogTrace($"[INFO] AbilityDef_FromJSON PREFIX RAN");
                 }
 
                 public static void Postfix(AbilityDef __instance, string json)
@@ -193,7 +193,7 @@ namespace Abilifier.Patches
                     //    return;
                     //}
                     abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
-                    //Mod.modLog.LogMessage($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost{ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown{ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
+                    Logger.LogTrace($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost{ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown{ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
                 }
             }
 
