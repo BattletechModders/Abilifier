@@ -104,14 +104,14 @@ namespace Abilifier.Framework
         internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var traverse = Traverse.Create(panel);
-            var orderedDictionary = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
+            //var traverse = Traverse.Create(panel);
+            var orderedDictionary = panel.upgradedSkills;//traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
 
-            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            var upgradedPrimarySkills = panel.upgradedPrimarySkills;// traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
             var upgradedAbilities = new List<AbilityDef>();
             upgradedAbilities.AddRange(upgradedPrimarySkills);
-            
-            panel.SetPilot(traverse.Field("basePilot").GetValue<Pilot>());
+
+            panel.SetPilot(panel.basePilot);//traverse.Field("basePilot").GetValue<Pilot>());
             
             foreach (var obj in orderedDictionary.Values)
             {
@@ -132,8 +132,9 @@ namespace Abilifier.Framework
                 }
             }
 
-            var callback = traverse.Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
-            callback?.Invoke(traverse.Field("curPilot").GetValue<Pilot>());
+            panel.OnValueChangeCB(panel.curPilot);
+            //var callback = traverse.Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
+            //callback?.Invoke(traverse.Field("curPilot").GetValue<Pilot>());
         }
 
         // modified copy from assembly
@@ -144,18 +145,18 @@ namespace Abilifier.Framework
 
             var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
 
-            var traverse = Traverse.Create(panel);
+            //var traverse = Traverse.Create(panel);
 
             //    var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
-            var curPilot = traverse.Field("curPilot").GetValue<Pilot>();
+            var curPilot = panel.curPilot;//traverse.Field("curPilot").GetValue<Pilot>();
 
             var pilotDef = curPilot.ToPilotDef(true);
             pilotDef.DataManager = sim.DataManager;
             //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
-            var upgradedSkills = traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
+            var upgradedSkills = panel.upgradedSkills;//traverse.Field("upgradedSkills").GetValue<OrderedDictionary>();
 
             //    var upgradedPrimarySkills = Traverse.Create(panel).Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
-            var upgradedPrimarySkills = traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
+            var upgradedPrimarySkills = panel.upgradedPrimarySkills;//traverse.Field("upgradedPrimarySkills").GetValue<List<AbilityDef>>();
 
             for (var i = 0; i < abilityTree.Count; i++)
             {
@@ -163,7 +164,7 @@ namespace Abilifier.Framework
                 if (expAmount > 0)
                 {
                     //    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
-                    var skillKey = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
+                    var skillKey = panel.GetSkillKey(type, skill);//traverse.Method("GetSkillKey", type, skill).GetValue<string>());
 
                     if (!upgradedSkills.Contains(skillKey))
                     {
@@ -213,7 +214,7 @@ namespace Abilifier.Framework
                 else
                 {
                     //    var skillKey2 = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
-                    var skillKey2 = traverse.Method("GetSkillKey", type, skill).GetValue<string>();
+                    var skillKey2 = panel.GetSkillKey(type, skill);//traverse.Method("GetSkillKey", type, skill).GetValue<string>());
                     upgradedSkills.Remove(skillKey2);
                     upgradedPrimarySkills.Remove(abilityTree[i]);
 
@@ -240,10 +241,12 @@ namespace Abilifier.Framework
 
             pilot.ModifyPilotStat_Barracks(0, "Advancement", type, (uint)(skill + 1));
             panel.SetPilot(pilot, false);
-            Traverse.Create(panel).Method("RefreshPanel").GetValue();
-            var callback = Traverse.Create(panel).Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
+            panel.RefreshPanel();
+            panel.OnValueChangeCB(pilot);
+            //Traverse.Create(panel).Method("RefreshPanel").GetValue();
+            //var callback = Traverse.Create(panel).Field("OnValueChangeCB").GetValue<UnityAction<Pilot>>();
             // callback sets the Reset / Confirm buttons states
-            callback.Invoke(pilot);
+            //callback.Invoke(pilot);
         }
 
         //       internal static void PreloadIcons()

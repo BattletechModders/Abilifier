@@ -85,7 +85,7 @@ namespace Abilifier.Patches
                 this.abilitySelectionText = HUD.MechWarriorTray.targetEnemyAbilityText;
             }
 
-            protected override bool CanTargetCombatant(ICombatant potentialTarget)
+            public override bool CanTargetCombatant(ICombatant potentialTarget)
             {
                 var abilityDef = FromButton.Ability.Def;
                 if (potentialTarget is AbstractActor actor)
@@ -207,13 +207,13 @@ namespace Abilifier.Patches
                     {
                         if (Combat.TurnDirector.CurrentRound < 1)
                         {
-                            Traverse.Create(__instance).Property("CurrentCooldown")
-                                .SetValue(__instance.Def.ActivationCooldown + 1);
+                            __instance.CurrentCooldown = __instance.Def.ActivationCooldown + 1;
+                            //Traverse.Create(__instance).Property("CurrentCooldown").SetValue(__instance.Def.ActivationCooldown + 1);
                         }
                         else
                         {
-                            Traverse.Create(__instance).Property("CurrentCooldown")
-                                .SetValue(__instance.Def.ActivationCooldown);
+                            __instance.CurrentCooldown = __instance.Def.ActivationCooldown;
+                            //Traverse.Create(__instance).Property("CurrentCooldown").SetValue(__instance.Def.ActivationCooldown);
                         }
                     }
                 }
@@ -424,14 +424,15 @@ namespace Abilifier.Patches
                 {
                     if (UnityGameInstance.BattleTechGame.Simulation == null) return;
                     if (ModState.AbilityUses.Count <= 0) return;
-                    var addObjectiveMethod = Traverse.Create(__instance).Method("AddObjective", new Type[] { typeof(MissionObjectiveResult) });
+                    //var addObjectiveMethod = Traverse.Create(__instance).Method("AddObjective", new Type[] { typeof(MissionObjectiveResult) });
                     foreach (var abilityUse in ModState.AbilityUses)
                     {
                         if (abilityUse.TotalCost <= 0) continue;
                         var abilityUseCost = $"Ability Costs for {abilityUse.AbilityName}: {abilityUse.UseCount} Uses x {abilityUse.UseCost} ea. = ¢-{abilityUse.TotalCost}";
 
                         var abilityUseCostResult = new MissionObjectiveResult($"{abilityUseCost}", Guid.NewGuid().ToString(), false, true, ObjectiveStatus.Ignored, false);
-                        addObjectiveMethod.GetValue(abilityUseCostResult);
+                        __instance.AddObjective(abilityUseCostResult);
+                        //addObjectiveMethod.GetValue(abilityUseCostResult);
                     }
                 }
             }
@@ -452,7 +453,8 @@ namespace Abilifier.Patches
                         Mod.modLog.LogMessage($"{abilityUse.TotalCost} in command costs for {abilityUse.AbilityName}: {abilityUse.UseCost}. Current Total Command Cost: {finalAbilityCosts}");
                     }
                     var moneyResults = __instance.MoneyResults - finalAbilityCosts;
-                    Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);
+                    //Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);
+                    __instance.MoneyResults = moneyResults;
                 }
             }
         }

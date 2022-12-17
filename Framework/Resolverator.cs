@@ -105,8 +105,8 @@ namespace Abilifier.Framework
             var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
             var combat = UnityGameInstance.BattleTechGame.Combat;
             var actorTeam = actor.team;
-            var moraleLogger = Traverse.Create(actorTeam).Field("moraleLogger").GetValue<ILog>();
-            var attackLogger = Traverse.Create(actorTeam).Field("attackLogger").GetValue<ILog>();
+            var moraleLogger = Team.moraleLogger;//Traverse.Create(actorTeam).Field("moraleLogger").GetValue<ILog>();
+            var attackLogger = Team.attackLogger;//Traverse.Create(actorTeam).Field("attackLogger").GetValue<ILog>();
             if (actorTeam.IsMoraleSuppressed)
             {
                 moraleLogger.Log("Morale is suppressed for this mission; doing nothing");

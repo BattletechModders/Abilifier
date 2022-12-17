@@ -416,7 +416,7 @@ namespace Abilifier.Patches
                             (combat.Constants.GetActiveMoraleDef(combat).CanAIBeInspired ||
                              !(__instance is AITeam)))
                         {
-                            var moraleLogger = Traverse.Create(__instance).Field("moraleLogger").GetValue<ILog>();
+                            var moraleLogger = Team.moraleLogger;//Traverse.Create(__instance).Field("moraleLogger").GetValue<ILog>();
                             int baselineMoraleGain = __instance.BaselineMoraleGain;
                             if (baselineMoraleGain > 0)
                             {
@@ -449,8 +449,8 @@ namespace Abilifier.Patches
                 }
             }
 
-            private static MethodInfo _CHMB_RefreshMoraleBarTarget = AccessTools.Method(typeof(CombatHUDMoraleBar), "RefreshMoraleBarTarget");
-            private static MethodInfo _CHMB_Update = AccessTools.Method(typeof(CombatHUDMoraleBar), "Update");
+            //private static MethodInfo _CHMB_RefreshMoraleBarTarget = AccessTools.Method(typeof(CombatHUDMoraleBar), "RefreshMoraleBarTarget");
+            //private static MethodInfo _CHMB_Update = AccessTools.Method(typeof(CombatHUDMoraleBar), "Update");
 
             [HarmonyPatch(typeof(CombatHUD), "OnActorSelected",
                 new Type[] {typeof(AbstractActor)})]
@@ -461,12 +461,14 @@ namespace Abilifier.Patches
                 {
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var tray = __instance.MechWarriorTray;
-                    CombatHUDMoraleBarInstance.CHMB = Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
-//                    var CHMB = Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
+                    CombatHUDMoraleBarInstance.CHMB = tray.moraleDisplay;//Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
+                    //var CHMB = Traverse.Create(tray).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
 
-                        _CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
+                    //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
+                    tray.moraleDisplay.RefreshMoraleBarTarget(true);
                     Mod.modLog.LogMessage($"Invoked CHMB RefreshMoraleBarTarget");
-                    _CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
+                    tray.moraleDisplay.Update();
+                    //_CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
                     Mod.modLog.LogMessage($"Invoked CHMB Update");
 
 
@@ -609,12 +611,11 @@ namespace Abilifier.Patches
                             button.DisableButton();
                         }
 
-                        var moraleBar = Traverse.Create(__instance).Property("moraleDisplay")
-                            .GetValue<CombatHUDMoraleBar>();
-                        var predicting = Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
+                        var moraleBar = __instance.moraleDisplay;//Traverse.Create(__instance).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
+                        var predicting = moraleBar.predicting;//Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
                         if (predicting)
                         {
-                            var predictWidth = Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
+                            var predictWidth = moraleBar.predictWidth;//Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
                             if (Mathf.RoundToInt(predictWidth) < ability.Def.getAbilityDefExtension().ResolveCost)
                             {
                                 button.DisableButton();
@@ -753,13 +754,12 @@ namespace Abilifier.Patches
                         {
                             button.DisableButton();
                         }
-
-                        var moraleBar = Traverse.Create(__instance).Property("moraleDisplay")
-                            .GetValue<CombatHUDMoraleBar>();
-                        var predicting = Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
+                        
+                        var moraleBar = __instance.HUD.MechWarriorTray.moraleDisplay;// Traverse.Create(__instance).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
+                        var predicting = moraleBar.predicting;//Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
                         if (predicting)
                         {
-                            var predictWidth = Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
+                            var predictWidth = moraleBar.predictWidth;//Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
                             if (Mathf.RoundToInt(predictWidth) < ability.Def.getAbilityDefExtension().ResolveCost)
                             {
                                 button.DisableButton();
@@ -789,14 +789,13 @@ namespace Abilifier.Patches
             public static class CombatHUDMechwarriorTray_ResetMechwarriorButtons_Patch
             {
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
-                public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor,
-                    CombatGameState ___Combat)
+                public static void Postfix(CombatHUDMechwarriorTray __instance, AbstractActor actor)
                 {
-                    if (___Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null) return;
-                    var abilityButtons = Traverse.Create(__instance).Property("AbilityButtons").GetValue<CombatHUDActionButton[]>();
-                    var moraleButtons = Traverse.Create(__instance).Property("MoraleButtons").GetValue<CombatHUDActionButton[]>();
-                    var activeMoraleDef = ___Combat.Constants.GetActiveMoraleDef(___Combat);
+                    var abilityButtons = __instance.AbilityButtons;//Traverse.Create(__instance).Property("AbilityButtons").GetValue<CombatHUDActionButton[]>();
+                    var moraleButtons = __instance.MoraleButtons;//Traverse.Create(__instance).Property("MoraleButtons").GetValue<CombatHUDActionButton[]>();
+                    var activeMoraleDef = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat);
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
                     bool flag2 = activeMoraleDef.UseOffensivePush &&
@@ -816,13 +815,13 @@ namespace Abilifier.Patches
                     }
 
                     if (!actor.IsProne && actor.IsOperational && !actor.HasFiredThisRound &&
-                        ___Combat.TurnDirector.IsInterleaved && !flag5)
+                        __instance.Combat.TurnDirector.IsInterleaved && !flag5)
                     {
                         if (flag2)
                         {
                             moraleButtons[0].ResetButtonIfNotActive(actor);
                             moraleButtons[0].isAutoHighlighted =
-                                ___Combat.LocalPlayerTeam.Morale == activeMoraleDef.MoraleMax;
+                                __instance.Combat.LocalPlayerTeam.Morale == activeMoraleDef.MoraleMax;
                         }
                         else
                         {
@@ -833,7 +832,7 @@ namespace Abilifier.Patches
                         if (flag3)
                         {
                             moraleButtons[1].ResetButtonIfNotActive(actor);
-                            if (___Combat.LocalPlayerTeam.Morale == activeMoraleDef.MoraleMax)
+                            if (__instance.Combat.LocalPlayerTeam.Morale == activeMoraleDef.MoraleMax)
                             {
                                 moraleButtons[1].isAutoHighlighted = true;
                             }
@@ -879,17 +878,10 @@ namespace Abilifier.Patches
             public static class CombatHUDMoraleBar_RefreshMoraleBarTarget
             {
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
-                public static bool Prefix(CombatHUDMoraleBar __instance, bool forceRefresh, CombatHUD ___HUD,
-                    float ___width, ref float ___moraleBarTargetWidth, bool ___lerping,
-                    ref float ___moraleBarTimeLerping, float ___timeFactor, ref float ___moraleBarPreviousWidth,
-                    float ___predictWidth, bool ___predicting, ref int ___maxMorale, Color ___predictColor,
-                    Graphic ___moralePredictGraphic, CombatGameState ___Combat, ref int ___moralePrevious,
-                    RectTransform ___moraleBar, HBSDOTweenButton ___moraleTweens, float ___moraleBarMaxWidth,
-                    LocalizableText ___HoverText, ILog ___uiLogger)
+                public static bool Prefix(CombatHUDMoraleBar __instance, bool forceRefresh)
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
-                    var selectedUnitFromTraverse =
-                        Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
+                    var selectedUnitFromTraverse = __instance.HUD.selectedUnit;// Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
                     if (selectedUnitFromTraverse == null)
                     {
                         return true;
@@ -899,53 +891,51 @@ namespace Abilifier.Patches
                     var pilot = selectedUnitFromTraverse.GetPilot();
                     var actorKey = pilot.Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                    ___maxMorale = pilotResolveInfo.PilotMaxResolve;
+                    __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
                     Mod.modLog.LogMessage($"{pilot.Callsign} ___maxMorale set to {pilotResolveInfo.PilotMaxResolve}");
                     Mod.modLog.LogMessage($"{pilot.Callsign} current Resolve is {pilotResolveInfo.PilotResolve}");
 
-                    int num = pilotResolveInfo.PilotResolve - ___moralePrevious;
-                    Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} old resolve - {___moralePrevious} = {num}");
+                    int num = pilotResolveInfo.PilotResolve - __instance.moralePrevious;
+                    Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} old resolve - {__instance.moralePrevious} = {num}");
                     if (num != 0 || forceRefresh)
                     {
                         float num2 = (float) pilotResolveInfo.PilotResolve;
-                        if (___moraleBar != null)
+                        if (__instance.moraleBar != null)
                         {
-                            ___moraleBarPreviousWidth = ___moraleBar.rect.width;
-                            float num3 = num2 / (float) ___maxMorale;
-                            ___moraleBarTargetWidth = ___moraleBarMaxWidth * num3;
-                            Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {___moraleBarTargetWidth}");
-                            if (num2 >= (float) ___maxMorale)
+                            __instance.moraleBarPreviousWidth = __instance.moraleBar.rect.width;
+                            float num3 = num2 / (float) __instance.maxMorale;
+                            __instance.moraleBarTargetWidth = __instance.moraleBarMaxWidth * num3;
+                            Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {__instance.moraleBarTargetWidth}");
+                            if (num2 >= (float) __instance.maxMorale)
                             {
-                                ___moraleTweens.SetState(ButtonState.Highlighted, true);
+                                __instance.moraleTweens.SetState(ButtonState.Highlighted, true);
                             }
-                            else if (!Mathf.Approximately(___moraleBarPreviousWidth, ___moraleBarTargetWidth))
+                            else if (!Mathf.Approximately(__instance.moraleBarPreviousWidth, __instance.moraleBarTargetWidth))
                             {
-                                ___moraleBarTimeLerping = 0f;
-                                ___moraleTweens.SetState(ButtonState.Enabled, true);
+                                __instance.moraleBarTimeLerping = 0f;
+                                __instance.moraleTweens.SetState(ButtonState.Enabled, true);
                             }
 
-                            var floatToaster = Traverse.Create(__instance).Property("FloatieToaster")
-                                .GetValue<CombatHUDFloatieStack>();
-                            var moraleGainDesc = Traverse.Create(__instance).Property("MoraleGainDescription")
-                                .GetValue<string>();
+                            var floatToaster = __instance.FloatieToaster;//Traverse.Create(__instance).Property("FloatieToaster").GetValue<CombatHUDFloatieStack>();
+                            var moraleGainDesc = __instance.MoraleGainDescription;//Traverse.Create(__instance).Property("MoraleGainDescription").GetValue<string>();
 
                             floatToaster.AddFloatie(new Localize.Text(moraleGainDesc, new object[]
                             {
                                 num
                             }), (num > 0) ? FloatieMessage.MessageNature.Buff : FloatieMessage.MessageNature.Neutral);
 
-                            var getMoraleDescMethod = Traverse.Create(__instance).Method("GetMoraleDescription",new object[] {pilotResolveInfo.PilotResolve, ___maxMorale});
-                            var GottentMoraleDesc = getMoraleDescMethod.GetValue<string>();
-                            ___HoverText.SetText(GottentMoraleDesc, Array.Empty<object>());
+                            //var getMoraleDescMethod = Traverse.Create(__instance).Method("GetMoraleDescription",new object[] {pilotResolveInfo.PilotResolve, __instance.maxMorale });
+                            var GottentMoraleDesc = __instance.GetMoraleDescription(pilotResolveInfo.PilotResolve, __instance.maxMorale);//getMoraleDescMethod.GetValue<string>());
+                            __instance.HoverText.SetText(GottentMoraleDesc, Array.Empty<object>());
                         }
                         else
                         {
-                            ___uiLogger.LogWarning($"No morale bar in UI! new morale is {num2}");
+                            CombatHUDMoraleBar.uiLogger.LogWarning($"No morale bar in UI! new morale is {num2}");
                             Mod.modLog.LogMessage($"No morale bar in UI! new morale is {num2}");
                         }
 
-                        ___moralePrevious = pilotResolveInfo.PilotResolve;
-                        Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} pilot resolve set to {___moralePrevious} (___moralePrevious)");
+                        __instance.moralePrevious = pilotResolveInfo.PilotResolve;
+                        Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} pilot resolve set to {__instance.moralePrevious} (___moralePrevious)");
                     }
 
                     return false;
@@ -957,15 +947,10 @@ namespace Abilifier.Patches
             public static class CombatHUDMoraleBar_UpdateMoraleBar
             {
                 //public static bool Prepare() => Mod.modSettings.enableResolverator;
-                public static bool Prefix(CombatHUDMoraleBar __instance, CombatHUD ___HUD, ref float ___width,
-                    float ___moraleBarTargetWidth, ref bool ___lerping, ref float ___moraleBarTimeLerping,
-                    ref float ___timeFactor, float ___moraleBarPreviousWidth, ref float ___predictWidth,
-                    ref bool ___predicting, ref int ___maxMorale, ref Color ___predictColor,
-                    Graphic ___moralePredictGraphic, CombatGameState ___Combat)
+                public static bool Prefix(CombatHUDMoraleBar __instance)
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
-                    var selectedUnitFromTraverse =
-                        Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
+                    var selectedUnitFromTraverse = __instance.HUD.selectedUnit;// Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
                     if (selectedUnitFromTraverse == null)
                     {
                         return true; // display not changing for some damn reason, but morale tracking internally is working. wtf.
@@ -976,83 +961,83 @@ namespace Abilifier.Patches
                     {
                         pilotResolveInfo = PilotResolveTracker.HolderInstance
                             .pilotResolveDict[selectedUnitFromTraverse.GetPilot().Fetch_rGUID()];
-                        ___maxMorale = pilotResolveInfo.PilotMaxResolve;
+                        __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
                     }
 
-                    ___width = ___moraleBarTargetWidth;
+                    __instance.width = __instance.moraleBarTargetWidth;
 
-                    Framework.Logger.LogTrace($"TRACE: Moralebar max height for {selectedUnitFromTraverse.GetPilot().Callsign}: {___maxMorale}, width set to {___width}");
+                    Framework.Logger.LogTrace($"TRACE: Moralebar max height for {selectedUnitFromTraverse.GetPilot().Callsign}: {__instance.maxMorale}, width set to {__instance.width}");
 
-                    ___lerping = false;
-                    if (___moraleBarTimeLerping < __instance.moraleBarLerpTime)
+                    __instance.lerping = false;
+                    if (__instance.moraleBarTimeLerping < __instance.moraleBarLerpTime)
                     {
-                        ___lerping = true;
-                        ___moraleBarTimeLerping += Time.deltaTime;
+                        __instance.lerping = true;
+                        __instance.moraleBarTimeLerping += Time.deltaTime;
                         if (__instance.moraleBar != null)
                         {
-                            ___timeFactor = ___moraleBarTimeLerping / __instance.moraleBarLerpTime;
-                            if (___timeFactor < 1f)
+                            __instance.timeFactor = __instance.moraleBarTimeLerping / __instance.moraleBarLerpTime;
+                            if (__instance.timeFactor < 1f)
                             {
-                                ___width = Mathf.SmoothStep(___moraleBarPreviousWidth, ___moraleBarTargetWidth,
-                                    ___timeFactor);
+                                __instance.width = Mathf.SmoothStep(__instance.moraleBarPreviousWidth, __instance.moraleBarTargetWidth,
+                                    __instance.timeFactor);
                             }
                             else
                             {
-                                ___lerping = false;
+                                __instance.lerping = false;
                             }
                         }
                     }
 
-                    ___predictWidth = ___width;
-                    ___predicting = false;
+                    __instance.predictWidth = __instance.width;
+                    __instance.predicting = false;
                     if (Mod.modSettings.enableResolverator)
                     {
-                        pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
+                        pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(__instance.predictWidth);
                         pilotResolveInfo.Predicting = false;
                     }
                     
 
-                    if (___HUD.SelectionHandler.ActiveState != null)
+                    if (__instance.HUD.SelectionHandler.ActiveState != null)
                     {
-                        if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.ConfirmMorale)
+                        if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.ConfirmMorale)
                         {
-                            ___predictWidth -= selectedUnitFromTraverse.DefensivePushCost / (float) ___maxMorale *
+                            __instance.predictWidth -= selectedUnitFromTraverse.DefensivePushCost / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
-                            ___predictWidth = Mathf.Max(0f, ___predictWidth);
+                            __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
-                            ___predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.ConfirmMorale (vigilance): {___predictWidth}");
+                            __instance.predicting = true;
+                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.ConfirmMorale (vigilance): {__instance.predictWidth}");
                         }
-                        else if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.FireMorale)
+                        else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.FireMorale)
                         {
-                            ___predictWidth -= selectedUnitFromTraverse.OffensivePushCost / (float) ___maxMorale *
+                            __instance.predictWidth -= selectedUnitFromTraverse.OffensivePushCost / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
-                            ___predictWidth = Mathf.Max(0f, ___predictWidth);
+                            __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
-                            ___predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.FireMorale (called shot): {___predictWidth}");
+                            __instance.predicting = true;
+                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.FireMorale (called shot): {__instance.predictWidth}");
                         }
-                        else if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.MWInstant)
+                        else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.MWInstant)
                         {
-                            ___predictWidth -= ___HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float) ___maxMorale *
+                            __instance.predictWidth -= __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
-                            ___predictWidth = Mathf.Max(0f, ___predictWidth);
+                            __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
-                            ___predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {___predictWidth}");
+                            __instance.predicting = true;
+                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
                         }
-                        else if (___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandTargetTwoPoints || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandSpawnTarget || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandBase || ___HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandInstant)
+                        else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandTargetTwoPoints || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandSpawnTarget || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandBase || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandInstant)
                         {
-                            ___predictWidth -= ___HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float)___maxMorale *
+                            __instance.predictWidth -= __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float)__instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
-                            ___predictWidth = Mathf.Max(0f, ___predictWidth);
+                            __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
-                            ___predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {___predictWidth}");
+                            __instance.predicting = true;
+                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
                         }
                     }
 
-                    if (___predicting)
+                    if (__instance.predicting)
                     {
                         if (!__instance.moralePrediction.gameObject.activeSelf)
                         {
@@ -1061,14 +1046,14 @@ namespace Abilifier.Patches
 
                         if (Mod.modSettings.enableResolverator)
                         {
-                            pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(___predictWidth);
+                            pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(__instance.predictWidth);
                             pilotResolveInfo.Predicting = true;
                         }
-                        ___predictColor = ___moralePredictGraphic.color;
-                        ___predictColor.a = Mathf.Sin(Time.realtimeSinceStartup * 5f) * 0.35f + 0.65f;
-                        ___moralePredictGraphic.color = ___predictColor;
-                        __instance.moralePrediction.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, ___width);
-                        __instance.moraleBar?.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, ___predictWidth);
+                        __instance.predictColor = __instance.moralePredictGraphic.color;
+                        __instance.predictColor.a = Mathf.Sin(Time.realtimeSinceStartup * 5f) * 0.35f + 0.65f;
+                        __instance.moralePredictGraphic.color = __instance.predictColor;
+                        __instance.moralePrediction.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, __instance.width);
+                        __instance.moraleBar?.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, __instance.predictWidth);
                         __instance.moraleTweens.SetState(ButtonState.Disabled, false);
                     }
                     else
@@ -1078,13 +1063,14 @@ namespace Abilifier.Patches
                             __instance.moralePrediction.gameObject.SetActive(false);
                         }
 
-                        __instance.moraleBar?.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, ___width);
+                        __instance.moraleBar?.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, __instance.width);
                     }
 
-                    if (!___lerping && !___predicting)
+                    if (!__instance.lerping && !__instance.predicting)
                     {
-                        var resetTweens = Traverse.Create(__instance).Method("ResetTweens");
-                        resetTweens.GetValue();
+                        __instance.ResetTweens();
+                        //var resetTweens = Traverse.Create(__instance).Method("ResetTweens");
+                        //resetTweens.GetValue();
                     }
 
                     return false;
@@ -1107,9 +1093,11 @@ namespace Abilifier.Patches
                                                              1); // this negates Team Morale loss from vanilla method
 
                     actor.ModifyResolve(actor.DefensivePushCost * -1);
-                    _CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
+                    //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
+                    CombatHUDMoraleBarInstance.CHMB.RefreshMoraleBarTarget(true);
                     Mod.modLog.LogMessage($"Invoked CHMB RefreshMoraleBarTarget");
-                    _CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
+                    CombatHUDMoraleBarInstance.CHMB.Update();
+                    //_CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
                     Mod.modLog.LogMessage($"Invoked CHMB Update");
                 }
             }
@@ -1156,7 +1144,7 @@ namespace Abilifier.Patches
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
@@ -1172,8 +1160,7 @@ namespace Abilifier.Patches
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1194,7 +1181,7 @@ namespace Abilifier.Patches
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
@@ -1210,8 +1197,7 @@ namespace Abilifier.Patches
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1232,7 +1218,7 @@ namespace Abilifier.Patches
 
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
@@ -1249,8 +1235,7 @@ namespace Abilifier.Patches
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1272,7 +1257,7 @@ namespace Abilifier.Patches
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
@@ -1288,8 +1273,7 @@ namespace Abilifier.Patches
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1310,7 +1294,7 @@ namespace Abilifier.Patches
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
                     var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
@@ -1326,8 +1310,7 @@ namespace Abilifier.Patches
                     HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1349,7 +1332,7 @@ namespace Abilifier.Patches
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;
 
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
@@ -1367,8 +1350,7 @@ namespace Abilifier.Patches
                     //clear SelectionStateMoraleAttack if present? force OnInactivate
 
                     if (!Mod.modSettings.disableCalledShotExploit) return;
-                    var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                        .GetValue<List<SelectionState>>();
+                    var selectionStack = HUD.selectionHandler.SelectionStack;//Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
                     var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                     if (moraleState != null)
                     {
@@ -1415,7 +1397,7 @@ namespace Abilifier.Patches
 
                 public static void Postfix(CombatSelectionHandler __instance)
                 {
-                    var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                    var HUD = __instance.HUD;
                     if (__instance.SelectedActor != null) HUD.MechWarriorTray.ResetMechwarriorButtons(__instance.SelectedActor);
                 }
             }
@@ -1460,7 +1442,7 @@ namespace Abilifier.Patches
                         var abilityDef = __instance.FromButton?.Ability?.Def;
                         if (abilityDef == null) return;
                         Mod.modLog.LogMessage($"Processing resolve costs for {abilityDef.Description.Name}");
-                        var HUD = Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
+                        var HUD = __instance.HUD;
                         var theActor = HUD.SelectedActor;
                         if (theActor == null) return;
                         var amt = -abilityDef.getAbilityDefExtension().ResolveCost;
@@ -1475,8 +1457,7 @@ namespace Abilifier.Patches
                         HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
 
                         if (!Mod.modSettings.disableCalledShotExploit) return;
-                        var selectionStack = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack")
-                            .GetValue<List<SelectionState>>();
+                        var selectionStack = HUD.selectionHandler.SelectionStack;
                         var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
                         if (moraleState != null)
                         {

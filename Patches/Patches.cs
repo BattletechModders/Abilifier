@@ -25,7 +25,7 @@ namespace Abilifier.Patches
         public static class SGBarracksAdvancementPanel_SetPips_Patch
         {
             public static bool Prefix(SGBarracksAdvancementPanel __instance,
-                List<SGBarracksSkillPip> pips, int originalSkill, int curSkill, int idx, bool needsXP, bool isLocked, Pilot ___curPilot)
+                List<SGBarracksSkillPip> pips, int originalSkill, int curSkill, int idx, bool needsXP, bool isLocked)
 
             {
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
@@ -41,12 +41,12 @@ namespace Abilifier.Patches
                 var flag = isLocked && (idx + 1 == pips.Count || curSkill == idx + 1);
                 if (pips[idx].Ability != null)
                 {
-                    var flag2 = Helpers.CanPilotTakeAbilityPip(sim, ___curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
-                    var flag3 = ___curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
+                    var flag2 = Helpers.CanPilotTakeAbilityPip(sim, __instance.curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
+                    var flag3 = __instance.curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
                     var type = pips[idx].Ability.ReqSkill;
-                    var abilityDefs = ___curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
+                    var abilityDefs = __instance.curPilot.pilotDef.AbilityDefs.Where(x => x.ReqSkill == type
                         && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility);
                     var flag4 = abilityDefs.Any();
 
@@ -63,15 +63,12 @@ namespace Abilifier.Patches
 
         public static class SGBarracksMWDetailPanel_SetPilot_Patch
         {
-            public static void Postfix(SGBarracksMWDetailPanel __instance,
-                Pilot p,
-                SGBarracksAdvancementPanel ___advancement
-                )
+            public static void Postfix(SGBarracksMWDetailPanel __instance, Pilot p)
             {
-                var gunPips = Traverse.Create(___advancement).Field("gunPips").GetValue<List<SGBarracksSkillPip>>();
-                var pilotPips = Traverse.Create(___advancement).Field("pilotPips").GetValue<List<SGBarracksSkillPip>>();
-                var gutPips = Traverse.Create(___advancement).Field("gutPips").GetValue<List<SGBarracksSkillPip>>();
-                var tacPips = Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
+                var gunPips = __instance.advancement.gunPips;//Traverse.Create(___advancement).Field("gunPips").GetValue<List<SGBarracksSkillPip>>();
+                var pilotPips = __instance.advancement.pilotPips;//Traverse.Create(___advancement).Field("pilotPips").GetValue<List<SGBarracksSkillPip>>();
+                var gutPips = __instance.advancement.gutPips;//Traverse.Create(___advancement).Field("gutPips").GetValue<List<SGBarracksSkillPip>>();
+                var tacPips = __instance.advancement.tacPips;//Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
 
 
                 var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility).ToArray();
@@ -81,9 +78,11 @@ namespace Abilifier.Patches
                 {
                     if (ability.ReqSkill == SkillType.Gunnery)
                     {
-                        Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
-                        Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+
+                        gunPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
+                        gunPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        //Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        //Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
 
@@ -91,9 +90,11 @@ namespace Abilifier.Patches
                 {
                     if (ability.ReqSkill == SkillType.Piloting)
                     {
-                        Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
-                        Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        pilotPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
+                        pilotPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+
+                        //Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        //Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
 
@@ -101,9 +102,11 @@ namespace Abilifier.Patches
                 {
                     if (ability.ReqSkill == SkillType.Guts)
                     {
-                        Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
-                        Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        gutPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
+                        gutPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+
+                        //Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        //Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
 
@@ -111,9 +114,11 @@ namespace Abilifier.Patches
                 {
                     if (ability.ReqSkill == SkillType.Tactics)
                     {
-                        Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
-                        Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        tacPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
+                        tacPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+
+                        //Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
+                        //Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
                 }
             }
@@ -125,38 +130,31 @@ namespace Abilifier.Patches
         public static class SGBarracksAdvancementPanel_OnValueClick_Patch
         {
             public static bool Prefix(
-                SGBarracksAdvancementPanel __instance,
-                Pilot ___curPilot,
-                List<SGBarracksSkillPip> ___gunPips,
-                List<SGBarracksSkillPip> ___pilotPips,
-                List<SGBarracksSkillPip> ___gutPips,
-                List<SGBarracksSkillPip> ___tacPips,
-                string type,
-                int value)
+                SGBarracksAdvancementPanel __instance, string type, int value)
             {
                 try
                 {
                     if (modSettings.debugXP)
                     {
-                        ___curPilot.AddExperience(0, "", 100000);
+                        __instance.curPilot.AddExperience(0, "", 100000);
                     }
 
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
                     var pips = new Dictionary<string, List<SGBarracksSkillPip>>
                     {
-                        {"Gunnery", ___gunPips},
-                        {"Piloting", ___pilotPips},
-                        {"Guts", ___gutPips},
-                        {"Tactics", ___tacPips},
+                        {"Gunnery", __instance.gunPips},
+                        {"Piloting", __instance.pilotPips},
+                        {"Guts", __instance.gutPips},
+                        {"Tactics", __instance.tacPips},
                     };
 
                     // removal of pip
-                    if (___curPilot.StatCollection.GetValue<int>(type) > value)
+                    if (__instance.curPilot.StatCollection.GetValue<int>(type) > value)
                     {
                         Logger.LogTrace($"Removing {type} {value}");
                         Logger.LogTrace($"{pips[type][value].Ability}");
                         Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
-                        ___curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
+                        __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
                         Logger.LogTrace("\n");
                         Helpers.ForceResetCharacter(__instance);
                         //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
@@ -164,11 +162,11 @@ namespace Abilifier.Patches
                     }
 
                     // add non-ability pip
-                    if (!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
+                    if (!pips[type][value].hasAbility)//!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
                     {
                         Logger.LogTrace("Non-ability pip");
                         Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
-                        ___curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
+                        __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
                         Logger.LogTrace("\n");
                         return false;
                     }
@@ -201,8 +199,8 @@ namespace Abilifier.Patches
 
                     // prevents which were ability buttons before other primaries were selected from being abilities
                     // not every ability button is visible all the time
-                    var curButton = Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
-                    var skillButton = Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
+                    var curButton = pips[type][value].curButton;//Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
+                    var skillButton = pips[type][value].skillButton;//Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
                     if (curButton != skillButton)
                     {
                         Logger.LogTrace(new string('=', 50));
@@ -215,7 +213,7 @@ namespace Abilifier.Patches
 
                     //new code below//
                     //new code below for ability requirements
-                    List<string> pilotAbilityDefNames = ___curPilot.pilotDef.abilityDefNames;
+                    List<string> pilotAbilityDefNames = __instance.curPilot.pilotDef.abilityDefNames;
 
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
@@ -286,10 +284,12 @@ namespace Abilifier.Patches
                             () =>
                             {
                                 // have to change the Ability so SetPips later, SetActiveAbilityVisible works
-                                Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
-                                Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
-                                Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>()
-                                    .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                                pip.thisAbility = abilityDef;
+                                pip.abilityIcon.vectorGraphics = abilityDef.AbilityIcon;
+                                pip.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                                //Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
+                                //Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
+                                //Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
                                 Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
                             });
                     }
@@ -315,7 +315,7 @@ namespace Abilifier.Patches
         public static class SGBarracksSkillPip_Set_Patch
         {
             public static void Postfix(SGBarracksSkillPip __instance, SGBarracksSkillPip.PurchaseState purchaseState,
-                bool canClick, bool showXP, bool needXP, bool isLocked, int ___idx, string ___type, HBSTooltip ___AbilityTooltip)
+                bool canClick, bool showXP, bool needXP, bool isLocked)
             {
                 if (purchaseState == SGBarracksSkillPip.PurchaseState.Unselected)
                 {
@@ -325,10 +325,10 @@ namespace Abilifier.Patches
                     var abilityDefs = new List<AbilityDef>();
                     foreach (var abilityDictionary in abilityDictionaries)
                     {
-                        abilityDefs.AddRange(abilityDictionary[___idx].Where(x => x.ReqSkill.ToString() == ___type));
+                        abilityDefs.AddRange(abilityDictionary[__instance.idx].Where(x => x.ReqSkill.ToString() == __instance.type));
                     }
 
-                    var title = $"{___type}: Level {___idx+1} Ability Options";
+                    var title = $"{__instance.type}: Level {__instance.idx +1} Ability Options";
 
                     var desc = "";
                     
@@ -354,7 +354,7 @@ namespace Abilifier.Patches
                     }
 
                     var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
-                    ___AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
+                    __instance.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
                 }
             }
         }
@@ -367,7 +367,7 @@ namespace Abilifier.Patches
             {
                 //               if (Mod.modSettings.usingHumanResources) return;
                 // this below can probably be disabled once we include HR? maybe not since i think CU adds its tonk tag too late.
-                var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
+                //var SetPilotAbilitiesMethod = Traverse.Create(__instance).Method("SetPilotAbilities", new Type[] {typeof(PilotDef), typeof(string), typeof(int)});
                 foreach (var pilot in __result)
                 {
                     foreach (var tagClean in Mod.modSettings.proceduralTagCleanup.Keys)
@@ -387,19 +387,23 @@ namespace Abilifier.Patches
 
                     for (int l = 1; l <= pilot.BaseGunnery; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(pilot, "Gunnery", l);
+                        __instance.SetPilotAbilities(pilot, "Gunnery", l);
+                        //SetPilotAbilitiesMethod.GetValue(pilot, "Gunnery", l);
                     }
                     for (int l = 1; l <= pilot.BaseGuts; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(pilot, "Guts", l);
+                        __instance.SetPilotAbilities(pilot, "Guts", l);
+                        //SetPilotAbilitiesMethod.GetValue(pilot, "Guts", l);
                     }
                     for (int l = 1; l <= pilot.BasePiloting; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(pilot, "Piloting", l);
+                        __instance.SetPilotAbilities(pilot, "Piloting", l);
+                        //SetPilotAbilitiesMethod.GetValue(pilot, "Piloting", l);
                     }
                     for (int l = 1; l <= pilot.BaseTactics; l++)
                     {
-                        SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
+                        __instance.SetPilotAbilities(pilot, "Tactics", l);
+                       // SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
                     }
                 }
             }
