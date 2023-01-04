@@ -161,6 +161,8 @@ eg
     "CBillCost": 5000
 ```
 
+resolveGenTacticsMult, resolveGenBaseMult, resolveCostBaseMult, and resolveCostBaseMult are all (float) actor stats which can be modified by skills, equipment, etc. In addition, `maxResolveMod` is an actor stat which is added to `CombatGameConstants.MoraleConstants.MoraleMax` to define the maximum resolve the actor can have. Also (obviously) modifiable by equipment, skills, etc.
+
 Tracking resolve costs per-pilot means a hefty rebalance of resolve generation will likely be needed. In addition to the values in CombatGameConstants under `"MoraleConstants": {`, other values that may need changing are:
 ```
     "MoraleCostAttackDescription": {
@@ -237,13 +239,13 @@ Settings available in the mod.json:
 
 `enableResolverator` - bool, enables pilot resolve overhaul module
 
-`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill
+`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
-`resolveCostTacticsMult` - float, multiplier modifies resolve costs of abilities according to tactics skill
+`resolveCostTacticsMult` - float, multiplier modifies resolve costs of abilities according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
-`resolveGenBaseMult` - float, base multiplier for all resolve generation
+`resolveGenBaseMult` - float, base multiplier for all resolve generation. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
-`resolveCostBaseMult` - float, base multiplier for all resolve costs
+`resolveCostBaseMult` - float, base multiplier for all resolve costs. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
 `usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 
