@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using BattleTech;
+using BattleTech.Rendering.Mood;
+using BattleTech.Save.SaveGameStructure;
 using BattleTech.UI;
 using Harmony;
 using UnityEngine;
@@ -53,6 +55,81 @@ namespace Abilifier.Framework
             return result;
         }
 
+        public static bool SetPilotAbilitiesNonProcedural(this PilotDef pilotDef, string type, int value)
+        {
+            if (pilotDef.PilotTags == null) return true;
+
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            if (sim == null) return false;
+            if (sim.AbilityTree == null) return false;
+            value--;
+            if (value < 0)
+            {
+                return false;
+            }
+
+            if (!sim.AbilityTree.ContainsKey(type))
+            {
+                return false;
+            }
+
+            if (sim.AbilityTree[type].Count <= value)
+            {
+                return false;
+            }
+
+            List<AbilityDef> list = sim.AbilityTree[type][value];
+
+            if (list.Count == 0)
+            {
+                return false;
+            }
+
+            else
+            {
+                List<AbilityDef>
+                    listTraits = list.FindAll(x => x.IsPrimaryAbility != true); //need to keep all traits
+               
+                pilotDef.DataManager = sim.DataManager;
+                pilotDef.ForceRefreshAbilityDefs();
+                foreach (var t in listTraits)
+                {
+                    if (sim.CanPilotTakeAbility(pilotDef, t))
+                    {
+                        pilotDef.abilityDefNames.Add(t.Description.Id);
+                        Logger.LogTrace($"[SetPilotAbilitiesNonProcedural] Autofilling trait {t.Description.Id} on {pilotDef.Description.Id}");
+                    }
+                }
+                pilotDef.ForceRefreshAbilityDefs();
+                return false;
+            }
+        }
+        public static void AutofillNonProceduralTraits(this PilotDef pilotDef)
+        {
+            for (int l = 1; l <= pilotDef.BaseGunnery; l++)
+            {
+                pilotDef.SetPilotAbilitiesNonProcedural("Gunnery", l);
+                //SetPilotAbilitiesMethod.GetValue(pilot, "Gunnery", l);
+            }
+
+            for (int l = 1; l <= pilotDef.BaseGuts; l++)
+            {
+                pilotDef.SetPilotAbilitiesNonProcedural("Guts", l);
+                //SetPilotAbilitiesMethod.GetValue(pilot, "Guts", l);
+            }
+
+            for (int l = 1; l <= pilotDef.BasePiloting; l++)
+            {
+                pilotDef.SetPilotAbilitiesNonProcedural("Piloting", l);
+                //SetPilotAbilitiesMethod.GetValue(pilot, "Piloting", l);
+            }
+
+            for (int l = 1; l <= pilotDef.BaseTactics; l++)
+            {
+                pilotDef.SetPilotAbilitiesNonProcedural("Tactics", l);
+                // SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
+            }
+        }
         public static bool CanPilotTakeAbilityPip(SimGameState sim, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
         {
             if (!newAbility.IsPrimaryAbility)

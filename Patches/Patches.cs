@@ -38,10 +38,12 @@ namespace Abilifier.Patches
                 {
                     purchaseState = SGBarracksSkillPip.PurchaseState.Selected;
                 }
+
                 var flag = isLocked && (idx + 1 == pips.Count || curSkill == idx + 1);
                 if (pips[idx].Ability != null)
                 {
-                    var flag2 = Helpers.CanPilotTakeAbilityPip(sim, __instance.curPilot.pilotDef, pips[idx].Ability, pips[idx].SecondTierAbility);
+                    var flag2 = Helpers.CanPilotTakeAbilityPip(sim, __instance.curPilot.pilotDef, pips[idx].Ability,
+                        pips[idx].SecondTierAbility);
                     var flag3 = __instance.curPilot.pilotDef.abilityDefNames.Contains(pips[idx].Ability.Description.Id);
 
                     //this is the pertinent change, which checks if pilot has ANY ability of the correct type and level, and sets it to be visible if true
@@ -50,10 +52,13 @@ namespace Abilifier.Patches
                         && x.ReqSkillLevel == idx + 1 && x.IsPrimaryAbility);
                     var flag4 = abilityDefs.Any();
 
-                    pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
+                    pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx,
+                        needsXP, isLocked && flag);
                     pips[idx].SetActiveAbilityVisible(flag2 || flag3 || flag4);
                 }
-                pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx, needsXP, isLocked && flag);
+
+                pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx,
+                    needsXP, isLocked && flag);
                 return false;
             }
         }
@@ -65,10 +70,18 @@ namespace Abilifier.Patches
         {
             public static void Postfix(SGBarracksMWDetailPanel __instance, Pilot p)
             {
-                var gunPips = __instance.advancement.gunPips;//Traverse.Create(___advancement).Field("gunPips").GetValue<List<SGBarracksSkillPip>>();
-                var pilotPips = __instance.advancement.pilotPips;//Traverse.Create(___advancement).Field("pilotPips").GetValue<List<SGBarracksSkillPip>>();
-                var gutPips = __instance.advancement.gutPips;//Traverse.Create(___advancement).Field("gutPips").GetValue<List<SGBarracksSkillPip>>();
-                var tacPips = __instance.advancement.tacPips;//Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
+                var gunPips =
+                    __instance.advancement
+                        .gunPips; //Traverse.Create(___advancement).Field("gunPips").GetValue<List<SGBarracksSkillPip>>();
+                var pilotPips =
+                    __instance.advancement
+                        .pilotPips; //Traverse.Create(___advancement).Field("pilotPips").GetValue<List<SGBarracksSkillPip>>();
+                var gutPips =
+                    __instance.advancement
+                        .gutPips; //Traverse.Create(___advancement).Field("gutPips").GetValue<List<SGBarracksSkillPip>>();
+                var tacPips =
+                    __instance.advancement
+                        .tacPips; //Traverse.Create(___advancement).Field("tacPips").GetValue<List<SGBarracksSkillPip>>();
 
 
                 var abilityDefs = p.pilotDef.AbilityDefs.Where(x => x.IsPrimaryAbility).ToArray();
@@ -80,7 +93,8 @@ namespace Abilifier.Patches
                     {
 
                         gunPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
-                        gunPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        gunPips[ability.ReqSkillLevel - 1].AbilityTooltip
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                         //Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
                         //Traverse.Create(gunPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
                     }
@@ -91,7 +105,8 @@ namespace Abilifier.Patches
                     if (ability.ReqSkill == SkillType.Piloting)
                     {
                         pilotPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
-                        pilotPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        pilotPips[ability.ReqSkillLevel - 1].AbilityTooltip
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
 
                         //Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
                         //Traverse.Create(pilotPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
@@ -103,7 +118,8 @@ namespace Abilifier.Patches
                     if (ability.ReqSkill == SkillType.Guts)
                     {
                         gutPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
-                        gutPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        gutPips[ability.ReqSkillLevel - 1].AbilityTooltip
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
 
                         //Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
                         //Traverse.Create(gutPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
@@ -115,7 +131,8 @@ namespace Abilifier.Patches
                     if (ability.ReqSkill == SkillType.Tactics)
                     {
                         tacPips[ability.ReqSkillLevel - 1].abilityIcon.vectorGraphics = ability.AbilityIcon;
-                        tacPips[ability.ReqSkillLevel - 1].AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
+                        tacPips[ability.ReqSkillLevel - 1].AbilityTooltip
+                            .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
 
                         //Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = ability.AbilityIcon;
                         //Traverse.Create(tacPips[ability.ReqSkillLevel - 1]).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(ability.Description));
@@ -126,7 +143,7 @@ namespace Abilifier.Patches
 
         // rewrite of original
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "OnValueClick")]
-        [HarmonyBefore(new string[] { "io.github.mpstark.AbilityRealizer" })]
+        [HarmonyBefore(new string[] {"io.github.mpstark.AbilityRealizer"})]
         public static class SGBarracksAdvancementPanel_OnValueClick_Patch
         {
             public static bool Prefix(
@@ -162,7 +179,8 @@ namespace Abilifier.Patches
                     }
 
                     // add non-ability pip
-                    if (!pips[type][value].hasAbility)//!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
+                    if (!pips[type][value]
+                            .hasAbility) //!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
                     {
                         Logger.LogTrace("Non-ability pip");
                         Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
@@ -199,8 +217,12 @@ namespace Abilifier.Patches
 
                     // prevents which were ability buttons before other primaries were selected from being abilities
                     // not every ability button is visible all the time
-                    var curButton = pips[type][value].curButton;//Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
-                    var skillButton = pips[type][value].skillButton;//Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
+                    var curButton =
+                        pips[type][value]
+                            .curButton; //Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
+                    var skillButton =
+                        pips[type][value]
+                            .skillButton; //Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
                     if (curButton != skillButton)
                     {
                         Logger.LogTrace(new string('=', 50));
@@ -217,23 +239,24 @@ namespace Abilifier.Patches
 
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
-                    List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
-              
-                        var abilityDefsForDesc = new List<AbilityDef>();
-                        abilityDefsForDesc.AddRange(abilityDefs);
-                        if (abilitiesWithReqs.Count > 0)
+                    List<AbilityDef> abilitiesWithReqs = abilityDefs
+                        .Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
+
+                    var abilityDefsForDesc = new List<AbilityDef>();
+                    abilityDefsForDesc.AddRange(abilityDefs);
+                    if (abilitiesWithReqs.Count > 0)
+                    {
+                        foreach (var abilityWithReq in abilitiesWithReqs)
                         {
-                            foreach (var abilityWithReq in abilitiesWithReqs)
-                            {
-                                if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
+                            if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
                                     .FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
-                                {
-                                    abilityDefs.Remove(abilityWithReq);
-                                }
+                            {
+                                abilityDefs.Remove(abilityWithReq);
                             }
                         }
+                    }
 
-                        //original code continues below//
+                    //original code continues below//
                     string abilityDescs = null;
                     foreach (var abilityDefDesc in abilityDefsForDesc)
                     {
@@ -243,11 +266,13 @@ namespace Abilifier.Patches
                             string abilityName = abilityDefDesc.Description.Name;
                             if (modSettings.usePopUpsForAbilityDesc)
                             {
-                                abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                                abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName +
+                                                "</b>]]" + "\n\n";
                             }
                             else
                             {
-                                abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                                abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" +
+                                                abilityDefDesc.Description.Details + "\n\n";
                             }
                         }
                         else
@@ -255,26 +280,31 @@ namespace Abilifier.Patches
                             var abilityID = abilityDefDesc.Id + "Desc";
                             var abilityName = abilityDefDesc.Description.Name;
 
-                            var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
+                            var reqAbilityName = modSettings.abilityReqs
+                                .FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
 
                             sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
 
                             if (modSettings.usePopUpsForAbilityDesc)
                             {
                                 //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
-                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
+                                                "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" +
+                                                abilityName + "</b>]]" + "\n\n";
                             }
                             else
                             {
                                 //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
-                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name + "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
+                                                "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name +
+                                                ": </color>" + abilityDefDesc.Description.Details + "\n\n";
                             }
                         }
                     }
 
                     var popup = GenericPopupBuilder
                         .Create("Select an ability",
-                        abilityDescs)
+                            abilityDescs)
                         .AddFader();
                     popup.AlwaysOnTop = true;
                     var pip = pips[type][value];
@@ -286,13 +316,15 @@ namespace Abilifier.Patches
                                 // have to change the Ability so SetPips later, SetActiveAbilityVisible works
                                 pip.thisAbility = abilityDef;
                                 pip.abilityIcon.vectorGraphics = abilityDef.AbilityIcon;
-                                pip.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                                pip.AbilityTooltip.SetDefaultStateData(
+                                    TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
                                 //Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
                                 //Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
                                 //Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
                                 Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
                             });
                     }
+
                     popup.Render();
                 }
                 catch (Exception ex)
@@ -325,31 +357,36 @@ namespace Abilifier.Patches
                     var abilityDefs = new List<AbilityDef>();
                     foreach (var abilityDictionary in abilityDictionaries)
                     {
-                        abilityDefs.AddRange(abilityDictionary[__instance.idx].Where(x => x.ReqSkill.ToString() == __instance.type));
+                        abilityDefs.AddRange(abilityDictionary[__instance.idx]
+                            .Where(x => x.ReqSkill.ToString() == __instance.type));
                     }
 
-                    var title = $"{__instance.type}: Level {__instance.idx +1} Ability Options";
+                    var title = $"{__instance.type}: Level {__instance.idx + 1} Ability Options";
 
                     var desc = "";
-                    
+
 
                     foreach (var ability in abilityDefs)
                     {
                         var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
-                        List<AbilityDef> abilitiesWithReqs = abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
+                        List<AbilityDef> abilitiesWithReqs =
+                            abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
 
                         if (abilitiesWithReqs.Contains(ability))
                         {
-                            var reqAbilityName = modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
+                            var reqAbilityName = modSettings.abilityReqs
+                                .FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
 
                             sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
 
-                            desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " + reqAbility.Description.Name + "\n\n" + ability.Description.Details + "\n\n\n";
+                            desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
+                                    reqAbility.Description.Name + "\n\n" + ability.Description.Details + "\n\n\n";
                         }
                         else
                         {
-                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + ability.Description.Details +"\n\n\n";
+                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + ability.Description.Details +
+                                    "\n\n\n";
                         }
                     }
 
@@ -362,8 +399,9 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(PilotGenerator), "GeneratePilots")]
         public static class PilotGenerator_GeneratePilots_Patch
         {
-            
-            public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty, float roninChance, List<PilotDef> __result)
+
+            public static void Postfix(PilotGenerator __instance, int numPilots, int systemDifficulty,
+                float roninChance, List<PilotDef> __result)
             {
                 //               if (Mod.modSettings.usingHumanResources) return;
                 // this below can probably be disabled once we include HR? maybe not since i think CU adds its tonk tag too late.
@@ -390,27 +428,30 @@ namespace Abilifier.Patches
                         __instance.SetPilotAbilities(pilot, "Gunnery", l);
                         //SetPilotAbilitiesMethod.GetValue(pilot, "Gunnery", l);
                     }
+
                     for (int l = 1; l <= pilot.BaseGuts; l++)
                     {
                         __instance.SetPilotAbilities(pilot, "Guts", l);
                         //SetPilotAbilitiesMethod.GetValue(pilot, "Guts", l);
                     }
+
                     for (int l = 1; l <= pilot.BasePiloting; l++)
                     {
                         __instance.SetPilotAbilities(pilot, "Piloting", l);
                         //SetPilotAbilitiesMethod.GetValue(pilot, "Piloting", l);
                     }
+
                     for (int l = 1; l <= pilot.BaseTactics; l++)
                     {
                         __instance.SetPilotAbilities(pilot, "Tactics", l);
-                       // SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
+                        // SetPilotAbilitiesMethod.GetValue(pilot, "Tactics", l);
                     }
                 }
             }
         }
 
         //this patch should hopefuly prevent AI generated (hiring hall) pilots from having too many abilities
-                [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
+        [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
         public static class PilotGenerator_SetPilotAbilities_Patch
         {
             public static bool Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value)
@@ -451,10 +492,12 @@ namespace Abilifier.Patches
                 {
                     return false;
                 }
+
                 if (!sim.AbilityTree.ContainsKey(type))
                 {
                     return false;
                 }
+
                 if (sim.AbilityTree[type].Count <= value)
                 {
                     return false;
@@ -469,27 +512,32 @@ namespace Abilifier.Patches
 
                 else
                 {
-                    List<AbilityDef> listAbilities = list.FindAll(x => x.IsPrimaryAbility);//get primary abilities
+                    List<AbilityDef> listAbilities = list.FindAll(x => x.IsPrimaryAbility); //get primary abilities
 
                     List<string> pilotAbilityDefNames = pilot.abilityDefNames;
                     var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
 
-                    List<AbilityDef> abilitiesWithReqs = listAbilities.Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
+                    List<AbilityDef> abilitiesWithReqs = listAbilities
+                        .Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
 
                     foreach (var abilityWithReq in abilitiesWithReqs)
                     {
-                        if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs.FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
+                        if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
+                                .FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
                         {
                             listAbilities.Remove(abilityWithReq);
                         }
                     }
 
-                    List<AbilityDef> listTraits = list.FindAll(x => x.IsPrimaryAbility != true);//need to keep all traits
+                    List<AbilityDef>
+                        listTraits = list.FindAll(x => x.IsPrimaryAbility != true); //need to keep all traits
                     if (listAbilities.Count > 0)
                     {
-                        int idx = UnityEngine.Random.Range(0, listAbilities.Count);//pick a random primary of the options
-                        listTraits.Add(listAbilities[idx]);//add only that random primary
+                        int idx = UnityEngine.Random.Range(0,
+                            listAbilities.Count); //pick a random primary of the options
+                        listTraits.Add(listAbilities[idx]); //add only that random primary
                     }
+
                     pilot.DataManager = sim.DataManager;
                     pilot.ForceRefreshAbilityDefs();
                     foreach (var t in listTraits)
@@ -499,29 +547,35 @@ namespace Abilifier.Patches
                             pilot.abilityDefNames.Add(t.Description.Id);
                         }
                     }
+
                     pilot.ForceRefreshAbilityDefs();
                     return false;
                 }
 
             }
         }
+
         [HarmonyPatch(typeof(SimGameState), "CanPilotTakeAbility")]
-        [HarmonyAfter(new string[] { "io.github.mpstark.AbilityRealizer" })]
+        [HarmonyAfter(new string[] {"io.github.mpstark.AbilityRealizer"})]
         public static class SimGameState_CanPilotTakeAbility_Patch
         {
-            public static bool Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility, bool checkSecondTier = false)
+            public static bool Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility,
+                bool checkSecondTier = false)
             {
 
                 List<string> pilotAbilityDefNames = p.abilityDefNames;
+                if (pilotAbilityDefNames.Contains(newAbility.Description.Id))
+                {
+                    __result = false;
+                    return false;
+                }
 
                 var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
-
                 var abilityReq = abilityFilter.FirstOrDefault(x => x == newAbility.Id);
-
                 if (!string.IsNullOrEmpty(abilityReq))
                 {
                     if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
-                        .FirstOrDefault(x => x.Value.Contains(abilityReq)).Key))
+                            .FirstOrDefault(x => x.Value.Contains(abilityReq)).Key))
                     {
                         __result = false;
                         return false;
@@ -533,50 +587,66 @@ namespace Abilifier.Patches
                     __result = true;
                     return false;
                 }
+
                 List<AbilityDef> primaryPilotAbilities = SimGameState.GetPrimaryPilotAbilities(p);
                 if (primaryPilotAbilities == null)
                 {
                     __result = true;
                     return false;
                 }
-                if (primaryPilotAbilities.Count >= 3 + modSettings.extraAbilities) //change max allowed abilities for pilot to take when lvling up
+
+                if (primaryPilotAbilities.Count >=
+                    3 + modSettings.extraAbilities) //change max allowed abilities for pilot to take when lvling up
                 {
                     __result = false;
                     return false;
                 }
+
                 Dictionary<SkillType, int> sortedSkillCount = __instance.GetSortedSkillCount(p);
 
                 __result = (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities
-                    || sortedSkillCount.ContainsKey(newAbility.ReqSkill))
-                    && (!sortedSkillCount.ContainsKey(newAbility.ReqSkill) || sortedSkillCount[newAbility.ReqSkill] <= 1 + modSettings.extraAbilitiesAllowedPerSkill)
-                    && (!checkSecondTier || sortedSkillCount.ContainsKey(newAbility.ReqSkill) || primaryPilotAbilities.Count <= 1 + modSettings.extraAbilitiesAllowedPerSkill);                 //change max # abilities per-skill type (default is 2, so only allowed to take if currently have <=1)
+                            || sortedSkillCount.ContainsKey(newAbility.ReqSkill))
+                           && (!sortedSkillCount.ContainsKey(newAbility.ReqSkill) ||
+                               sortedSkillCount[newAbility.ReqSkill] <= 1 + modSettings.extraAbilitiesAllowedPerSkill)
+                           && (!checkSecondTier || sortedSkillCount.ContainsKey(newAbility.ReqSkill) ||
+                               primaryPilotAbilities.Count <=
+                               1 + modSettings
+                                   .extraAbilitiesAllowedPerSkill); //change max # abilities per-skill type (default is 2, so only allowed to take if currently have <=1)
                 //       && (modSettings.skillLockThreshold <= 0 || ((primaryPilotAbilities.Count == 2 + modSettings.extraAbilities) ? (newAbility.ReqSkillLevel > modSettings.skillLockThreshold && sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill) : true));//added part for skill locking?
 
 
-                 //section allows you to set a threshold the "locks" the pilot into taking only abilities within that skill once the threshold has been reached.
-                
-                    if ((p.SkillGunnery >= modSettings.skillLockThreshold) ||
-                       (p.SkillPiloting >= modSettings.skillLockThreshold) ||
-                       (p.SkillGuts >= modSettings.skillLockThreshold) ||
-                       (p.SkillTactics >= modSettings.skillLockThreshold))
+                //section allows you to set a threshold the "locks" the pilot into taking only abilities within that skill once the threshold has been reached.
 
-                    { __result = false; }
+                if ((p.SkillGunnery >= modSettings.skillLockThreshold) ||
+                    (p.SkillPiloting >= modSettings.skillLockThreshold) ||
+                    (p.SkillGuts >= modSettings.skillLockThreshold) ||
+                    (p.SkillTactics >= modSettings.skillLockThreshold))
 
-                    if (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities && newAbility.ReqSkillLevel < modSettings.skillLockThreshold)
-                    {
-                        __result = true;
-                        return false;
-                    }
+                {
+                    __result = false;
+                }
 
-                    if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] < 1 + modSettings.extraAbilitiesAllowedPerSkill) __result = true;
+                if (sortedSkillCount.Count <= 1 + modSettings.extraFirstTierAbilities &&
+                    newAbility.ReqSkillLevel < modSettings.skillLockThreshold)
+                {
+                    __result = true;
+                    return false;
+                }
 
-                    var ct = sortedSkillCount.Where(x => x.Value >= 1 + modSettings.extraAbilitiesAllowedPerSkill);
+                if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] <
+                    1 + modSettings.extraAbilitiesAllowedPerSkill) __result = true;
 
-                    if (ct.Count() >= 1 + modSettings.extraPreCapStoneAbilities) __result = false;     
+                var ct = sortedSkillCount.Where(x => x.Value >= 1 + modSettings.extraAbilitiesAllowedPerSkill);
 
-                    if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill && newAbility.ReqSkillLevel >= modSettings.skillLockThreshold)
-                    { __result = true; }
-                
+                if (ct.Count() >= 1 + modSettings.extraPreCapStoneAbilities) __result = false;
+
+                if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) &&
+                    sortedSkillCount[newAbility.ReqSkill] == 1 + modSettings.extraAbilitiesAllowedPerSkill &&
+                    newAbility.ReqSkillLevel >= modSettings.skillLockThreshold)
+                {
+                    __result = true;
+                }
+
                 return false;
             }
         }
@@ -649,13 +719,27 @@ namespace Abilifier.Patches
 //                {
 //                    if (codes[index].opcode == OpCodes.Ldfld)
 //                    {
-                        return instructions.MethodReplacer(
-                            AccessTools.Property(typeof(AbstractActor), nameof(AbstractActor.ComponentAbilities)).GetGetMethod(),
-                            AccessTools.Method(typeof(Helpers), nameof(Helpers.FetchAllActorAbilities))
-                        );
+                return instructions.MethodReplacer(
+                    AccessTools.Property(typeof(AbstractActor), nameof(AbstractActor.ComponentAbilities))
+                        .GetGetMethod(),
+                    AccessTools.Method(typeof(Helpers), nameof(Helpers.FetchAllActorAbilities))
+                );
 //                    }
 //                }
 //                return codes.AsEnumerable();
+            }
+        }
+
+        [HarmonyPatch(typeof(Pilot), "AddToTeam",
+            new Type[] {typeof(Team)})]
+        public static class Pilot_AddToTeam
+        {
+            public static void Postfix(ref Pilot __instance)
+            {
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                if (sim == null || __instance == null) return;
+                if (__instance.pilotDef.dataManager == null) return;
+                __instance.pilotDef.AutofillNonProceduralTraits();
             }
         }
     }
