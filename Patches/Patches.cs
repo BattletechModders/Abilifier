@@ -730,11 +730,10 @@ namespace Abilifier.Patches
             }
         }
 
-        [HarmonyPatch(typeof(Pilot), "AddToTeam",
-            new Type[] {typeof(Team)})]
-        public static class Pilot_AddToTeam
+        [HarmonyPatch(typeof(Pilot), "InitAbilities", new Type[] {typeof(bool), typeof(bool)})]
+        public static class Pilot_InitAbilities
         {
-            public static void Postfix(ref Pilot __instance)
+            public static void Prefix(ref Pilot __instance)
             {
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 if (sim == null || __instance == null) return;
