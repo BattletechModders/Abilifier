@@ -106,16 +106,19 @@ On its own this will do nothing, but lets say I have an AbilityDef that contains
 ```
 Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because the `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, the following restrictions are in place:
 
-Because TargetCollectionForSearch is set to "Unit" and TargetCollectionTagMatch contains "ImADumbUnitTag", only Units with the MechDef or VehicleDef tag of ImADumbUnitTag will be affected. Furthermore, because TargetComponentTagMatch contains "Potato_Gun", only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
+Because `TargetCollectionForSearch` is set to "Unit" and `TargetCollectionTagMatch` contains "ImADumbUnitTag", only Units with the MechDef or VehicleDef tag of "ImADumbUnitTag" will be affected. Furthermore, because `TargetComponentTagMatch` contains "Potato_Gun", only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
 
-Valid values for TargetCollectionForSearch are: `Unit` (search unitDef tags for match), `Pilot` (search PilotDef for match), and `Component` (searches all unit components ComponentDef tags for match)
+Valid values for TargetCollectionForSearch are: `NotSet` (skip the initial tag match), `Unit` (search unitDef tags for match), `Pilot` (search PilotDef for match), and `Component` (searches all unit components ComponentDef tags for match)
 
-Note: this function still respects the existing restrictions of targetCollection, targetAmmoCategory, etc., etc, with a few differences based on what TargetCollection, if any, is selected. For example, the above is using `"targetCollection": "Weapon",`, so only Weapons are available to be used here, and are just filtered further by the TargetComponentTagMatch match requirement.
+To further explain, this is a two-step process. If `TargetCollectionForSearch` is other than `NotSet`, it will attempt to search for a matching tag from `TargetCollectionTagMatch` in the TagSet associated with `TargetCollectionForSearch`. If a match is found **OR** if `TargetCollectionForSearch` is `NotSet`, it then proceeds to the 2nd step. The 2nd step further filters _what specific thing_ the effect should apply to, by only applying the effect to things containing a match from `TargetComponentTagMatch`.
+
+Note: this function still respects the existing restrictions of targetCollection, targetAmmoCategory, etc., with a few differences based on what TargetCollection, if any, is selected. For example, the above is using `"targetCollection": "Weapon",`, so only Weapons are available to be used here, and are just filtered further by the TargetComponentTagMatch match requirement.
 
 If targetCollection = NotSet (or missing from the EffectData), TargetComponentTagMatch searches the unit tags of the target if it is a valid AbstractActor. So if it is a Mech, it will search for a matching MechDef tag, Vehicle: VehicleDef Tag, and Turret: TurretDef Tag.
 
 If targetCollection = Pilot, TargetComponentTagMatch searches the pilotTags of the targets pilot.
 
+Only a single matching tag is needed, even if multiple tags are defined in `TargetCollectionTagMatch` or `TargetComponentTagMatch`.
 
 ### CBill Costs
 
