@@ -250,7 +250,7 @@ Settings available in the mod.json:
 
 `resolveCostBaseMult` - float, base multiplier for all resolve costs. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
-**NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team)
+**NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team). Keep in mind this "flat" bonus will still be affected by `resolveGenBaseMult` or `resolveGenTacticsMult`, however.
 
 `usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 
