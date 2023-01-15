@@ -423,11 +423,14 @@ namespace Abilifier.Patches
 
                                 foreach (var unit in __instance.units)
                                 {
-                                    unit.ModifyResolve(baselineMoraleGain);
+                                    var baselineUnitMoraleGain =
+                                        Mathf.RoundToInt(unit.StatCollection.GetValue<float>("resolveRoundBaseMod"));
+                                    var totalUnitBaseline = baselineMoraleGain + baselineUnitMoraleGain;
+                                    unit.ModifyResolve(totalUnitBaseline);
                                     moraleLogger.Log(
-                                        $"MORALE: Unit {unit.DisplayName} gains {baselineMoraleGain} baseline morale");
+                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {totalUnitBaseline}");
                                     Mod.modLog.LogMessage(
-                                        $"MORALE: Unit {unit.DisplayName} gains {baselineMoraleGain} baseline morale");
+                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale");
                                 }
 
                                 if (__instance == combat.LocalPlayerTeam)
@@ -867,6 +870,8 @@ namespace Abilifier.Patches
                         Mod.modSettings.resolveGenBaseMult);
                     __instance.StatCollection.AddStatistic<float>("resolveCostBaseMult",
                         Mod.modSettings.resolveCostBaseMult);
+                    __instance.StatCollection.AddStatistic<float>("resolveRoundBaseMod",
+                        0);
 
                     __instance.StatCollection.AddStatistic<int>("maxResolveMod", 0);
 
