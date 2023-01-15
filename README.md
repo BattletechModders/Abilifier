@@ -250,6 +250,8 @@ Settings available in the mod.json:
 
 `resolveCostBaseMult` - float, base multiplier for all resolve costs. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
+**NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team)
+
 `usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 
 `debugXP` bool, grants 100000 XP when XP is spent (useful for testing newly added abilities).
