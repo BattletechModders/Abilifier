@@ -428,9 +428,9 @@ namespace Abilifier.Patches
                                     var totalUnitBaseline = baselineMoraleGain + baselineUnitMoraleGain;
                                     unit.ModifyResolve(totalUnitBaseline);
                                     moraleLogger.Log(
-                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {totalUnitBaseline}");
+                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {baselineUnitMoraleGain}");
                                     Mod.modLog.LogMessage(
-                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale");
+                                        $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {baselineUnitMoraleGain}");
                                 }
 
                                 if (__instance == combat.LocalPlayerTeam)
