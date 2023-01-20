@@ -49,8 +49,8 @@ namespace Abilifier
             public bool usePopUpsForAbilityDesc = false;
             public bool debugXP = false;
             public bool enableResolverator = true;
-            public float resolveGenTacticsMult = 0.1f;
-            public float resolveCostTacticsMult = 0.05f;
+            //public float resolveGenTacticsMult = 0.1f;
+            //public float resolveCostTacticsMult = 0.05f;
             public float resolveGenBaseMult = 1.0f;
             public float resolveCostBaseMult = 1.0f;
             public int extraFirstTierAbilities = 0;

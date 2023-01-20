@@ -1,11 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Abilifier.Patches;
 using BattleTech;
 using BattleTech.Rendering.Mood;
 using BattleTech.Save.SaveGameStructure;
 using BattleTech.UI;
 using Harmony;
+using HBS.Collections;
+using JetBrains.Annotations;
+using Localize;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -38,6 +43,132 @@ namespace Abilifier.Framework
         //        }
 
         // modified copy from assembly
+        [CanBeNull]
+        public static MechComponent GenerateDummyActorAbilityComponent(this AbstractActor actor)
+        {
+            var mechComponent = new MechComponent();
+            mechComponent.SetGuid($"Abilifier_ActorLink-{actor.GUID}");
+            mechComponent.statCollection.Set<ComponentDamageLevel>("DamageLevel", ComponentDamageLevel.Functional);
+            return mechComponent;
+        }
+
+        [CanBeNull]
+        public static Text ParseResolveDetailsFromConstants(this AbstractActor actor, bool isAttack, int moraleState, CombatGameConstants constants)
+        {
+            if (isAttack)
+            {
+                if (moraleState == 0)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescriptionLow.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushLowMoraleCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState == 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescription.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState > 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescriptionHigh.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushHighMoraleCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+            }
+            else
+            {
+                if (moraleState == 0)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescriptionLow.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushLowMoraleCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState == 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescription.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState > 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescriptionHigh.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushHighMoraleCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+            }
+            return null;
+        }
+        public static Text ProcessAbilityDefDetailString(AbilityDef abilityDef)
+        {
+            string text = Strings.T(abilityDef.Description.Details);
+            List<object> list = new List<object>();
+            text = text.Replace("[FloatParam1]", "{0}");
+            list.Add(new Text("{0}", new object[] { abilityDef.FloatParam1 }));
+            text = text.Replace("[FloatParam2]", "{1}");
+            list.Add(new Text("{0}", new object[] { abilityDef.FloatParam2 }));
+            text = text.Replace("[IntParam1]", "{2}");
+            list.Add(new Text("{0}", new object[] { abilityDef.IntParam1 }));
+            text = text.Replace("[IntParam2]", "{3}");
+            list.Add(new Text("{0}", new object[] { abilityDef.IntParam2 }));
+            text = text.Replace("[StringParam1]", "{4}");
+            list.Add(new Text("{0}", new object[] { abilityDef.StringParam1 }));
+            text = text.Replace("[StringParam2]", "{5}");
+            list.Add(new Text("{0}", new object[] { abilityDef.StringParam2 }));
+            text = text.Replace("[ActivationCooldown]", "{6}");
+            list.Add(new Text("{0}", new object[] { abilityDef.ActivationCooldown }));
+            text = text.Replace("[DurationActivations]", "{7}");
+            list.Add(new Text("{0}", new object[] { abilityDef.DurationActivations }));
+            text = text.Replace("[ActivationETA]", "{8}");
+            list.Add(new Text("{0}", new object[] { abilityDef.ActivationETA }));
+            text = text.Replace("[NumberOfUses]", "{9}");
+            list.Add(new Text("{0}", new object[] { abilityDef.NumberOfUses }));
+            text = text.Replace("[ResolveCost]", "{10}");
+            list.Add(new Text("{0}", new object[] { abilityDef.getAbilityDefExtension().ResolveCost}));
+
+            List<EffectData> effectData = abilityDef.EffectData;
+            if (list.Count <= 0)
+            {
+                return new Text(text, Array.Empty<object>());
+            }
+            return new Text(text, list.ToArray());
+        }
 
         public static List<Ability> FetchAllActorAbilities(this AbstractActor @this)
         {

@@ -164,33 +164,48 @@ eg
     "CBillCost": 5000
 ```
 
-resolveGenTacticsMult, resolveGenBaseMult, resolveCostBaseMult, and resolveCostBaseMult are all (float) actor stats which can be modified by skills, equipment, etc. In addition, `maxResolveMod` is an actor stat which is added to `CombatGameConstants.MoraleConstants.MoraleMax` to define the maximum resolve the actor can have. Also (obviously) modifiable by equipment, skills, etc.
+resolveGenBaseMult, resolveCostBaseMult, and resolveRoundBaseMod are all (float) actor stats which can be modified by skills, equipment, etc. In addition, `maxResolveMod` is an actor stat which is added to `CombatGameConstants.MoraleConstants.MoraleMax` to define the maximum resolve the actor can have. Also (obviously) modifiable by equipment, skills, etc.
 
 Tracking resolve costs per-pilot means a hefty rebalance of resolve generation will likely be needed. In addition to the values in CombatGameConstants under `"MoraleConstants": {`, other values that may need changing are:
+
+**UPDATE FOR v1.1.6.0**
+
+Abilifier now supports dynamic resolve costs for ability tooltips and descriptions. For the descriptors listed below (found in CombatGameConstants.CombatUIConstants), the `{0}` arg will autoreplace with the corresponding values from `CombatGameConstants.MoraleConstants` _and_ will reflect individual unit values for the unit statistic `resolveCostBaseMult`. In addition, the `{10)` can be used in the `Description.Details` field of AbilityDefs to give the value of the `ResolveCost` set for that ability. The final displayed value will also reflect changes due to `resolveCostBaseMult`. E.g.
+
+```
+{
+	"Description": {
+		"Id": "AbilityDefG5a",
+		"Name": "BATTLELORD",
+		"Details": "ACTION: Supercharge your mech for a turn, dealing 15% greater damage and hitting with +2 accuracy for the turn. Generates an extra 30 heat this turn. 3 turn cooldown. <b><color=#099ff2>Costs {10} Resolve to use!</color></b>",
+		"Icon": "uixSvgIcon_skullAtlas"
+	},
+```
+
 ```
     "MoraleCostAttackDescription": {
       "Name": "PRECISION STRIKE COST",
-      "Details": "Cost: 30 Resolve"
+      "Details": "Cost: {0} Resolve"
     },
     "MoraleCostAttackDescriptionLow": {
       "Name": "PRECISION STRIKE COST LOW",
-      "Details": "Cost: <color=#F04228FF>40 Resolve (this MechWarrior has Low Spirits)</color>"
+      "Details": "Cost: <color=#F04228FF>{0} Resolve (this MechWarrior has Low Spirits)</color>"
     },
     "MoraleCostAttackDescriptionHigh": {
       "Name": "PRECISION STRIKE COST HIGH",
-      "Details": "Cost: <color=#85DBF6FF>20 Resolve (this MechWarrior has High Spirits)</color>"
+      "Details": "Cost: <color=#85DBF6FF>{0} Resolve (this MechWarrior has High Spirits)</color>"
     },
     "MoraleCostDefendDescription": {
       "Name": "VIGILANCE COST",
-      "Details": "Cost: 30 Resolve"
+      "Details": "Cost: {0} Resolve"
     },
     "MoraleCostDefendDescriptionLow": {
       "Name": "VIGILANCE COST LOW",
-      "Details": "Cost: <color=#F04228FF>40 Resolve (this MechWarrior has Low Spirits)</color>"
+      "Details": "Cost: <color=#F04228FF>{0} Resolve (this MechWarrior has Low Spirits)</color>"
     },
     "MoraleCostDefendDescriptionHigh": {
       "Name": "VIGILANCE COST HIGH",
-      "Details": "Cost: <color=#85DBF6FF>20 Resolve (this MechWarrior has High Spirits)</color>"
+      "Details": "Cost: <color=#85DBF6FF>{0} Resolve (this MechWarrior has High Spirits)</color>"
     },
 ```
 
@@ -202,8 +217,6 @@ Settings available in the mod.json:
 	"enableTrace": false,
 	"enableLog": false,
 	"enableResolverator": true,
-	"resolveGenTacticsMult": 0.1,
-	"resolveCostTacticsMult": 0.05,
 	"resolveGenBaseMult": 1.0,
 	"resolveCostBaseMult": 1.0,
 	"usePopUpsForAbilityDesc": false,
@@ -242,15 +255,15 @@ Settings available in the mod.json:
 
 `enableResolverator` - bool, enables pilot resolve overhaul module
 
-`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
+~~`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.~~ deprecated. just alter resolveGenBaseMult using traits.
 
-`resolveCostTacticsMult` - float, multiplier modifies resolve costs of abilities according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
+~~`resolveCostTacticsMult` - float, multiplier modifies resolve costs of abilities according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.~~ deprecated. just alter resolveCostBaseMult using traits.
 
 `resolveGenBaseMult` - float, base multiplier for all resolve generation. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
 `resolveCostBaseMult` - float, base multiplier for all resolve costs. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
-**NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team). Keep in mind this "flat" bonus will still be affected by `resolveGenBaseMult` or `resolveGenTacticsMult`, however.
+**NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team). Keep in mind this "flat" bonus will still be affected by `resolveGenBaseMult`, however.
 
 `usePopUpsForAbilityDesc` bool, sets Abilifier to use hover tooltips for Ability descriptions as described above.
 

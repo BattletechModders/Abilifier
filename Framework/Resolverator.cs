@@ -77,6 +77,21 @@ namespace Abilifier.Framework
 
     public static class ActorExtensions
     {
+        public static float GetResolveGenBaseMult(this AbstractActor actor)
+        {
+            return actor.StatCollection.GetValue<float>("resolveGenBaseMult");
+        }
+
+        public static float GetResolveCostBaseMult(this AbstractActor actor)
+        {
+            return actor.StatCollection.GetValue<float>("resolveCostBaseMult");
+        }
+
+        public static float GetResolveRoundBaseMod(this AbstractActor actor)
+        {
+            return actor.StatCollection.GetValue<float>("resolveRoundBaseMod");
+        }
+
         internal static float getTeamMoraleMultiplier(this AbstractActor actor)
         {
             var combat = UnityGameInstance.BattleTechGame.Combat;
@@ -107,6 +122,8 @@ namespace Abilifier.Framework
             var actorTeam = actor.team;
             var moraleLogger = Team.moraleLogger;//Traverse.Create(actorTeam).Field("moraleLogger").GetValue<ILog>();
             var attackLogger = Team.attackLogger;//Traverse.Create(actorTeam).Field("attackLogger").GetValue<ILog>();
+            var resolveCostBaseMult = actor.GetResolveCostBaseMult();
+            var resolveGenBaseMult = actor.GetResolveGenBaseMult();
             if (actorTeam.IsMoraleSuppressed)
             {
                 moraleLogger.Log("Morale is suppressed for this mission; doing nothing");
@@ -130,29 +147,28 @@ namespace Abilifier.Framework
 
             if (amt > 0)
             {
-                var resolveGenBaseMult = actor.StatCollection.GetValue<float>("resolveGenBaseMult");
-                var resolveGenTacticsMult = actor.StatCollection.GetValue<float>("resolveGenTacticsMult");
+                //var resolveGenBaseMult = actor.StatCollection.GetValue<float>("resolveGenBaseMult");
+                //var resolveGenTacticsMult = actor.StatCollection.GetValue<float>("resolveGenTacticsMult");
                 Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve gain: {amt} * resolveGenBaseMult {resolveGenBaseMult} = {Mathf.RoundToInt(amt * resolveGenBaseMult)}");
                 amt = Mathf.RoundToInt(amt * resolveGenBaseMult);
                 
-                if (resolveGenTacticsMult != 0)
-                {
-                    Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve gain: {amt} * Tactics {actor.SkillTactics} * resolveGenTacticsMult {resolveGenTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)}");
-                    amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult);
-                }
+                //if (resolveGenTacticsMult != 0)
+                //{
+                //    Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve gain: {amt} * Tactics {actor.SkillTactics} * resolveGenTacticsMult {resolveGenTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)}");
+                //    amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult);
+                //}
             }
 
             else
             {
-                var resolveCostBaseMult = actor.StatCollection.GetValue<float>("resolveCostBaseMult");
-                var resolveCostTacticsMult = actor.StatCollection.GetValue<float>("resolveCostTacticsMult");
+                //var resolveCostTacticsMult = actor.StatCollection.GetValue<float>("resolveCostTacticsMult");
                 Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve loss: {amt} * resolveCostBaseMult {resolveCostBaseMult} = {Mathf.RoundToInt(amt * resolveCostBaseMult)}");
                 amt = Mathf.RoundToInt(amt * resolveCostBaseMult);
-                if (resolveCostTacticsMult != 0)
-                {
-                    Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve loss: {amt} * Tactics {actor.SkillTactics} * resolveCostTacticsMult {resolveCostTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)}");
-                    amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult);
-                }
+                //if (resolveCostTacticsMult != 0)
+               // {
+               //     Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve loss: {amt} * Tactics {actor.SkillTactics} * resolveCostTacticsMult {resolveCostTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)}");
+               //     amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult);
+               // }
             }
 
             attackLogger.Log(
@@ -175,11 +191,11 @@ namespace Abilifier.Framework
                 combat.MessageCenter.PublishMessage(new ReportMoraleMaxMessage());
             }
 
-            if (pilotResolveInfo.PilotResolve >= activeMoraleDef.CanUseInspireLevel || activeMoraleDef.CanUseInspireLevel <= 0)
+            if (pilotResolveInfo.PilotResolve >= (activeMoraleDef.CanUseInspireLevel * resolveCostBaseMult) || activeMoraleDef.CanUseInspireLevel <= 0)
             {
                 pilotResolveInfo.CanInspire = true;
             }
-            else if (pilotResolveInfo.PilotResolve < activeMoraleDef.CanUseInspireLevel)
+            else if (pilotResolveInfo.PilotResolve < (activeMoraleDef.CanUseInspireLevel * resolveCostBaseMult))
             {
                 pilotResolveInfo.CanInspire = false;
             }

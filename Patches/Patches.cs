@@ -8,6 +8,7 @@ using BattleTech.Save;
 using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using Harmony;
+using Localize;
 using SVGImporter;
 using UnityEngine;
 using static Abilifier.Mod;
@@ -272,7 +273,7 @@ namespace Abilifier.Patches
                             else
                             {
                                 abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" +
-                                                abilityDefDesc.Description.Details + "\n\n";
+                                                Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
                             }
                         }
                         else
@@ -297,7 +298,7 @@ namespace Abilifier.Patches
                                 //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
                                 abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
                                                 "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name +
-                                                ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                                                ": </color>" + Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
                             }
                         }
                     }
@@ -381,11 +382,11 @@ namespace Abilifier.Patches
                             sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
 
                             desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
-                                    reqAbility.Description.Name + "\n\n" + ability.Description.Details + "\n\n\n";
+                                    reqAbility.Description.Name + "\n\n" + Helpers.ProcessAbilityDefDetailString(ability) + "\n\n\n";
                         }
                         else
                         {
-                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + ability.Description.Details +
+                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + Helpers.ProcessAbilityDefDetailString(ability) +
                                     "\n\n\n";
                         }
                     }

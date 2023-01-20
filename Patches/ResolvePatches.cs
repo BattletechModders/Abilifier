@@ -14,6 +14,9 @@ using HBS.Logging;
 using SVGImporter;
 using UnityEngine;
 using UnityEngine.UI;
+using Text = Localize.Text;
+using Steamworks;
+using BattleTech.Save.SaveGameStructure;
 
 namespace Abilifier.Patches
 {
@@ -94,17 +97,200 @@ namespace Abilifier.Patches
         }
 
         public class Resolve_CombatPatches
-        {
+        { 
+            [HarmonyPatch(typeof(CombatHUDMoraleBar), "RefreshTooltip", new Type[] {})]
+            public static class CombatHUDMoraleBar_RefreshTooltip
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static bool Prefix(CombatHUDMoraleBar __instance)
+                {
+                    var sim = UnityGameInstance.BattleTechGame.Simulation;
+                    if (sim == null) return true;
+
+                    CombatHUDSidePanelHoverElement componentInChildren = __instance.GetComponentInChildren<CombatHUDSidePanelHoverElement>(true);
+                    if (componentInChildren != null)
+                    {
+                        if (__instance.Combat.EncounterLayerData.SupportedContractTypeValue.UsesFury)
+                        {
+                            componentInChildren.Title = new Localize.Text(__instance.Combat.Constants.CombatUIConstants.FuryBarDescription.Name, Array.Empty<object>());
+                            componentInChildren.Description = new Localize.Text(__instance.Combat.Constants.CombatUIConstants.FuryBarDescription.Details, Array.Empty<object>());
+                            return false;
+                        }
+                        MoraleConstantsDef activeMoraleDef = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat);
+                        componentInChildren.Title = new Localize.Text(__instance.Combat.Constants.CombatUIConstants.MoraleBarDescription.Name, Array.Empty<object>());
+                        var unit = __instance.HUD.selectedUnit;
+                        var totalBaseline = (float)__instance.Combat.LocalPlayerTeam.BaselineMoraleGain;
+                        var totalAfterModifiers = Mathf.RoundToInt(totalBaseline);
+                        if (unit != null)
+                        {
+                            var baselineUnitMoraleGain = unit.GetResolveRoundBaseMod();
+                            totalBaseline += baselineUnitMoraleGain;
+                            var resolveGenBaseMult = unit.GetResolveGenBaseMult();
+                            totalAfterModifiers = Mathf.RoundToInt(totalBaseline * resolveGenBaseMult);
+                        }
+                        
+                        
+                        componentInChildren.Description = new Localize.Text(__instance.Combat.Constants.CombatUIConstants.MoraleBarDescription.Details, new object[]
+                        {
+                            //__instance.Combat.LocalPlayerTeam.BaselineMoraleGain,
+                            totalAfterModifiers,
+                            __instance.Combat.LocalPlayerTeam.CollectSimGameBaseline(activeMoraleDef),
+                            __instance.Combat.LocalPlayerTeam.CollectUnitBaseline(activeMoraleDef),
+                            __instance.Combat.LocalPlayerTeam.CollectBiggestMoraleMod(activeMoraleDef)
+                        });
+                    }
+                    return false;
+                }
+            }//patch ability init at pilot (everywhere Init(combat) to make dummy mechcomponent that contains reference to actor; patch everywhere else to ignore it if it isnt really a component
+
+
+            [HarmonyPatch(typeof(Pilot), "AddAbility", new Type[] { typeof(string) })]
+            public static class Pilot_AddAbility
+            {
+                public static void Postfix(Pilot __instance, string abilityName)
+                {//probably pointless, since only used for turrets
+                    if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    var component = __instance.ParentActor.GenerateDummyActorAbilityComponent();
+                    if (component == null) return;
+                    var ability = __instance.Abilities.FirstOrDefault(x => x.Def.Id == abilityName);
+                    if (ability == null) return;
+                    ability.parentComponent = component;
+                }
+            }
+            
+            [HarmonyPatch(typeof(Ability), "ProcessDetailString")]
+            public static class Ability_ProcessDetailString
+            {
+                public static bool Prefix(Ability ability, ref Text __result)
+                {
+                    var combat = UnityGameInstance.BattleTechGame.Combat;
+                    if (combat == null) return true;
+                    AbstractActor actor;
+                    if (ability.parentComponent == null) return true;
+                    if (ability.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
+                    if (ability.parentComponent.parent != null)
+                    {
+                        actor = ability.parentComponent.parent;
+                    }
+                    else
+                    {
+                        var subStringGUID = ability.parentComponent.GUID.Substring(20);
+                        actor = combat.FindActorByGUID(subStringGUID);
+                    }
+                    
+                    if (actor == null) return true;
+
+                    string text = Localize.Strings.T(ability.Def.Description.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[FloatParam1]", "{0}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.FloatParam1 }));
+                    text = text.Replace("[FloatParam2]", "{1}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.FloatParam2 }));
+                    text = text.Replace("[IntParam1]", "{2}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.IntParam1 }));
+                    text = text.Replace("[IntParam2]", "{3}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.IntParam2 }));
+                    text = text.Replace("[StringParam1]", "{4}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.StringParam1 }));
+                    text = text.Replace("[StringParam2]", "{5}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.StringParam2 }));
+                    text = text.Replace("[ActivationCooldown]", "{6}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.ActivationCooldown }));
+                    text = text.Replace("[DurationActivations]", "{7}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.DurationActivations }));
+                    text = text.Replace("[ActivationETA]", "{8}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.ActivationETA }));
+                    text = text.Replace("[NumberOfUses]", "{9}");
+                    list.Add(new Text("{0}", new object[] { ability.Def.NumberOfUses }));
+                    text = text.Replace("[ResolveCost]", "{10}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()) }));
+                    List<EffectData> effectData = ability.Def.EffectData;
+                    if (list.Count <= 0)
+                    {
+                        __result = new Text(text, Array.Empty<object>());
+                        return false;
+                    }
+                    __result = new Text(text, list.ToArray());
+                    return false;
+                }
+            }
+
+            [HarmonyPatch(typeof(CombatHUDSidePanelHoverElement), "InitForSelectionState", new Type[] {typeof(SelectionType), typeof(AbstractActor) })]
+            public static class CombatHUDSidePanelHoverElement_InitForSelectionState
+            {
+
+                [HarmonyPriority(Priority.Last)]
+                public static void Postfix(CombatHUDSidePanelHoverElement __instance, SelectionType SelectionType, AbstractActor actor)
+                {
+                    var constants = __instance.HUD.Combat.Constants;
+                    if (SelectionType == SelectionType.FireMorale)
+                    {
+                        __instance.Title = new Text(constants.CombatUIConstants.MoraleAttackDescription.Name, Array.Empty<object>());
+                        if (actor == null)
+                        {
+                            __instance.Description = new Text(constants.CombatUIConstants.MoraleAttackDescription.Details, Array.Empty<object>());
+                            return;
+                        }
+                        bool usesFury = __instance.HUD.Combat.EncounterLayerData.SupportedContractTypeValue.UsesFury;
+                        __instance.Description = new Text("{0}{1}", new object[]
+                        {
+                            constants.CombatUIConstants.MoraleAttackDescription.Details,
+                            usesFury ? constants.CombatUIConstants.MoraleCostAttackDescriptionFury.Details : (actor.HasLowMorale ? actor.ParseResolveDetailsFromConstants(true, 0, constants)?.ToString() : 
+                                (actor.HasHighMorale ? actor.ParseResolveDetailsFromConstants(true, 2, constants)?.ToString() :
+                                    actor.ParseResolveDetailsFromConstants(true, 1, constants)?.ToString()))
+                        });
+                    }
+
+                    if (SelectionType == SelectionType.ConfirmMorale)
+                    {
+                        __instance.Title = new Text(constants.CombatUIConstants.MoraleDefendDescription.Name, Array.Empty<object>());
+                        if (actor == null)
+                        {
+                            __instance.Description = new Text(constants.CombatUIConstants.MoraleDefendDescription.Details, Array.Empty<object>());
+                            return;
+                        }
+                        __instance.Description = new Text("{0}{1}", new object[]
+                        {
+                            constants.CombatUIConstants.MoraleDefendDescription.Details,
+                            actor.HasLowMorale ? actor.ParseResolveDetailsFromConstants(false, 0, constants)?.ToString() :
+                                (actor.HasHighMorale ? actor.ParseResolveDetailsFromConstants(false, 2, constants)?.ToString() :
+                                    actor.ParseResolveDetailsFromConstants(false, 1, constants)?.ToString())
+                        });
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(SelectionStateConfirmMorale), "FireButtonString", MethodType.Getter)]
+            public static class SelectionStateConfirmMorale_FireButtonString_Getter
+            {
+                [HarmonyPriority(Priority.Last)]
+                public static void Postfix(SelectionStateConfirmMorale __instance, ref string __result)
+                {
+                    if (__instance.HUD.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                    var constants = __instance.Combat.Constants;
+                    var actor = __instance.SelectedActor;
+                    __result = Localize.Strings.T("{0}{1}", new object[]
+                    {
+                        constants.CombatUIConstants.MoraleDefendDescription.Details,
+                        actor.HasLowMorale ? actor.ParseResolveDetailsFromConstants(false, 0, constants)?.ToString() :
+                            (actor.HasHighMorale ? actor.ParseResolveDetailsFromConstants(false, 2, constants)?.ToString() :
+                                actor.ParseResolveDetailsFromConstants(false, 1, constants)?.ToString())
+                    });
+                }
+            }
+
+
             [HarmonyPatch(typeof(Team), "AddUnit", new Type[] {typeof(AbstractActor)})]
             public static class Team_AddUnit
             {
                 public static bool Prepare() => Mod.modSettings.enableResolverator;
+                [HarmonyPriority(Priority.Last)]
                 public static void Postfix(Team __instance, AbstractActor unit)
                 {
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     //still need to make AI GUID end with aiPilotFlag
                     var p = unit.GetPilot();
-
                     if (!p.pilotDef.PilotTags.Any(x => x.StartsWith(rGUID)))
                     {
                         p.pilotDef.PilotTags.Add(
@@ -127,6 +313,15 @@ namespace Abilifier.Patches
                         .MoraleConstants.MoraleMax + maxMod;
 
                     Mod.modLog.LogMessage($"{p.Callsign} Max Resolve: {actorResolveInfo.PilotMaxResolve}. {maxMod} from maxResolveMod");
+
+                    //add actorlink to active abilities
+                    foreach (var ability in unit.GetPilot().Abilities)
+                    {
+                        var component = unit.GenerateDummyActorAbilityComponent();
+                        if (component == null) return;
+                        ability.parentComponent = component;
+                        Framework.Logger.LogTrace($"Team_AddUnit: Ability {ability.Def.Id} added dummy parentComponent with actor link ID {ability.parentComponent.GUID}");
+                    }
                 }
             }
 
@@ -420,11 +615,10 @@ namespace Abilifier.Patches
                             int baselineMoraleGain = __instance.BaselineMoraleGain;
                             if (baselineMoraleGain > 0)
                             {
-
                                 foreach (var unit in __instance.units)
                                 {
                                     var baselineUnitMoraleGain =
-                                        Mathf.RoundToInt(unit.StatCollection.GetValue<float>("resolveRoundBaseMod"));
+                                        Mathf.RoundToInt(unit.GetResolveRoundBaseMod());
                                     var totalUnitBaseline = baselineMoraleGain + baselineUnitMoraleGain;
                                     unit.ModifyResolve(totalUnitBaseline);
                                     moraleLogger.Log(
@@ -629,13 +823,13 @@ namespace Abilifier.Patches
                     {
                         var actorKey = actor.GetPilot().Fetch_rGUID();
                         var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
                         {
                             button.DisableButton();
                         }
 
                         if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                            ability.Def.getAbilityDefExtension().ResolveCost)
+                            ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
                         {
                             button.DisableButton();
                         }
@@ -773,13 +967,13 @@ namespace Abilifier.Patches
                     {
                         var actorKey = actor.GetPilot().Fetch_rGUID();
                         var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
                         {
                             button.DisableButton();
                         }
 
                         if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                            ability.Def.getAbilityDefExtension().ResolveCost)
+                            ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
                         {
                             button.DisableButton();
                         }
@@ -802,9 +996,9 @@ namespace Abilifier.Patches
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
                     bool flag2 = activeMoraleDef.UseOffensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= actor.OffensivePushCost && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= actor.OffensivePushCost) || actor.OffensivePushCost <= 0);
+                                 (pilotResolveInfo.PilotResolve >= (actor.OffensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= (actor.OffensivePushCost * actor.GetResolveCostBaseMult())) || (actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
                     bool flag3 = activeMoraleDef.UseDefensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= actor.DefensivePushCost && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= actor.DefensivePushCost) || actor.DefensivePushCost <= 0);
+                                 (pilotResolveInfo.PilotResolve >= (actor.DefensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= (actor.DefensivePushCost * actor.GetResolveCostBaseMult())) || (actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
                     var flag5 = false;
 
                     foreach (var t in abilityButtons)
@@ -857,25 +1051,22 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(AbstractActor), "InitEffectStats")]
             public static class AbstractActor_InitEffectStats_Patch
             {
-                public static bool Prepare() => Mod.modSettings.enableResolverator;
                 public static void Prefix(AbstractActor __instance)
                 {
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    __instance.StatCollection.AddStatistic<float>("resolveGenTacticsMult",
-                        Mod.modSettings.resolveGenTacticsMult);
-                    __instance.StatCollection.AddStatistic<float>("resolveCostTacticsMult",
-                        Mod.modSettings.resolveCostTacticsMult);
+                    //__instance.StatCollection.AddStatistic<float>("resolveGenTacticsMult", Mod.modSettings.resolveGenTacticsMult);
+                    //__instance.StatCollection.AddStatistic<float>("resolveCostTacticsMult", Mod.modSettings.resolveCostTacticsMult);
 
                     __instance.StatCollection.AddStatistic<float>("resolveGenBaseMult",
                         Mod.modSettings.resolveGenBaseMult);
                     __instance.StatCollection.AddStatistic<float>("resolveCostBaseMult",
                         Mod.modSettings.resolveCostBaseMult);
                     __instance.StatCollection.AddStatistic<float>("resolveRoundBaseMod",
-                        0);
+                        0f);
 
                     __instance.StatCollection.AddStatistic<int>("maxResolveMod", 0);
 
-                    Mod.modLog.LogMessage($"Added actor stats to {__instance.GetPilot().Callsign}: resolveGenTacticsMult, resolveCostTacticsMult, resolveGenBaseMult, resolveCostBaseMult, maxResolveMod");
+                    Mod.modLog.LogMessage($"Added actor stats to {__instance.GetPilot().Callsign}: resolveGenBaseMult, resolveCostBaseMult, resolveRoundBaseMod, maxResolveMod");
                 }
             }
 
@@ -1006,7 +1197,7 @@ namespace Abilifier.Patches
                     {
                         if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.ConfirmMorale)
                         {
-                            __instance.predictWidth -= selectedUnitFromTraverse.DefensivePushCost / (float) __instance.maxMorale *
+                            __instance.predictWidth -= (selectedUnitFromTraverse.DefensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
@@ -1015,7 +1206,7 @@ namespace Abilifier.Patches
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.FireMorale)
                         {
-                            __instance.predictWidth -= selectedUnitFromTraverse.OffensivePushCost / (float) __instance.maxMorale *
+                            __instance.predictWidth -= (selectedUnitFromTraverse.OffensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
@@ -1024,8 +1215,12 @@ namespace Abilifier.Patches
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.MWInstant)
                         {
-                            __instance.predictWidth -= __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float) __instance.maxMorale *
-                                               __instance.moraleBarMaxWidth;
+                            var cost = __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def
+                                .getAbilityDefExtension().ResolveCost;
+                            if (Mod.modSettings.enableResolverator)
+                                cost = Mathf.RoundToInt(cost * selectedUnitFromTraverse.GetResolveCostBaseMult());
+                            __instance.predictWidth -= cost / (float) __instance.maxMorale *
+                                                       __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
                             __instance.predicting = true;
@@ -1033,7 +1228,11 @@ namespace Abilifier.Patches
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandTargetTwoPoints || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandSpawnTarget || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandBase || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandInstant)
                         {
-                            __instance.predictWidth -= __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def.getAbilityDefExtension().ResolveCost / (float)__instance.maxMorale *
+                            var cost = __instance.HUD.SelectionHandler.ActiveState.FromButton.Ability.Def
+                                .getAbilityDefExtension().ResolveCost;
+                            if (Mod.modSettings.enableResolverator)
+                                cost = Mathf.RoundToInt(cost * selectedUnitFromTraverse.GetResolveCostBaseMult());
+                            __instance.predictWidth -= cost / (float)__instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
@@ -1094,10 +1293,10 @@ namespace Abilifier.Patches
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance
                         .pilotResolveDict[actor.GetPilot().Fetch_rGUID()];
 
-                    __instance.owningActor.team.ModifyMorale(actor.DefensivePushCost *
+                    __instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) *
                                                              1); // this negates Team Morale loss from vanilla method
 
-                    actor.ModifyResolve(actor.DefensivePushCost * -1);
+                    actor.ModifyResolve(Mathf.RoundToInt(actor.DefensivePushCost) * -1);
                     //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
                     CombatHUDMoraleBarInstance.CHMB.RefreshMoraleBarTarget(true);
                     Mod.modLog.LogMessage($"Invoked CHMB RefreshMoraleBarTarget");
@@ -1117,10 +1316,10 @@ namespace Abilifier.Patches
                     if (!__instance.isMoraleAttack) return;
                     var actor = __instance.owningActor;
 
-                    __instance.owningActor.team.ModifyMorale(actor.OffensivePushCost *
+                    __instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) *
                                                              1); // this negates Team Morale loss from vanilla method
 
-                    actor.ModifyResolve(actor.OffensivePushCost * -1);
+                    actor.ModifyResolve(Mathf.RoundToInt(actor.OffensivePushCost) * -1);
                 }
             }
 
@@ -1133,8 +1332,9 @@ namespace Abilifier.Patches
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
                     var pilotResolveInfo = PilotResolveTracker.HolderInstance
                         .pilotResolveDict[__instance.GetPilot().Fetch_rGUID()];
+                    
                     __result = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat).UseOffensivePush &&
-                               (pilotResolveInfo.PilotResolve >= __instance.OffensivePushCost || __instance.OffensivePushCost <= 0);
+                               (pilotResolveInfo.PilotResolve >= (__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) || (__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) <= 0);
                     return false;
                 }
             }
@@ -1152,13 +1352,14 @@ namespace Abilifier.Patches
                     var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
 
@@ -1189,13 +1390,14 @@ namespace Abilifier.Patches
                     var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
 
@@ -1226,13 +1428,14 @@ namespace Abilifier.Patches
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
-                    if (!Mod.modSettings.enableResolverator)
+                   if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
                     //var states = Traverse.Create(HUD.SelectionHandler).Property("SelectionStack").GetValue<List<SelectionState>>();
@@ -1265,13 +1468,14 @@ namespace Abilifier.Patches
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
 
@@ -1302,13 +1506,14 @@ namespace Abilifier.Patches
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
 
@@ -1338,16 +1543,16 @@ namespace Abilifier.Patches
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;
-
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
-                    var amt = -__instance.Ability.Def.getAbilityDefExtension().ResolveCost;
                     if (!Mod.modSettings.enableResolverator)
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.team.ModifyMorale(amt);
                     }
                     else
                     {
+                        var amt = -Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost);
                         theActor.ModifyResolve(amt);
                     }
 
@@ -1415,7 +1620,7 @@ namespace Abilifier.Patches
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    var cost = __instance.Ability.Def.getAbilityDefExtension().ResolveCost;
+                    var cost = Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost * __instance.HUD.selectedUnit.GetResolveCostBaseMult());
                     Mod.modLog.LogMessage($"Activating {__instance.Ability.Def.Description.Name} and setting predicted Resolve Cost to {cost}");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = cost;
                 }
@@ -1450,13 +1655,14 @@ namespace Abilifier.Patches
                         var HUD = __instance.HUD;
                         var theActor = HUD.SelectedActor;
                         if (theActor == null) return;
-                        var amt = -abilityDef.getAbilityDefExtension().ResolveCost;
                         if (!Mod.modSettings.enableResolverator)
                         {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
                             theActor.team.ModifyMorale(amt);
                         }
                         else
                         {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
                             theActor.ModifyResolve(amt);
                         }
                         HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);

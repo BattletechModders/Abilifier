@@ -27,12 +27,12 @@ namespace Abilifier.Patches
                 if (actor == null || ability == null) return;
                 var actorKey = actor.GetPilot().Fetch_rGUID();
                 var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost)
+                if (pilotResolveInfo.PilotResolve < (ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                 {
                     button.DisableButton();
                 }
                 if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                    ability.Def.getAbilityDefExtension().ResolveCost)
+                    ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
                 {
                     button.DisableButton();
                 }
