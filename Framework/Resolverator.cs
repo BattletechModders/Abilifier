@@ -172,16 +172,9 @@ namespace Abilifier.Framework
             }
 
             attackLogger.Log(
-                $"RESOLVE: Unit {actor.DisplayName} has current {pilotResolveInfo.PilotResolve} resolve; adding {amt} new resolve");
-            if (pilotResolveInfo.PilotResolve + amt >= pilotResolveInfo.PilotMaxResolve)
-            {
-                pilotResolveInfo.PilotResolve = pilotResolveInfo.PilotMaxResolve;
-            }
-            else
-            {
-                pilotResolveInfo.PilotResolve += amt;
-            }
-
+                $"RESOLVE: Unit {actor.DisplayName} has current {pilotResolveInfo.PilotResolve} resolve; adding {amt} new resolve. Total to be bounded 0 - {pilotResolveInfo.PilotMaxResolve}");
+            var totalResolve = Mathf.Clamp(pilotResolveInfo.PilotResolve + amt, 0, pilotResolveInfo.PilotMaxResolve);
+            pilotResolveInfo.PilotResolve = totalResolve;
             combat.MessageCenter.PublishMessage(new MoraleChangedMessage(actorTeam.GUID));
             attackLogger.Log($"RESOLVE: Unit {actor.DisplayName} now has {pilotResolveInfo.PilotResolve} resolve");
             Mod.modLog.LogMessage($"RESOLVE: Unit {actor.DisplayName} now has {pilotResolveInfo.PilotResolve} resolve");
