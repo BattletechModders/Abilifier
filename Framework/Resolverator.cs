@@ -6,6 +6,7 @@ using Harmony;
 using HBS.Logging;
 using UnityEngine;
 using static Abilifier.Framework.GlobalVars;
+using static HoudiniEngineUnity.HEU_MaterialData;
 
 namespace Abilifier.Framework
 {
@@ -201,13 +202,39 @@ namespace Abilifier.Framework
                 }
                 if (activeMoraleDef.AutoInspire)
                 {
-                    actorTeam.InspireUnit(actor);
+                    if (actor is Mech mech)
+                    {
+                        mech.InspireResolverator("", -1);
+                        mech.Combat.MessageCenter.PublishMessage(new MoraleChangedMessage(mech.GUID));
+                    }
                 }
             }
             else if (!actorTeam.CanInspire && activeMoraleDef.AutoInspire)
             {
                 actorTeam.UnInspireUnit(actor);
             }
+        }
+
+        public static void InspireResolverator(this Mech mech, string sourceID, int stackItemID)
+        {
+            AbstractActor.attackLogger.Log(string.Format("MORALE: {0} is inspired", mech.LogDisplayName));
+            MoraleConstantsDef activeMoraleDef = mech.Combat.Constants.GetActiveMoraleDef(mech.Combat);
+            mech.CreateEffect(activeMoraleDef.InspiredEffect, null, sourceID, stackItemID, mech, false);
+            if (activeMoraleDef.FreeStandUpAction)
+            {
+                mech.DoFreeStandUpAction();
+            }
+            bool flag = activeMoraleDef.CameraHighlight && (mech.Combat.LocalPlayerTeam.IsFriendly(mech.team) || mech.Combat.LocalPlayerTeam.VisibilityToTarget(mech) == VisibilityLevel.LOSFull);
+            string name = activeMoraleDef.InspiredEffect.Description.Name;
+            mech.Combat.MessageCenter.PublishMessage(new AddSequenceToStackMessage(new ShowActorInfoSequence(mech, name, FloatieMessage.MessageNature.Inspiration, flag)));
+            WwiseManager.PostEvent<AudioEventList_ui>(AudioEventList_ui.ui_callout_inspired_buff, WwiseManager.GlobalAudioObject, null, null);
+            AudioEventManager.PlayPilotVO(VOEvents.Pilot_Inspired, mech, null, null, true);
+            mech.Combat.TurnDirector.NotifyInspiredAction();
+            if (activeMoraleDef.AutoInspire && activeMoraleDef.InspireCost > 0)
+            {
+                AbstractActor.attackLogger.LogError("ERROR: morale is set to AutoInspire, but cost is greater than 0... could cause a loop!");
+            }
+            mech.ModifyResolve(activeMoraleDef.InspireCost * -1);
         }
     }
 
