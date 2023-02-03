@@ -17,6 +17,11 @@ using UnityEngine.UI;
 using Text = Localize.Text;
 using Steamworks;
 using BattleTech.Save.SaveGameStructure;
+using CustomActivatableEquipment;
+using BattleTech.StringInterpolation;
+using CustAmmoCategories;
+using CustAmmoCategoriesPatches;
+using CustomAmmoCategoriesPatches;
 
 namespace Abilifier.Patches
 {
@@ -334,6 +339,9 @@ namespace Abilifier.Patches
                     AttackDirector.AttackSequence sequence)
                 {
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
+#if !NO_CAE 
+                    if (Mod.modSettings.disableResolveAttackGround && sequence.isTerrainAttackSequence()) return false;
+#endif
                     var attacker = sequence.attacker;
                     var dictionary = new Dictionary<AbstractActor, int> {{attacker, 0}};
                     Team team = attacker.team;
@@ -564,7 +572,45 @@ namespace Abilifier.Patches
                         }
                     }
 
-                    if (sequence.RatioSuccessfulHits > activeMoraleDef.ThresholdMajorityHit)
+
+                    var ratioSuccessfulHits = sequence.RatioSuccessfulHits;
+#if !NO_CAE
+                    if (Mod.modSettings.disableResolveAttackGround)
+                    {
+                        int attackTotalShotsFired = 0;
+                        int attackTotalShotsHit = 0;
+                        for (int i = 0; i < sequence.weaponHitInfo.Length; i++)
+                        {
+                            for (int j = 0; j < sequence.weaponHitInfo[i].Length; j++)
+                            {
+                                var hitInfo = sequence.weaponHitInfo[i][j];
+
+                                for (int k = 0; k < hitInfo.Value.hitLocations.Length; k++)
+                                {
+                                    var wep = sequence.GetWeapon(i, j); 
+                                    if (!wep.InstallMineField() && !wep.AOECapable)
+                                    {
+                                        attackTotalShotsFired++;
+                                        if (hitInfo.Value.DidShotHitChosenTarget(k))
+                                        {
+                                            attackTotalShotsHit++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Framework.Logger.LogTrace($"[AttackDirector_ResolveSequenceMorale]: Recalculated shots hit for resolve: {attackTotalShotsHit} / {attackTotalShotsFired} vs unmodified {sequence.attackTotalShotsHit} / {sequence.attackTotalShotsFired}");
+
+                        if (attackTotalShotsFired == 0)
+                        {
+                            attackTotalShotsFired++;
+                        }
+                        ratioSuccessfulHits = (float) attackTotalShotsHit / attackTotalShotsFired;
+                    }
+
+#endif
+
+                    if (ratioSuccessfulHits > activeMoraleDef.ThresholdMajorityHit)
                     {
                         AttackDirector.attackLogger.Log(
                             $"MORALE: attack hit more than {activeMoraleDef.ThresholdMajorityHit * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityHit * 100f})");
@@ -575,8 +621,13 @@ namespace Abilifier.Patches
                     }
 
                     if (dictionary[attacker] == 0 &&
-                        sequence.RatioSuccessfulHits < activeMoraleDef.ThresholdMajorityMiss)
+                        ratioSuccessfulHits < activeMoraleDef.ThresholdMajorityMiss)
                     {
+                        AttackDirector.attackLogger.Log(
+                            $"MORALE: attack missed more than {activeMoraleDef.ThresholdMajorityMiss * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityMiss * 100f})");
+                        Mod.modLog.LogMessage(
+                            $"MORALE: attack missed more than {activeMoraleDef.ThresholdMajorityMiss * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityMiss * 100f})");
+
                         PilotResolveTracker.HolderInstance.ModifyPendingMoraleForUnit(ref dictionary, attacker,
                             activeMoraleDef.ChangeMajorityAttackingShotsMiss);
                     }

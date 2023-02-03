@@ -217,6 +217,7 @@ Settings available in the mod.json:
 	"enableTrace": false,
 	"enableLog": false,
 	"enableResolverator": true,
+	"disableResolveAttackGround": true,
 	"resolveGenBaseMult": 1.0,
 	"resolveCostBaseMult": 1.0,
 	"usePopUpsForAbilityDesc": false,
@@ -254,6 +255,8 @@ Settings available in the mod.json:
 `enableTrace` and `enableLog` (bools) allow logging.
 
 `enableResolverator` - bool, enables pilot resolve overhaul module
+
+`disableResolveAttackGround` - bool, enabled by default, only used in CAE/CAC build. disable resolve processing for all "attack ground" attacks. also disable resolve bonus/malus for % shots hit/missed for weapons that proc AOE damage or mines.
 
 ~~`resolveGenTacticsMult` - float, multiplier modifies resolve generation according to tactics skill. Initialized as an actor stat, which can be modified be equipment, abilities, etc.~~ deprecated. just alter resolveGenBaseMult using traits.
 
