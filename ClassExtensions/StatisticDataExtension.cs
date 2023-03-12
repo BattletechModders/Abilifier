@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Abilifier.Framework;
 using BattleTech;
-using BattleTech.UI;
 using Harmony;
 using HBS.Collections;
-using HBS.Util;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Abilifier.Patches
 {
@@ -33,7 +25,7 @@ namespace Abilifier.Patches
             public TagSet TargetComponentTagMatch = new TagSet();
         }
 
-        private static EffectDataExtensionManager _instance;
+        public static EffectDataExtensionManager _instance;
 
         public ConcurrentDictionary<string, EffectDataExtensionManager.EffectDataExtension> ExtendedEffectDataDict =
             new ConcurrentDictionary<string, EffectDataExtensionManager.EffectDataExtension>();
@@ -47,7 +39,7 @@ namespace Abilifier.Patches
             }
         }
 
-        internal void Initialize()
+        public void Initialize()
         {
             using (StreamReader reader = new StreamReader($"{Mod.modDir}/EffectDataExtensions.json"))
             {

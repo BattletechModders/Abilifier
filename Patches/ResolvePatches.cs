@@ -1,26 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Abilifier.Framework;
 using static Abilifier.Framework.GlobalVars;
 using BattleTech;
 using BattleTech.Save;
 using BattleTech.Save.Test;
 using BattleTech.UI;
-using BattleTech.UI.TMProWrapper;
 using Harmony;
-using HBS.Logging;
 using SVGImporter;
 using UnityEngine;
-using UnityEngine.UI;
 using Text = Localize.Text;
-using Steamworks;
-using BattleTech.Save.SaveGameStructure;
-using CustomActivatableEquipment;
-using BattleTech.StringInterpolation;
 using CustAmmoCategories;
-using CustAmmoCategoriesPatches;
 using CustomAmmoCategoriesPatches;
 
 namespace Abilifier.Patches
@@ -584,16 +575,18 @@ namespace Abilifier.Patches
                             for (int j = 0; j < sequence.weaponHitInfo[i].Length; j++)
                             {
                                 var hitInfo = sequence.weaponHitInfo[i][j];
-
-                                for (int k = 0; k < hitInfo.Value.hitLocations.Length; k++)
+                                if (hitInfo != null)
                                 {
-                                    var wep = sequence.GetWeapon(i, j); 
-                                    if (!wep.InstallMineField() && !wep.AOECapable)
+                                    for (int k = 0; k < hitInfo?.hitLocations.Length; k++)
                                     {
-                                        attackTotalShotsFired++;
-                                        if (hitInfo.Value.DidShotHitChosenTarget(k))
+                                        var wep = sequence.GetWeapon(i, j);
+                                        if (!wep.InstallMineField() && !wep.AOECapable)
                                         {
-                                            attackTotalShotsHit++;
+                                            attackTotalShotsFired++;
+                                            if (hitInfo.Value.DidShotHitChosenTarget(k))
+                                            {
+                                                attackTotalShotsHit++;
+                                            }
                                         }
                                     }
                                 }
@@ -697,8 +690,8 @@ namespace Abilifier.Patches
                 }
             }
 
-            //private static MethodInfo _CHMB_RefreshMoraleBarTarget = AccessTools.Method(typeof(CombatHUDMoraleBar), "RefreshMoraleBarTarget");
-            //private static MethodInfo _CHMB_Update = AccessTools.Method(typeof(CombatHUDMoraleBar), "Update");
+            //public static MethodInfo _CHMB_RefreshMoraleBarTarget = AccessTools.Method(typeof(CombatHUDMoraleBar), "RefreshMoraleBarTarget");
+            //public static MethodInfo _CHMB_Update = AccessTools.Method(typeof(CombatHUDMoraleBar), "Update");
 
             [HarmonyPatch(typeof(CombatHUD), "OnActorSelected",
                 new Type[] {typeof(AbstractActor)})]
@@ -1200,7 +1193,7 @@ namespace Abilifier.Patches
                     var selectedUnitFromTraverse = __instance.HUD.selectedUnit;// Traverse.Create(___HUD).Field("selectedUnit").GetValue<AbstractActor>();
                     if (selectedUnitFromTraverse == null)
                     {
-                        return true; // display not changing for some damn reason, but morale tracking internally is working. wtf.
+                        return true; // display not changing for some damn reason, but morale tracking publicly is working. wtf.
                     }
 
                     PilotResolveInfo pilotResolveInfo = new PilotResolveInfo();

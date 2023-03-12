@@ -88,6 +88,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RetrainerModule.cs" />
     <Compile Include="Framework\Logger.cs" />
     <Compile Include="Framework\Resolverator.cs" />
     <Compile Include="ClassExtensions\AbilityExtension.cs" />

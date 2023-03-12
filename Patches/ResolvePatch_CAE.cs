@@ -1,10 +1,6 @@
 ﻿#if NO_CAE
 #else
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Abilifier.Framework;
 using BattleTech;
 using BattleTech.UI;
@@ -13,7 +9,7 @@ using Harmony;
 
 namespace Abilifier.Patches
 {
-    internal class ResolvePatch_CAE
+    public class ResolvePatch_CAE
     {
         [HarmonyPatch(typeof(CombatHUDEquipmentSlotEx), "ResetAbilityButton",
             new Type[] { typeof(AbstractActor), typeof(CombatHUDActionButton), typeof(Ability), typeof(bool) })]

@@ -9,7 +9,6 @@ using BattleTech.UI;
 using Harmony;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TB.ComponentModel;
 using UnityEngine;
 using Logger = Abilifier.Framework.Logger;
 
@@ -122,7 +121,7 @@ namespace Abilifier.Patches
             }
         }
 
-        private static ConcurrentDictionary<string, AbilityDefExtension> abilityDefExtensionDict = new ConcurrentDictionary<string, AbilityDefExtension>();
+        public static ConcurrentDictionary<string, AbilityDefExtension> abilityDefExtensionDict = new ConcurrentDictionary<string, AbilityDefExtension>();
         public static AbilityDefExtension getAbilityDefExtension(this AbilityDef abilityDef)
         {
             if (abilityDefExtensionDict.TryGetValue(abilityDef.Id, out var abilityDefExtension))

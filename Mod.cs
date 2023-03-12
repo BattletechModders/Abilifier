@@ -13,10 +13,10 @@ namespace Abilifier
 {
     public static class Mod
     {
-        internal static Logger modLog;
-        internal static string modDir;
+        public static Logger modLog;
+        public static string modDir;
 
-        internal static Settings modSettings;
+        public static Settings modSettings;
 
         public static void Init(string directory, string settings)
         {
@@ -28,9 +28,10 @@ namespace Abilifier
                 modSettings = JsonConvert.DeserializeObject<Settings>(settings);
                 modSettings.modDirectory = modDir;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 modSettings = new Settings();
+                Framework.Logger.LogException(e);
             }
 
             Mod.modLog.LogMessage($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
@@ -69,6 +70,8 @@ namespace Abilifier
             public Dictionary<string, string> tagTraitForTree = new Dictionary<string, string>(); // key will be pilot tag (e.g vehicle_crew), value is trait or ability which will be prereq for subsequent abilities.
             public Dictionary<string, string> defaultTagTraitForTree = new Dictionary<string, string>(); // if none of the tags in tagTraitForTree are present on the pilot, this tag and trait will be added
             public string defaultTagTraitException = ""; //except if this is present
+
+            public RetrainerSettings retrainerSettings = new RetrainerSettings();
         }
     }
 }

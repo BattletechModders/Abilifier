@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using Abilifier.Patches;
 using BattleTech;
-using BattleTech.Rendering.Mood;
-using BattleTech.Save.SaveGameStructure;
 using BattleTech.UI;
-using Harmony;
-using HBS.Collections;
 using JetBrains.Annotations;
 using Localize;
 using UnityEngine;
-using UnityEngine.Events;
 
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable InconsistentNaming
@@ -21,9 +15,9 @@ namespace Abilifier.Framework
 {
     public static class Helpers
     {
-        //        internal static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
+        //        public static readonly List<AbilityDef> ModAbilities = new List<AbilityDef>();
 
-        //        internal static void PopulateAbilities()
+        //        public static void PopulateAbilities()
         //        {
         //            var jsonFiles = new DirectoryInfo(
         //                Path.Combine(modSettings.modDirectory, "Abilities")).GetFiles().ToList();
@@ -176,7 +170,7 @@ namespace Abilifier.Framework
             abilities.AddRange(@this.GetPilot().Abilities);
             return abilities;
         }
-        private static bool HasExistingAbilityAtTier(PilotDef pilotDef, AbilityDef abilityToUse)
+        public static bool HasExistingAbilityAtTier(PilotDef pilotDef, AbilityDef abilityToUse)
         {
             var result = pilotDef.AbilityDefs.Any(x =>
                 x.IsPrimaryAbility &&
@@ -309,7 +303,7 @@ namespace Abilifier.Framework
 
             return tempResult;
         }
-        internal static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
+        public static void ForceResetCharacter(SGBarracksAdvancementPanel panel)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             //var traverse = Traverse.Create(panel);
@@ -329,13 +323,13 @@ namespace Abilifier.Framework
                 if (abilityDef.Count > 0)
                 {
                     Logger.LogTrace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
-                    // this is the only change - calling internal implementation
+                    // this is the only change - calling public implementation
                     SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), abilityDef[0]);
                 }
                 else
                 {
                     Logger.LogTrace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
-                    // this is the only change - calling internal implementation
+                    // this is the only change - calling public implementation
                     SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
                 }
             }
@@ -346,7 +340,7 @@ namespace Abilifier.Framework
         }
 
         // modified copy from assembly
-        internal static void SetTempPilotSkill(string type, int skill, int expAmount, AbilityDef abilityDef = null)
+        public static void SetTempPilotSkill(string type, int skill, int expAmount, AbilityDef abilityDef = null)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var abilityTree = sim.AbilityTree[type][skill];
@@ -457,7 +451,7 @@ namespace Abilifier.Framework
             //callback.Invoke(pilot);
         }
 
-        //       internal static void PreloadIcons()
+        //       public static void PreloadIcons()
         //       {
         //           var dm = UnityGameInstance.BattleTechGame.DataManager;
         //           var loadRequest = dm.CreateLoadRequest();

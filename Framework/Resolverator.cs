@@ -2,18 +2,15 @@
 using System.Linq;
 using BattleTech;
 using BattleTech.UI;
-using Harmony;
-using HBS.Logging;
 using UnityEngine;
 using static Abilifier.Framework.GlobalVars;
-using static HoudiniEngineUnity.HEU_MaterialData;
 
 namespace Abilifier.Framework
 {
     public static class GlobalVars
     {
-        internal const string aiPilotFlag = "_AI_TEMP_RESOLVERATOR";
-        internal const string rGUID = "RESOLVERATOR_";
+        public const string aiPilotFlag = "_AI_TEMP_RESOLVERATOR";
+        public const string rGUID = "RESOLVERATOR_";
     }
 
     public static class CombatHUDMoraleBarInstance
@@ -32,7 +29,7 @@ namespace Abilifier.Framework
     public class PilotResolveTracker
     {
         public int selectedAbilityResolveCost;
-        private static PilotResolveTracker _instance;
+        public static PilotResolveTracker _instance;
         public Dictionary<string, PilotResolveInfo> pilotResolveDict;
 
         public static PilotResolveTracker HolderInstance
@@ -93,7 +90,7 @@ namespace Abilifier.Framework
             return actor.StatCollection.GetValue<float>("resolveRoundBaseMod");
         }
 
-        internal static float getTeamMoraleMultiplier(this AbstractActor actor)
+        public static float getTeamMoraleMultiplier(this AbstractActor actor)
         {
             var combat = UnityGameInstance.BattleTechGame.Combat;
             MoraleConstantsDef activeMoraleDef = combat.Constants.GetActiveMoraleDef(combat);

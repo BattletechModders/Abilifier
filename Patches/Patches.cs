@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Save;
 using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using Harmony;
-using Localize;
-using SVGImporter;
-using UnityEngine;
 using static Abilifier.Mod;
 using Logger = Abilifier.Framework.Logger;
 
@@ -328,9 +324,9 @@ namespace Abilifier.Patches
 
                     popup.Render();
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    modLog.LogMessage(ex.Message);
+                    Framework.Logger.LogException(e);
                 }
 
                 return false;
