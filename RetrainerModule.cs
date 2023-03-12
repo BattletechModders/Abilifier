@@ -116,7 +116,7 @@ namespace Abilifier
             return true;
         }
 
-
+        // thanks kmission for fancy button
         public class RetrainButtonSupervisor : MonoBehaviour
         {
             public SGBarracksMWDetailPanel parent { get; set; } = null;
