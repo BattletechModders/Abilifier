@@ -373,8 +373,7 @@ Unavailable abilities will still be shown in the ability-chooser dialogue box, w
 			"cost": 500000,
 			"onceOnly": false,
 			"trainingModuleRequired": true,
-			"ignoredAbilities": [
-			],
+			"ignoredAbilities": [],
 			"confirmAbilityText": "Confirming this Ability selection is semi-permanent. You may only have two Level 5, one Level 8, and one level 10 Abilities. With the Training Module 2 argo upgrade, Mechwarriors can be retrained for 500,000 c-bills by shift-clicking on the Pilot's skills tab."
 		}
 ```
