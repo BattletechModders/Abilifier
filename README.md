@@ -367,6 +367,9 @@ Unavailable abilities will still be shown in the ability-chooser dialogue box, w
 
 
 ## Retrainer Module
+
+v1.2.0.0 and higher have integrated Retrainer; standalone Retrainer mod is no longer necessary. Includes kmission's fancy retrain button in barracks, eliminating need to shift-click.
+
 ```
 "retrainerSettings": {
 			"enableRetrainer": true,
@@ -374,7 +377,7 @@ Unavailable abilities will still be shown in the ability-chooser dialogue box, w
 			"onceOnly": false,
 			"trainingModuleRequired": true,
 			"ignoredAbilities": [],
-			"confirmAbilityText": "Confirming this Ability selection is semi-permanent. You may only have two Level 5, one Level 8, and one level 10 Abilities. With the Training Module 2 argo upgrade, Mechwarriors can be retrained for 500,000 c-bills by shift-clicking on the Pilot's skills tab."
+			"confirmAbilityText": ""
 		}
 ```
 
