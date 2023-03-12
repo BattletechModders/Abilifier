@@ -251,6 +251,31 @@ Settings available in the mod.json:
 		"AbilityDefGu5a":["AbilityDefGu8a"]
 		}
 	},
+	"retrainerSettings": {
+			"enableRetrainer": true,
+			"cost": 500000,
+			"onceOnly": false,
+			"trainingModuleRequired": true,
+			"ignoredAbilities": [
+				"AbilityDefBDInit",
+				"AbilityDefBlueAP",
+				"AbilityDefLokiGhost",
+				"AbilityDefWulfSRM",
+				"AbilityDefTexHealth",
+				"AbilityDeftboneHunt",
+				"AbilityDefTurtrusEnergy",
+				"AbilityDefRevostaeIndirect",
+				"AbilityDefShadeMelee",
+				"AbilityDefGrampaTex",
+				"AbilityDefCMDHunter",
+				"AbilityDefCMDOperative",
+				"AbilityDefCMDPilot",
+				"AbilityDefCMDRacer",
+				"AbilityDefCMDSmuggler",
+				"AbilityDefCMDTrainee"
+			],
+			"confirmAbilityText": "Confirming this Ability selection is semi-permanent. You may only have two Level 5, one Level 8, and one level 10 Abilities. With the Training Module 2 argo upgrade, Mechwarriors can be retrained for 500,000 c-bills by shift-clicking on the Pilot's skills tab."
+		}
 ```
 `enableTrace` and `enableLog` (bools) allow logging.
 
@@ -339,3 +364,29 @@ Guts: 5, 8
 Unavailable abilities will still be shown in the ability-chooser dialogue box, with text added indicating what missing ability is required, but they will not be selectable:
 
 ![HoverPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/abilityReqs.png)
+
+
+## Retrainer Module
+```
+"retrainerSettings": {
+			"enableRetrainer": true,
+			"cost": 500000,
+			"onceOnly": false,
+			"trainingModuleRequired": true,
+			"ignoredAbilities": [
+			],
+			"confirmAbilityText": "Confirming this Ability selection is semi-permanent. You may only have two Level 5, one Level 8, and one level 10 Abilities. With the Training Module 2 argo upgrade, Mechwarriors can be retrained for 500,000 c-bills by shift-clicking on the Pilot's skills tab."
+		}
+```
+
+`enableRetrainer`, bool. if true, will use integrated retrainer module. obviously not compatible with standalone Retrainer
+
+`cost`, int: cbill cost to retrain
+
+`onceOnly`, bool: whether you can only retrain a given pilot once
+
+`trainingModuleRequired`, bool: whether the argo training module 2 upgrade is required to retrain
+
+`ignoredAbilities`, List [strings]: list of AbilityDef names which will <i>not</i> be removed when retraining. Intended to be used with pre-set, non-tree abilities (if you put a normal ability here, you'd keep the ability but still get refunded the XP when retraininer).
+
+`confirmAbilityText`: string. if not empty, will replace in-game popup text when confirming abilities (mostly for use if Abilifier is allowing more than the default number of abilities) 
