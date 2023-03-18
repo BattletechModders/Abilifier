@@ -115,7 +115,8 @@ namespace Abilifier.Framework
         public static void ModifyResolve(this AbstractActor actor, string id, int stackItemUID, int amt)
         {
             var actorKey = actor.GetPilot().Fetch_rGUID();
-            var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+            if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                return;
             var combat = UnityGameInstance.BattleTechGame.Combat;
             var actorTeam = actor.team;
             var moraleLogger = Team.moraleLogger;//Traverse.Create(actorTeam).Field("moraleLogger").GetValue<ILog>();

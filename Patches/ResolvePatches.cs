@@ -301,7 +301,8 @@ namespace Abilifier.Patches
                     PilotResolveTracker.HolderInstance.pilotResolveDict.Add(pKey, new PilotResolveInfo());
                     Mod.modLog.LogMessage($"{p.Callsign} missing, added to pilotResolveDict and initialized at 0 resolve");
 
-                    var actorResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[pKey];
+                    if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(pKey,
+                            out var actorResolveInfo)) return;
 
                     var maxMod = unit.StatCollection.GetValue<int>("maxResolveMod");
                     actorResolveInfo.PilotMaxResolve = CombatGameConstants
@@ -866,14 +867,15 @@ namespace Abilifier.Patches
                     else
                     {
                         var actorKey = actor.GetPilot().Fetch_rGUID();
-                        var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
+                        if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                            return;
+                        if (pilotResolveInfo.PilotResolve < Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
                         }
 
                         if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                            ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
+                            Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
                         }
@@ -1010,14 +1012,15 @@ namespace Abilifier.Patches
                     else
                     {
                         var actorKey = actor.GetPilot().Fetch_rGUID();
-                        var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                        if (pilotResolveInfo.PilotResolve < ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
+                        if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                            return;
+                        if (pilotResolveInfo.PilotResolve < Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
                         }
 
                         if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                            ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
+                            Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
                         }
@@ -1038,11 +1041,12 @@ namespace Abilifier.Patches
                     var moraleButtons = __instance.MoraleButtons;//Traverse.Create(__instance).Property("MoraleButtons").GetValue<CombatHUDActionButton[]>();
                     var activeMoraleDef = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat);
                     var actorKey = actor.GetPilot().Fetch_rGUID();
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                    if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                        return;
                     bool flag2 = activeMoraleDef.UseOffensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= (actor.OffensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= (actor.OffensivePushCost * actor.GetResolveCostBaseMult())) || (actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
+                                 (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
                     bool flag3 = activeMoraleDef.UseDefensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= (actor.DefensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= (actor.DefensivePushCost * actor.GetResolveCostBaseMult())) || (actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
+                                 (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
                     var flag5 = false;
 
                     foreach (var t in abilityButtons)
@@ -1130,7 +1134,8 @@ namespace Abilifier.Patches
                     __instance.showMoraleAsPercent = false;
                     var pilot = selectedUnitFromTraverse.GetPilot();
                     var actorKey = pilot.Fetch_rGUID();
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
+                    if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                        return true;
                     __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
                     Mod.modLog.LogMessage($"{pilot.Callsign} ___maxMorale set to {pilotResolveInfo.PilotMaxResolve}");
                     Mod.modLog.LogMessage($"{pilot.Callsign} current Resolve is {pilotResolveInfo.PilotResolve}");
@@ -1199,9 +1204,9 @@ namespace Abilifier.Patches
                     PilotResolveInfo pilotResolveInfo = new PilotResolveInfo();
                     if (Mod.modSettings.enableResolverator)
                     {
-                        pilotResolveInfo = PilotResolveTracker.HolderInstance
-                            .pilotResolveDict[selectedUnitFromTraverse.GetPilot().Fetch_rGUID()];
-                        __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
+                        var pKey = selectedUnitFromTraverse.GetPilot().Fetch_rGUID();
+                        PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(pKey, out pilotResolveInfo);
+                        if (pilotResolveInfo != null) __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
                     }
 
                     __instance.width = __instance.moraleBarTargetWidth;
@@ -1230,7 +1235,7 @@ namespace Abilifier.Patches
 
                     __instance.predictWidth = __instance.width;
                     __instance.predicting = false;
-                    if (Mod.modSettings.enableResolverator)
+                    if (Mod.modSettings.enableResolverator && pilotResolveInfo != null)
                     {
                         pilotResolveInfo.PredictedResolve = Mathf.RoundToInt(__instance.predictWidth);
                         pilotResolveInfo.Predicting = false;
@@ -1241,7 +1246,7 @@ namespace Abilifier.Patches
                     {
                         if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.ConfirmMorale)
                         {
-                            __instance.predictWidth -= (selectedUnitFromTraverse.DefensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
+                            __instance.predictWidth -= Mathf.RoundToInt(selectedUnitFromTraverse.DefensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
@@ -1250,7 +1255,7 @@ namespace Abilifier.Patches
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.FireMorale)
                         {
-                            __instance.predictWidth -= (selectedUnitFromTraverse.OffensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
+                            __instance.predictWidth -= Mathf.RoundToInt(selectedUnitFromTraverse.OffensivePushCost * selectedUnitFromTraverse.GetResolveCostBaseMult()) / (float) __instance.maxMorale *
                                                __instance.moraleBarMaxWidth;
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
@@ -1334,8 +1339,6 @@ namespace Abilifier.Patches
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var actor = __instance.owningActor;
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance
-                        .pilotResolveDict[actor.GetPilot().Fetch_rGUID()];
 
                     __instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) *
                                                              1); // this negates Team Morale loss from vanilla method
@@ -1374,11 +1377,12 @@ namespace Abilifier.Patches
                 public static bool Prefix(AbstractActor __instance, ref bool __result)
                 {
                     if (__instance.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return true;
-                    var pilotResolveInfo = PilotResolveTracker.HolderInstance
-                        .pilotResolveDict[__instance.GetPilot().Fetch_rGUID()];
+                    var pKey = __instance.GetPilot().Fetch_rGUID();
+
+                    if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(pKey, out var pilotResolveInfo)) return true;
                     
                     __result = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat).UseOffensivePush &&
-                               (pilotResolveInfo.PilotResolve >= (__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) || (__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) <= 0);
+                               (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) || Mathf.RoundToInt(__instance.OffensivePushCost * __instance.GetResolveCostBaseMult()) <= 0);
                     return false;
                 }
             }

@@ -6,6 +6,7 @@ using BattleTech;
 using BattleTech.UI;
 using CustomActivatableEquipment;
 using Harmony;
+using UnityEngine;
 
 namespace Abilifier.Patches
 {
@@ -22,13 +23,14 @@ namespace Abilifier.Patches
                 if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                 if (actor == null || ability == null) return;
                 var actorKey = actor.GetPilot().Fetch_rGUID();
-                var pilotResolveInfo = PilotResolveTracker.HolderInstance.pilotResolveDict[actorKey];
-                if (pilotResolveInfo.PilotResolve < (ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
+                if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
+                    return;
+                if (pilotResolveInfo.PilotResolve < Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                 {
                     button.DisableButton();
                 }
                 if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
-                    ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult())
+                    Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                 {
                     button.DisableButton();
                 }
