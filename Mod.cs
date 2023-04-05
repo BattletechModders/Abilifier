@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
@@ -17,6 +18,11 @@ namespace Abilifier
         public static string modDir;
 
         public static Settings modSettings;
+        public static void FinishedLoading(List<string> loadOrder) {
+            Mod.modLog.LogMessage($"FinishedLoading");
+            MEHelper.AttachTo();
+        }
+        
 
         public static void Init(string directory, string settings)
         {
