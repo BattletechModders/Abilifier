@@ -1,0 +1,85 @@
+﻿using BattleTech;
+using Harmony;
+using HBS.Util;
+using SVGImporter.LibTessDotNet;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace Abilifier.Patches
+{
+    public static class TicksOnDistance
+    {
+        public static bool DecrementMovementsByDistance(this ETimer timer, AbstractActor actor)
+        {
+            if (timer.numMovementsRemaining > 0)
+            {
+                var dist = Mathf.RoundToInt(actor.DistMovedThisRound);
+                timer.numMovementsRemaining -= dist;
+                Mod.modLog.LogMessage($"[DecrementMovementsByDistance] Processed {actor.DisplayName}, remaining dist in effect {timer.numMovementsRemaining} from {dist} movement");
+                if (timer.numMovementsRemaining <= 0)
+                {
+                    timer.isRunning = false;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(EffectManager), "NotifyEndOfMovement", new Type[] { typeof(string) })]
+        public static class EffectManager_NotifyEndOfMovement
+        {
+            public static bool Prefix(EffectManager __instance, string targetGUID)
+            {
+                var actor = __instance.Combat.FindActorByGUID(targetGUID);
+                if (actor == null) return true;
+                //Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] Processing end of movement for {actor.DisplayName} - {actor.GetPilot().Callsign}");
+
+                __instance.expiringEffects.Clear();
+                for (int i = 0; i < __instance.effects.Count; i++)
+                {
+                    Effect effect = __instance.effects[i];
+
+                    //Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] checking {effect.EffectData.Description.Id}");
+                    if (Mod.modSettings.ticksOnMovementDistanceIDs.Contains(effect.EffectData.Description.Id))
+                    {
+                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] found settings for {effect.EffectData.Description.Id}");
+                        if (effect.Duration.activationActorGUID == targetGUID)
+                        {
+                            if (effect.Duration.isRunning)
+                            {
+                                effect.OnEffectMovementEnd();
+                            }
+                            if (!effect.Duration.DecrementMovementsByDistance(actor))
+                            {
+                                __instance.expiringEffects.Add(effect);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (effect.Duration.activationActorGUID == targetGUID)
+                        {
+                            if (effect.Duration.isRunning)
+                            {
+                                effect.OnEffectMovementEnd();
+                            }
+                            if (!effect.Duration.DecrementMovements())
+                            {
+                                __instance.expiringEffects.Add(effect);
+                            }
+                        }
+                    }
+                }
+                for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
+                {
+                    __instance.expiringEffects[j].OnEffectExpiration();
+                }
+                return false;
+            }
+        }
+    }
+}

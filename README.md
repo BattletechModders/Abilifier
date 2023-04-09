@@ -366,6 +366,8 @@ Unavailable abilities will still be shown in the ability-chooser dialogue box, w
 ![HoverPop](https://github.com/BattletechModders/Abilifier/blob/master/doc/abilityReqs.png)
 
 
+`ticksOnMovementDistanceIDs`: effect data with IDs in this list and which have `ticksOnMovements` set true in durationData will use their target units last movement distance (`unit.DistMovedThisRound` value) to decrement duration rather than simply decrementing by one if they moved. Note that because units' `DistMovedThisRound` includes distance spent going uphill, around obstacles, etc, it will rarely be cleanly divisible by the games nominal hex size. E.g. If game hex size is set to 28, and an effectData has duration set to 56, that will not always equate to "two hexes" of movement.
+
 ## Retrainer Module
 
 v1.2.0.0 and higher have integrated Retrainer; standalone Retrainer mod is no longer necessary. Includes kmission's fancy retrain button in barracks, eliminating need to shift-click.

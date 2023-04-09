@@ -77,7 +77,11 @@ namespace Abilifier
             public Dictionary<string, string> defaultTagTraitForTree = new Dictionary<string, string>(); // if none of the tags in tagTraitForTree are present on the pilot, this tag and trait will be added
             public string defaultTagTraitException = ""; //except if this is present
 
+            public List<string> ticksOnMovementDistanceIDs = new List<string>(); // durationdata must be set ticksOnMovement
+
             public RetrainerSettings retrainerSettings = new RetrainerSettings();
+
+            
         }
     }
 }
