@@ -86,7 +86,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EffectDurationDataHelper.cs" />
     <Compile Include="MEHelper.cs" />
     <Compile Include="Patches\TicksOnDistance.cs" />
     <Compile Include="RetrainerModule.cs" />
