@@ -21,6 +21,13 @@ namespace Abilifier
         public static void FinishedLoading(List<string> loadOrder) {
             Mod.modLog.LogMessage($"FinishedLoading");
             MEHelper.AttachTo();
+            try
+            {
+                EffectDurationDataHelper.Prepare();
+            }catch(Exception e)
+            {
+                Mod.modLog.LogMessage(e.ToString());
+            }
         }
         
 

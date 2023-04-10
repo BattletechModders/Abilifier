@@ -55,10 +55,15 @@ namespace Abilifier.Patches
     {
         public static EffectDataExtensionManager.EffectDataExtension getStatDataExtension(this EffectData statData)
         {
-            return EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.ContainsKey(
-                statData.Description.Id)
-                ? EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[statData.Description.Id]
-                : new EffectDataExtensionManager.EffectDataExtension();
+            string id = statData.durationData.abilifierId();
+            if (string.IsNullOrEmpty(id)) { id = statData.Description.Id; }
+            if (string.IsNullOrEmpty(id)) { return new EffectDataExtensionManager.EffectDataExtension(); }
+            if(EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.TryGetValue(id, out var result) == false)
+            {
+                result = new EffectDataExtensionManager.EffectDataExtension();
+                EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[id] = result;
+            }
+            return result;
         }
 
         public static List<MechComponent> GetTargetComponentsMatchingTags(ICombatant target,
