@@ -48,16 +48,15 @@
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" Publicize="true">
+    <Reference Include="Assembly-CSharp" Publicize="true">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(BattleTechGameDir)\Mods\.modtek\AssembliesInjected\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="CustomActivatableEquipment, Version=0.0.0.97, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="CustomActivatableEquipment">
       <HintPath>$(BattleTechGameDir)\Mods\Core\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
     </Reference>
     <Reference Include="CustomAmmoCategories">
@@ -87,7 +86,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EffectDurationDataHelper.cs" />
     <Compile Include="MEHelper.cs" />
     <Compile Include="Patches\TicksOnDistance.cs" />
     <Compile Include="RetrainerModule.cs" />

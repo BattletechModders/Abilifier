@@ -55,7 +55,7 @@ namespace Abilifier.Patches
     {
         public static EffectDataExtensionManager.EffectDataExtension getStatDataExtension(this EffectData statData)
         {
-            string id = statData.durationData.abilifierId();
+            string id = statData.statisticData.abilifierId;
             if (string.IsNullOrEmpty(id)) { id = statData.Description.Id; }
             if (string.IsNullOrEmpty(id)) { return new EffectDataExtensionManager.EffectDataExtension(); }
             if(EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.TryGetValue(id, out var result) == false)
