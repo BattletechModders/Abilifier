@@ -115,7 +115,7 @@ On its own this will do nothing, but lets say I have an AbilityDef that contains
 }
 ```
 
-**Important** With v1.2.0.3, StatisticEffectData blocks now have new field `abilifierId`. If defined, StatisticEffectExtensions will search for this field ID key rather than `EffectData.Description.Id`. This allows more "compact" StatisticEffectExtensions for effects that use the same matching logic but need different `EffectData.Description.Id`s for stackLimit purposes. If `abilifierId` is defined, Description.Id will be ignored even if it exists in EffectDataExtensions!
+**Important** With v1.2.0.3, StatisticEffectData blocks now have new field `abilifierId`. If defined, StatisticEffectExtensions will search for this field ID key rather than `EffectData.Description.Id`. This allows more "compact" StatisticEffectExtensions settings for effects that use the same matching logic but need different `EffectData.Description.Id`s for stackLimit purposes. If `abilifierId` is defined, Description.Id will be ignored even if it exists in EffectDataExtensions!
 
 Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because `abilifierId` "AccMod1" or (if abilifierId was not defined) `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, the following restrictions are in place:
 
