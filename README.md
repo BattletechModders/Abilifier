@@ -65,6 +65,15 @@ For example, in `EffectDataExtensions.json` I have:
 		"TargetComponentTagMatch": [
 			"Potato_Gun"
 		]
+	},
+	"AccMod1": {
+		"TargetCollectionForSearch": "Unit",
+		"TargetCollectionTagMatch": [
+			"ImADumbUnitTag"
+		],
+		"TargetComponentTagMatch": [
+			"Potato_Gun"
+		]
 	}
 }
 ```
@@ -91,6 +100,7 @@ On its own this will do nothing, but lets say I have an AbilityDef that contains
 	},
 	"nature": "Buff",
 	"statisticData": {
+		"abilifierId": "AccMod1", // if this defined, Description.Id will be ignored even if it exists in EffectDataExtensions!
 		"statName": "AccuracyModifier",
 		"operation": "Float_Add",
 		"modValue": "-20",
@@ -104,7 +114,10 @@ On its own this will do nothing, but lets say I have an AbilityDef that contains
 	}
 }
 ```
-Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because the `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, the following restrictions are in place:
+
+**Important** With v1.2.0.3, StatisticEffectData blocks now have new field `abilifierId`. If defined, StatisticEffectExtensions will search for this field ID key rather than `EffectData.Description.Id`. This allows more "compact" StatisticEffectExtensions for effects that use the same matching logic but need different `EffectData.Description.Id`s for stackLimit purposes. If `abilifierId` is defined, Description.Id will be ignored even if it exists in EffectDataExtensions!
+
+Normally, the above ability would give +20 accuracy to <i>all</i> weapons on the affected unit. But because `abilifierId` "AccMod1" or (if abilifierId was not defined) `"Id": "StatusEffect-PotatoAccuracy",` from the abilitydef matches a key from EffectDataExtensions, the following restrictions are in place:
 
 Because `TargetCollectionForSearch` is set to "Unit" and `TargetCollectionTagMatch` contains "ImADumbUnitTag", only Units with the MechDef or VehicleDef tag of "ImADumbUnitTag" will be affected. Furthermore, because `TargetComponentTagMatch` contains "Potato_Gun", only weapons with a matching component tag (from `TargetComponentTagMatch` field) of "Potato_Gun" will recieve the +20 accuracy.
 
@@ -119,6 +132,8 @@ If targetCollection = NotSet (or missing from the EffectData), TargetComponentTa
 If targetCollection = Pilot, TargetComponentTagMatch searches the pilotTags of the targets pilot.
 
 Only a single matching tag is needed, even if multiple tags are defined in `TargetCollectionTagMatch` or `TargetComponentTagMatch`.
+
+
 
 ### CBill Costs
 
