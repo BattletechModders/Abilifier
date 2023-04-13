@@ -2,10 +2,6 @@
   <Target Name="ValidateBattleTechGameDir" Condition="'$(BattleTechGameDir)' == '' Or !Exists('$(BattleTechGameDir)')">
     <Error Text="BattleTechGameDir variable not set properly" />
   </Target>
-  <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>    
-</PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierInjectorPath)' == '' And Exists('$(BattleTechGameDir)\Mods\ModTek\Injectors')">
     <!-- flat dir -->
     <AbilifierInjectorPath>$(BattleTechGameDir)\Mods\ModTek\Injectors</AbilifierInjectorPath>
@@ -67,6 +63,8 @@
   <PropertyGroup>
     <!-- avoids IgnoresAccessChecksToAttribute warnings -->
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
+    <AssemblyVersion>1.2.0.4</AssemblyVersion>
+    <FileVersion>1.2.0.4</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
