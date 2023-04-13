@@ -1,18 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ValidateBattleTechGameDir">
+  <Target Name="ValidateBattleTechGameDir" Condition="'$(BattleTechGameDir)' == '' Or !Exists('$(BattleTechGameDir)')">
+    <Error Text="BattleTechGameDir variable not set properly" />
+  </Target>
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B1C39405-20CA-4883-956E-AE29270DE881}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Abilifier</RootNamespace>
-    <AssemblyName>Abilifier</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>    
+</PropertyGroup>
+  <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Core\Abilifier')">
+    <!-- RogueTech -->
+    <AbilifierModPath>$(BattleTechGameDir)\Mods\Core\Abilifier</AbilifierModPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Abilifier')">
+    <!-- flat dir -->
+    <AbilifierModPath>$(BattleTechGameDir)\Mods\Abilifier</AbilifierModPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AbilifierModPath)' == ''">
+    <!-- sources dir -->
+    <AbilifierModPath>$(MSBuildProjectDirectory)\..</AbilifierModPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -43,83 +47,84 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>11</LangVersion>
+    <AssemblySearchPaths>
+      $(ReferencePath);
+      {HintPathFromItem};
+      $(BattleTechGameDir)\BattleTech_Data\Managed\
+    </AssemblySearchPaths>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <Target Name="CopyFilesToGame" AfterTargets="CopyFilesToOutputDirectory">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AbilifierModPath)" />
+  </Target>
+  <PropertyGroup>
+    <!-- avoids IgnoresAccessChecksToAttribute warnings -->
+    <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.3.0" />
-    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\0Harmony.dll</HintPath>
+    <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
+    <Publicize Include="Assembly-CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HarmonyX" Version="2.10.1">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+        <Reference Include="CustomAmmoCategories">
+      <HintPath>$(AbilifierModPath)\..\CustomAmmoCategories\CustomAmmoCategories.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="$(BattleTechGameDir)\Mods\.modtek\AssembliesInjected\Assembly-CSharp.dll" Publicize="true">
-      <SpecificVersion>False</SpecificVersion>
-
+    <Reference Include="CustomActivatableEquipment">
+      <HintPath>$(AbilifierModPath)\..\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="CustomActivatableEquipment">
-      <HintPath>$(BattleTechGameDir)\Mods\CustomActivatableEquipment\CustomActivatableEquipment.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="CustomAmmoCategories">
-      <HintPath>$(BattleTechGameDir)\Mods\CustomAmmoCategories\CustomAmmoCategories.dll</HintPath>
+    <Reference Include="InControl">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="InControl, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\InControl.dll</HintPath>
+    <Reference Include="System">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="System.Core">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    <Reference Include="System.Data">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\UnityEngine.dll</HintPath>
+	    <Reference Include="System.Xml">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="Unity.TextMeshPro">
+      <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>$(BattleTechGameDir)\BattleTech_Data\Managed\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI" Publicize="true">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="MEHelper.cs" />
-    <Compile Include="Patches\TicksOnDistance.cs" />
-    <Compile Include="RetrainerModule.cs" />
-    <Compile Include="Framework\Logger.cs" />
-    <Compile Include="Framework\Resolverator.cs" />
-    <Compile Include="ClassExtensions\AbilityExtension.cs" />
-    <Compile Include="ClassExtensions\StatisticDataExtension.cs" />
-    <Compile Include="Patches\ResolvePatch_CAE.cs" />
-    <Compile Include="Patches\ResolvePatches.cs" />
-    <Compile Include="Patches\MoreAbilities.cs" />
-    <Compile Include="Mod.cs" />
-    <Compile Include="Framework\Helpers.cs" />
-    <Compile Include="Patches\Patches.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="mod.json" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
-    </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
-  <Target Name="AfterBuild">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BattleTechGameDir)\Mods\Core\Abilifier" Condition="'$(BattleTechGameDir)' != '' And Exists('$(BattleTechGameDir)\Mods\Core\Abilifier')" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BattleTechGameDir)\Mods_CBDE\Core\Abilifier" Condition="'$(BattleTechGameDir)' != '' And Exists('$(BattleTechGameDir)\Mods_CBDE\Core\Abilifier')" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RogueTechRepo)\Core\Abilifier" Condition="'$(RogueTechRepo)' != '' And Exists('$(RogueTechRepo)\Core\Abilifier')" />
-  </Target>
 </Project>

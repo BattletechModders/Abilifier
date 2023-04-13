@@ -5,7 +5,7 @@ using Abilifier.Framework;
 using BattleTech;
 using BattleTech.UI;
 using CustomActivatableEquipment;
-using Harmony;
+
 using UnityEngine;
 
 namespace Abilifier.Patches

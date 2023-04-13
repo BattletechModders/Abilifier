@@ -1,6 +1,6 @@
 ﻿using BattleTech.UI;
 using BattleTech;
-using Harmony;
+
 using HBS;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using Strings = Localize.Strings;
 
-namespace Abilifier
+namespace Abilifier.Patches
 {
 
     public class RetrainerSettings
@@ -25,12 +25,12 @@ namespace Abilifier
 
     public static class RetrainerModule
     {
-        public static T FindObject<T>(this GameObject go, string name) where T : Component
+        public static T? FindObject<T>(this GameObject go, string name) where T : Component
         {
-            T[] arr = go.GetComponentsInChildren<T>(true);
-            foreach (T component in arr)
+            T?[] arr = go.GetComponentsInChildren<T>(true);
+            foreach (T? component in arr)
             {
-                if (component.gameObject.transform.name == name)
+                if (component?.gameObject.transform.name == name)
                 {
                     return component;
                 }
@@ -94,14 +94,14 @@ namespace Abilifier
             }
 
             var message = Mod.modSettings.retrainerSettings.onceOnly
-                ? (Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU
+                ? Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU
                     ? $"Переподготовка сбросит все навыки на 1 и вернет очки опыта\nОбойдется в ¢{Mod.modSettings.retrainerSettings.cost:N0}, каждый пилот может быть переподготовлен один раз"
                     : $"This will set skills to 1 and refund all XP.\nIt will cost ¢{Mod.modSettings.retrainerSettings.cost:N0} and each pilot can only retrain once."
-                )
-                : (Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU
+                
+                : Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU
                     ? $"Переподготовка сбросит все навыки на 1 и вернет очки опыта\nОбойдется в ¢{Mod.modSettings.retrainerSettings.cost:N0}."
                     : $"This will set skills to 1 and refund all XP.\nIt will cost ¢{Mod.modSettings.retrainerSettings.cost:N0}"
-                );
+                ;
 
             GenericPopupBuilder
                 .Create(Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU ? "Переподготовка" : "Retrain", message)
@@ -136,7 +136,7 @@ namespace Abilifier
                         retrainButton.transform.parent.gameObject.GetComponent<HorizontalLayoutGroup>();
                     layout.spacing = 15f;
                     var pos = retrainButton.transform.parent.transform.localPosition;
-                    pos.x -= (retrainButton.gameObject.GetComponent<RectTransform>().sizeDelta.x * 0.6f);
+                    pos.x -= retrainButton.gameObject.GetComponent<RectTransform>().sizeDelta.x * 0.6f;
                     retrainButton.transform.parent.transform.localPosition = pos;
                 }
                 catch (Exception e)
@@ -151,32 +151,32 @@ namespace Abilifier
             {
                 if (ui_inited == false)
                 {
-                    this.initUI();
+                    initUI();
                 }
             }
 
             public void OnClicked()
             {
-                if (Retrain(this.parent))
+                if (Retrain(parent))
                 {
-                    this.parent.DisplayPilot(this.parent.curPilot);
+                    parent.DisplayPilot(parent.curPilot);
                 }
             }
 
             public void Instantine()
             {
-                this.retrainButton = GameObject.Instantiate(this.parent.advancementReset.gameObject)
+                retrainButton = Instantiate(parent.advancementReset.gameObject)
                     .GetComponent<HBSDOTweenButton>();
-                this.retrainButton.gameObject.transform.SetParent(this.parent.advancementReset.gameObject.transform
+                retrainButton.gameObject.transform.SetParent(parent.advancementReset.gameObject.transform
                     .parent);
-                this.retrainButton.gameObject.transform.SetAsFirstSibling();
-                this.retrainButton.OnClicked = new UnityEngine.Events.UnityEvent();
-                this.retrainButton.OnClicked.AddListener(new UnityEngine.Events.UnityAction(OnClicked));
-                this.retrainButton.SetText(Localize.Strings.CurrentCulture == Localize.Strings.Culture.CULTURE_RU_RU
+                retrainButton.gameObject.transform.SetAsFirstSibling();
+                retrainButton.OnClicked = new UnityEngine.Events.UnityEvent();
+                retrainButton.OnClicked.AddListener(new UnityEngine.Events.UnityAction(OnClicked));
+                retrainButton.SetText(Strings.CurrentCulture == Strings.Culture.CULTURE_RU_RU
                     ? "ПЕРЕПОДГОТОВКА"
                     : "RETRAIN");
-                this.retrainButton.SetState(ButtonState.Enabled);
-                this.parent.advancement.gameObject.FindObject<Image>("line")?.gameObject.SetActive(false);
+                retrainButton.SetState(ButtonState.Enabled);
+                parent.advancement.gameObject.FindObject<Image>("line")?.gameObject.SetActive(false);
                 ui_inited = false;
             }
 
@@ -185,7 +185,7 @@ namespace Abilifier
                 this.parent = parent;
                 if (retrainButton == null)
                 {
-                    this.Instantine();
+                    Instantine();
                 }
             }
         }
@@ -193,7 +193,7 @@ namespace Abilifier
         [HarmonyPatch(typeof(SGBarracksMWDetailPanel))]
         [HarmonyPatch("Initialize")]
         [HarmonyPatch(MethodType.Normal)]
-        [HarmonyPatch(new Type[] {typeof(SimGameState)})]
+        [HarmonyPatch(new Type[] { typeof(SimGameState) })]
         public static class MechComponent_InitPassiveSelfEffects
         {
             public static bool Prepare() => Mod.modSettings.retrainerSettings.enableRetrainer;
@@ -223,15 +223,18 @@ namespace Abilifier
         public static class SGBarracksMWDetailPanel_OnSkillsSectionClicked_Patch
         {
             public static bool Prepare() => Mod.modSettings.retrainerSettings.enableRetrainer;
-            public static bool Prefix(SGBarracksMWDetailPanel __instance, Pilot ___curPilot)
+            public static void Prefix(SGBarracksMWDetailPanel __instance, ref bool __runOriginal)
             {
+                if (!__runOriginal) return;
                 var hotkeyPerformed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
                 if (!hotkeyPerformed)
                 {
-                    return true;
+                    __runOriginal = true;
+                    return;
                 }
 
-                return Retrain(__instance) == false;
+                __runOriginal = Retrain(__instance) == false;
+                return;
             }
         }
 
@@ -249,15 +252,15 @@ namespace Abilifier
             advancement.Close();
             simState.UpgradePilot(tempPilot);
             barracks.Reset(tempPilot);
-            tempPilot = null;
         }
 
         [HarmonyPatch(typeof(SGBarracksMWDetailPanel), "OnPilotConfirmed")]
         public static class SGBarracksMWDetailPanel_OnPilotConfirmed
         {
             public static bool Prepare() => Mod.modSettings.retrainerSettings.enableRetrainer && !string.IsNullOrEmpty(Mod.modSettings.retrainerSettings.confirmAbilityText);
-            public static bool Prefix(SGBarracksMWDetailPanel __instance)
+            public static void Prefix(SGBarracksMWDetailPanel __instance, ref bool __runOriginal)
             {
+                if (!__runOriginal) return;
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 if (__instance.advancement.PendingPrimarySkillUpgrades())
                 {
@@ -274,11 +277,13 @@ namespace Abilifier
                         .AddFader(
                             new UIColorRef?(LazySingletonBehavior<UIManager>.Instance.UILookAndColorConstants
                                 .PopupBackfill), 0f, true).Render();
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 OnAcceptPilotConfirm(__instance.advancement, sim, __instance.barracks, __instance.tempPilot);
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
 

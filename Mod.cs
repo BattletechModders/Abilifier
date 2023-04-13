@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
-using Harmony;
 using Newtonsoft.Json;
 
 // ReSharper disable UnassignedField.Global
@@ -45,9 +44,7 @@ namespace Abilifier
 
             PilotResolveTracker.HolderInstance.Initialize();
             EffectDataExtensionManager.ManagerInstance.Initialize();
-            var harmony = HarmonyInstance.Create("ca.gnivler.BattleTech.Abilifier");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "ca.gnivler.BattleTech.Abilifier");
         }
         public class Settings
         {

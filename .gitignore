@@ -76,4 +76,7 @@ sysinfo.txt
 crashlytics-build.properties
 
 # Ignore the VS Directory.build.props file
-Directory.Build.props 
+Directory.Build.props
+
+# ignore manual backup of csproj
+*.csbak

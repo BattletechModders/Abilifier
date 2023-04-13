@@ -6,7 +6,7 @@ using BattleTech;
 using BattleTech.Save;
 using BattleTech.UI;
 using BattleTech.UI.Tooltips;
-using Harmony;
+
 using static Abilifier.Mod;
 using Logger = Abilifier.Framework.Logger;
 
@@ -21,10 +21,10 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(SGBarracksAdvancementPanel), "SetPips")]
         public static class SGBarracksAdvancementPanel_SetPips_Patch
         {
-            public static bool Prefix(SGBarracksAdvancementPanel __instance,
-                List<SGBarracksSkillPip> pips, int originalSkill, int curSkill, int idx, bool needsXP, bool isLocked)
-
+            public static void Prefix(SGBarracksAdvancementPanel __instance,
+                List<SGBarracksSkillPip> pips, int originalSkill, int curSkill, int idx, bool needsXP, bool isLocked, ref bool __runOriginal)
             {
+                if (!__runOriginal) return;
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 SGBarracksSkillPip.PurchaseState purchaseState = SGBarracksSkillPip.PurchaseState.Unselected;
                 if (originalSkill > idx)
@@ -56,7 +56,8 @@ namespace Abilifier.Patches
 
                 pips[idx].Set(purchaseState, (curSkill == idx || curSkill == idx + 1) && !isLocked, curSkill == idx,
                     needsXP, isLocked && flag);
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
 
@@ -143,193 +144,192 @@ namespace Abilifier.Patches
         [HarmonyBefore(new string[] {"io.github.mpstark.AbilityRealizer"})]
         public static class SGBarracksAdvancementPanel_OnValueClick_Patch
         {
-            public static bool Prefix(
-                SGBarracksAdvancementPanel __instance, string type, int value)
+            [HarmonyWrapSafe]
+            public static void Prefix(
+                SGBarracksAdvancementPanel __instance, string type, int value, ref bool __runOriginal)
             {
-                try
+                if (!__runOriginal) return;
+                if (modSettings.debugXP)
                 {
-                    if (modSettings.debugXP)
+                    __instance.curPilot.AddExperience(0, "", 100000);
+                }
+
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                var pips = new Dictionary<string, List<SGBarracksSkillPip>>
+                {
+                    {"Gunnery", __instance.gunPips},
+                    {"Piloting", __instance.pilotPips},
+                    {"Guts", __instance.gutPips},
+                    {"Tactics", __instance.tacPips},
+                };
+
+                // removal of pip
+                if (__instance.curPilot.StatCollection.GetValue<int>(type) > value)
+                {
+                    Logger.LogTrace($"Removing {type} {value}");
+                    Logger.LogTrace($"{pips[type][value].Ability}");
+                    Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
+                    __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
+                    Logger.LogTrace("\n");
+                    Helpers.ForceResetCharacter(__instance);
+                    //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
+                    __runOriginal = false;
+                    return;
+                }
+
+                // add non-ability pip
+                if (!pips[type][value]
+                        .hasAbility) //!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
+                {
+                    Logger.LogTrace("Non-ability pip");
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
+                    Logger.LogTrace("\n");
+                    __runOriginal = false;
+                    return;
+                }
+
+                // Ability pips
+                // build complete list of defs from HBS and imported json
+
+                //                    var abilityDefs = Helpers.ModAbilities
+                //                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
+
+
+                var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+
+                //List<AbilityDef> abilityDefs = sim.GetAbilityDefFromTree(type, value); //does same thing as below?
+                var abilityDefs = new List<AbilityDef>();
+                foreach (var abilityDictionary in abilityDictionaries)
+                {
+                    abilityDefs.AddRange(abilityDictionary[value].Where(x => x.ReqSkill.ToString() == type));
+                }
+
+
+
+                // don't create choice popups with 1 option
+                if (abilityDefs.Count <= 1)
+                {
+                    Logger.LogTrace($"Single ability for {type}|{value}, skipping");
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    __runOriginal = false;
+                    return;
+                }
+
+                // prevents which were ability buttons before other primaries were selected from being abilities
+                // not every ability button is visible all the time
+                var curButton =
+                    pips[type][value]
+                        .curButton; //Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
+                var skillButton =
+                    pips[type][value]
+                        .skillButton; //Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
+                if (curButton != skillButton)
+                {
+                    Logger.LogTrace(new string('=', 50));
+                    Logger.LogTrace("curButton != skillButton");
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    __runOriginal = false;
+                    return;
+                }
+
+                // dynamic buttons based on available abilities
+
+                //new code below//
+                //new code below for ability requirements
+                List<string> pilotAbilityDefNames = __instance.curPilot.pilotDef.abilityDefNames;
+
+                var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                List<AbilityDef> abilitiesWithReqs = abilityDefs
+                    .Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
+
+                var abilityDefsForDesc = new List<AbilityDef>();
+                abilityDefsForDesc.AddRange(abilityDefs);
+                if (abilitiesWithReqs.Count > 0)
+                {
+                    foreach (var abilityWithReq in abilitiesWithReqs)
                     {
-                        __instance.curPilot.AddExperience(0, "", 100000);
-                    }
-
-                    var sim = UnityGameInstance.BattleTechGame.Simulation;
-                    var pips = new Dictionary<string, List<SGBarracksSkillPip>>
-                    {
-                        {"Gunnery", __instance.gunPips},
-                        {"Piloting", __instance.pilotPips},
-                        {"Guts", __instance.gutPips},
-                        {"Tactics", __instance.tacPips},
-                    };
-
-                    // removal of pip
-                    if (__instance.curPilot.StatCollection.GetValue<int>(type) > value)
-                    {
-                        Logger.LogTrace($"Removing {type} {value}");
-                        Logger.LogTrace($"{pips[type][value].Ability}");
-                        Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
-                        __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
-                        Logger.LogTrace("\n");
-                        Helpers.ForceResetCharacter(__instance);
-                        //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
-                        return false;
-                    }
-
-                    // add non-ability pip
-                    if (!pips[type][value]
-                            .hasAbility) //!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
-                    {
-                        Logger.LogTrace("Non-ability pip");
-                        Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
-                        __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
-                        Logger.LogTrace("\n");
-                        return false;
-                    }
-
-                    // Ability pips
-                    // build complete list of defs from HBS and imported json
-
-                    //                    var abilityDefs = Helpers.ModAbilities
-                    //                        .Where(x => x.ReqSkillLevel == value + 1 && x.ReqSkill.ToString() == type).ToList();
-
-
-                    var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
-
-                    //List<AbilityDef> abilityDefs = sim.GetAbilityDefFromTree(type, value); //does same thing as below?
-                    var abilityDefs = new List<AbilityDef>();
-                    foreach (var abilityDictionary in abilityDictionaries)
-                    {
-                        abilityDefs.AddRange(abilityDictionary[value].Where(x => x.ReqSkill.ToString() == type));
-                    }
-
-
-
-                    // don't create choice popups with 1 option
-                    if (abilityDefs.Count <= 1)
-                    {
-                        Logger.LogTrace($"Single ability for {type}|{value}, skipping");
-                        Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
-                        return false;
-                    }
-
-                    // prevents which were ability buttons before other primaries were selected from being abilities
-                    // not every ability button is visible all the time
-                    var curButton =
-                        pips[type][value]
-                            .curButton; //Traverse.Create(pips[type][value]).Field("curButton").GetValue<HBSDOTweenToggle>();
-                    var skillButton =
-                        pips[type][value]
-                            .skillButton; //Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
-                    if (curButton != skillButton)
-                    {
-                        Logger.LogTrace(new string('=', 50));
-                        Logger.LogTrace("curButton != skillButton");
-                        Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
-                        return false;
-                    }
-
-                    // dynamic buttons based on available abilities
-
-                    //new code below//
-                    //new code below for ability requirements
-                    List<string> pilotAbilityDefNames = __instance.curPilot.pilotDef.abilityDefNames;
-
-                    var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
-
-                    List<AbilityDef> abilitiesWithReqs = abilityDefs
-                        .Where(ability => abilityFilter.Any(filter => filter.Equals(ability.Id))).ToList();
-
-                    var abilityDefsForDesc = new List<AbilityDef>();
-                    abilityDefsForDesc.AddRange(abilityDefs);
-                    if (abilitiesWithReqs.Count > 0)
-                    {
-                        foreach (var abilityWithReq in abilitiesWithReqs)
+                        if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
+                                .FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
                         {
-                            if (!pilotAbilityDefNames.Contains(modSettings.abilityReqs
-                                    .FirstOrDefault(x => x.Value.Contains(abilityWithReq.Id)).Key))
-                            {
-                                abilityDefs.Remove(abilityWithReq);
-                            }
+                            abilityDefs.Remove(abilityWithReq);
                         }
                     }
+                }
 
-                    //original code continues below//
-                    string abilityDescs = null;
-                    foreach (var abilityDefDesc in abilityDefsForDesc)
+                //original code continues below//
+                string abilityDescs = null;
+                foreach (var abilityDefDesc in abilityDefsForDesc)
+                {
+                    if (abilityDefs.Contains(abilityDefDesc))
                     {
-                        if (abilityDefs.Contains(abilityDefDesc))
+                        string abilityID = abilityDefDesc.Id + "Desc";
+                        string abilityName = abilityDefDesc.Description.Name;
+                        if (modSettings.usePopUpsForAbilityDesc)
                         {
-                            string abilityID = abilityDefDesc.Id + "Desc";
-                            string abilityName = abilityDefDesc.Description.Name;
-                            if (modSettings.usePopUpsForAbilityDesc)
-                            {
-                                abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName +
-                                                "</b>]]" + "\n\n";
-                            }
-                            else
-                            {
-                                abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" +
-                                                Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
-                            }
+                            abilityDescs += "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName +
+                                            "</b>]]" + "\n\n";
                         }
                         else
                         {
-                            var abilityID = abilityDefDesc.Id + "Desc";
-                            var abilityName = abilityDefDesc.Description.Name;
-
-                            var reqAbilityName = modSettings.abilityReqs
-                                .FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
-
-                            sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
-
-                            if (modSettings.usePopUpsForAbilityDesc)
-                            {
-                                //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
-                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
-                                                "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" +
-                                                abilityName + "</b>]]" + "\n\n";
-                            }
-                            else
-                            {
-                                //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
-                                abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
-                                                "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name +
-                                                ": </color>" + Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
-                            }
+                            abilityDescs += "<color=#33f9ff>" + abilityDefDesc.Description.Name + ": </color>" +
+                                            Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
                         }
                     }
-
-                    var popup = GenericPopupBuilder
-                        .Create("Select an ability",
-                            abilityDescs)
-                        .AddFader();
-                    popup.AlwaysOnTop = true;
-                    var pip = pips[type][value];
-                    foreach (var abilityDef in abilityDefs)
+                    else
                     {
-                        popup.AddButton(abilityDef.Description.Name,
-                            () =>
-                            {
-                                // have to change the Ability so SetPips later, SetActiveAbilityVisible works
-                                pip.thisAbility = abilityDef;
-                                pip.abilityIcon.vectorGraphics = abilityDef.AbilityIcon;
-                                pip.AbilityTooltip.SetDefaultStateData(
-                                    TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
-                                //Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
-                                //Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
-                                //Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
-                                Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
-                            });
+                        var abilityID = abilityDefDesc.Id + "Desc";
+                        var abilityName = abilityDefDesc.Description.Name;
+
+                        var reqAbilityName = modSettings.abilityReqs
+                            .FirstOrDefault(x => x.Value.Contains(abilityDefDesc.Id)).Key;
+
+                        sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
+
+                        if (modSettings.usePopUpsForAbilityDesc)
+                        {
+                            //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" + abilityName + "</b>]]" + "\n\n";
+                            abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
+                                            "</u></color> " + "[[DM.BaseDescriptionDefs[" + abilityID + "],<b>" +
+                                            abilityName + "</b>]]" + "\n\n";
+                        }
+                        else
+                        {
+                            //abilityDescs += "<color=#FF0000>(Requirements Unmet)</color> " + "<color=#0000FF>" + abilityDefDesc.Description.Name + ": </color>" + abilityDefDesc.Description.Details + "\n\n";
+                            abilityDescs += "<color=#FF0000> Requires <u>" + reqAbility.Description.Name +
+                                            "</u></color> " + "<color=#33f9ff>" + abilityDefDesc.Description.Name +
+                                            ": </color>" + Helpers.ProcessAbilityDefDetailString(abilityDefDesc) + "\n\n";
+                        }
                     }
-
-                    popup.Render();
                 }
-                catch (Exception e)
+
+                var popup = GenericPopupBuilder
+                    .Create("Select an ability",
+                        abilityDescs)
+                    .AddFader();
+                popup.AlwaysOnTop = true;
+                var pip = pips[type][value];
+                foreach (var abilityDef in abilityDefs)
                 {
-                    Framework.Logger.LogException(e);
+                    popup.AddButton(abilityDef.Description.Name,
+                        () =>
+                        {
+                            // have to change the Ability so SetPips later, SetActiveAbilityVisible works
+                            pip.thisAbility = abilityDef;
+                            pip.abilityIcon.vectorGraphics = abilityDef.AbilityIcon;
+                            pip.AbilityTooltip.SetDefaultStateData(
+                                TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                            //Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
+                            //Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
+                            //Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
+                            Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
+                        });
                 }
 
-                return false;
+                popup.Render();
+                __runOriginal = false;
+                return;
             }
 
         }
@@ -451,11 +451,15 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(PilotGenerator), "SetPilotAbilities")]
         public static class PilotGenerator_SetPilotAbilities_Patch
         {
-            public static bool Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value)
+            public static void Prefix(PilotGenerator __instance, PilotDef pilot, string type, int value, ref bool __runOriginal)
             {
-
-                if (pilot.PilotTags == null) return true;
-
+                if (!__runOriginal) return;
+                if (pilot.PilotTags == null)
+                {
+                    __runOriginal = true;
+                    return;
+                }
+                
                 if (Mod.modSettings.tagTraitForTree.Count > 0)
                 {
                     foreach (var tagK in Mod.modSettings.tagTraitForTree.Keys)
@@ -487,24 +491,28 @@ namespace Abilifier.Patches
                 value--;
                 if (value < 0)
                 {
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 if (!sim.AbilityTree.ContainsKey(type))
                 {
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 if (sim.AbilityTree[type].Count <= value)
                 {
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 List<AbilityDef> list = sim.AbilityTree[type][value];
 
                 if (list.Count == 0)
                 {
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 else
@@ -546,9 +554,9 @@ namespace Abilifier.Patches
                     }
 
                     pilot.ForceRefreshAbilityDefs();
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
-
             }
         }
 
@@ -556,15 +564,16 @@ namespace Abilifier.Patches
         [HarmonyAfter(new string[] {"io.github.mpstark.AbilityRealizer"})]
         public static class SimGameState_CanPilotTakeAbility_Patch
         {
-            public static bool Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility,
-                bool checkSecondTier = false)
+            public static void Prefix(SimGameState __instance, ref bool __result, PilotDef p, AbilityDef newAbility, ref bool __runOriginal,
+            bool checkSecondTier = false)
             {
-
+                if (!__runOriginal) return;
                 List<string> pilotAbilityDefNames = p.abilityDefNames;
                 if (pilotAbilityDefNames.Contains(newAbility.Description.Id))
                 {
                     __result = false;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
@@ -575,28 +584,32 @@ namespace Abilifier.Patches
                             .FirstOrDefault(x => x.Value.Contains(abilityReq)).Key))
                     {
                         __result = false;
-                        return false;
+                        __runOriginal = false;
+                        return;
                     }
                 }
 
                 if (!newAbility.IsPrimaryAbility)
                 {
                     __result = true;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 List<AbilityDef> primaryPilotAbilities = SimGameState.GetPrimaryPilotAbilities(p);
                 if (primaryPilotAbilities == null)
                 {
                     __result = true;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 if (primaryPilotAbilities.Count >=
                     3 + modSettings.extraAbilities) //change max allowed abilities for pilot to take when lvling up
                 {
                     __result = false;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 Dictionary<SkillType, int> sortedSkillCount = __instance.GetSortedSkillCount(p);
@@ -627,7 +640,8 @@ namespace Abilifier.Patches
                     newAbility.ReqSkillLevel < modSettings.skillLockThreshold)
                 {
                     __result = true;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 if (sortedSkillCount.ContainsKey(newAbility.ReqSkill) && sortedSkillCount[newAbility.ReqSkill] <
@@ -644,7 +658,8 @@ namespace Abilifier.Patches
                     __result = true;
                 }
 
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
 

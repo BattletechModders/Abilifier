@@ -1,5 +1,5 @@
 ﻿using BattleTech;
-using Harmony;
+
 using HBS.Util;
 using SVGImporter.LibTessDotNet;
 using System;
@@ -32,10 +32,15 @@ namespace Abilifier.Patches
         [HarmonyPatch(typeof(EffectManager), "NotifyEndOfMovement", new Type[] { typeof(string) })]
         public static class EffectManager_NotifyEndOfMovement
         {
-            public static bool Prefix(EffectManager __instance, string targetGUID)
+            public static void Prefix(ref bool __runOriginal, EffectManager __instance, string targetGUID)
             {
+                if (!__runOriginal) return;
                 var actor = __instance.Combat.FindActorByGUID(targetGUID);
-                if (actor == null) return true;
+                if (actor == null)
+                {
+                    __runOriginal = true;
+                    return;
+                }
                 //Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] Processing end of movement for {actor.DisplayName} - {actor.GetPilot().Callsign}");
 
                 __instance.expiringEffects.Clear();
@@ -78,7 +83,8 @@ namespace Abilifier.Patches
                 {
                     __instance.expiringEffects[j].OnEffectExpiration();
                 }
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using BattleTech;
-using Harmony;
+
 using HBS.Collections;
 using Newtonsoft.Json;
 
@@ -185,9 +185,10 @@ namespace Abilifier.Patches
             [HarmonyPatch(typeof(EffectManager), "GetTargetStatCollections")]
             public static class EffectManager_GetTargetStatCollections
             {
-                public static bool Prefix(EffectManager __instance, EffectData effectData, ICombatant target,
+                public static void Prefix(ref bool __runOriginal, EffectManager __instance, EffectData effectData, ICombatant target,
                     ref List<StatCollection> __result)
                 {
+                    if (!__runOriginal) return;
                     if (__result == null) __result = new List<StatCollection>();
                     List<StatCollection> list = new List<StatCollection>();
                     StatisticEffectData.TargetCollection targetCollection = effectData.statisticData.targetCollection;
@@ -206,7 +207,8 @@ namespace Abilifier.Patches
                         {
                             if (targetActor == null)
                             {
-                                return false;
+                                __runOriginal = false;
+                                return;
                             }
 
                             var foundMatch = false;
@@ -220,7 +222,11 @@ namespace Abilifier.Patches
                                 }
                             }
 
-                            if (!foundMatch) return false;
+                            if (!foundMatch)
+                            {
+                                __runOriginal = false;
+                                return;
+                            }
                         }
 
                         if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Pilot)
@@ -228,7 +234,8 @@ namespace Abilifier.Patches
                             if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
                                     .Overlaps(targetActor.GetPilot().pilotDef.PilotTags))
                             {
-                                return false;
+                                __runOriginal = false;
+                                return;
                             }
                         }
 
@@ -237,19 +244,22 @@ namespace Abilifier.Patches
                             if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
                                     .Overlaps(targetActor.GetTags()))
                             {
-                                return false;
+                                __runOriginal = false;
+                                return;
                             }
                         }
 
                     }
                     if (effectData.getStatDataExtension().TargetComponentTagMatch.Count <= 0)
                     {
-                        return true;
+                        __runOriginal = true;
+                        return;
                     }
 
                     if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
                     {
-                        return true;
+                        __runOriginal = true;
+                        return;
                     }
 
                     if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor != null)
@@ -281,7 +291,8 @@ namespace Abilifier.Patches
                     }
 
                     __result = list;
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
             }
         }

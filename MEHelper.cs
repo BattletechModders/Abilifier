@@ -1,7 +1,7 @@
 ﻿using Abilifier.Patches;
 using BattleTech;
 using BattleTech.Framework;
-using Harmony;
+
 using HBS.Collections;
 using System;
 using System.Linq;
