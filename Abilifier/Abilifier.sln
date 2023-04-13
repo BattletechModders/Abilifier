@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abilifier", "Abilifier.csproj", "{B1C39405-20CA-4883-956E-AE29270DE881}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbilifierEffectDataInjector", "..\Injector\AbilifierEffectDataInjector\AbilifierEffectDataInjector.csproj", "{254D2127-04CC-403D-806B-DB5B934B90E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbilifierEffectDataInjector", "..\Injector\AbilifierEffectDataInjector\AbilifierEffectDataInjector.csproj", "{254D2127-04CC-403D-806B-DB5B934B90E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,8 +16,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.ActiveCfg = Debug-NoCAE|Any CPU
-		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.Build.0 = Debug-NoCAE|Any CPU
+		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.Build.0 = Debug|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Release|Any CPU.Build.0 = Release|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
