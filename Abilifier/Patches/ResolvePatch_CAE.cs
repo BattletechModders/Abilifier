@@ -5,7 +5,6 @@ using Abilifier.Framework;
 using BattleTech;
 using BattleTech.UI;
 using CustomActivatableEquipment;
-
 using UnityEngine;
 
 namespace Abilifier.Patches

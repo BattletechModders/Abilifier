@@ -2,10 +2,13 @@
   <Target Name="ValidateBattleTechGameDir" Condition="'$(BattleTechGameDir)' == '' Or !Exists('$(BattleTechGameDir)')">
     <Error Text="BattleTechGameDir variable not set properly" />
   </Target>
-
+<PropertyGroup>
+<Configurations>Debug;Release;Debug-NoCAE</Configurations>
+</PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Core\Abilifier')">
     <!-- RogueTech -->
     <AbilifierModPath>$(BattleTechGameDir)\Mods\Core\Abilifier</AbilifierModPath>
+    <Configurations>Debug;Release;NoCAE</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Abilifier')">
     <!-- flat dir -->
