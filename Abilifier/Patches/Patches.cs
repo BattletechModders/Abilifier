@@ -751,6 +751,7 @@ namespace Abilifier.Patches
                 if (sim == null || __instance == null) return;
                 if (__instance.pilotDef.dataManager == null) return;
                 __instance.pilotDef.AutofillNonProceduralTraits();
+                Framework.AbilityRealizerFramework.TryUpdateAbilities(__instance);
             }
         }
     }

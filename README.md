@@ -49,7 +49,7 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
 }
 ```
 
-### StatisticEffectData Extensions
+## StatisticEffectData Extensions
 
 Abilifier now ships with an additional config .json called `EffectDataExtensions.json`. This file defines optional new capabilities and restrictions for EffectData affecting StatCollections in game. The config comprises a Dictionary, where the "key" is equal to the EffectData.Description.Id for which you want to impose additional restrictions.
 
@@ -136,6 +136,9 @@ If targetCollection = Pilot, TargetComponentTagMatch searches the pilotTags of t
 Only a single matching tag is needed, even if multiple tags are defined in `TargetCollectionTagMatch` or `TargetComponentTagMatch`.
 
 
+## Additional AbilityDef Fields
+
+A few new fields have been added to AbilityDefs, providing some additional functionality.
 
 ### CBill Costs
 
@@ -159,7 +162,7 @@ An optional new field in AbilityDefs "TriggersUniversalCooldown" determines whet
 
 Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" determines whether <i>that specific ability</i> is subject to the universal cooldown. Adding this field and setting it to true in the AbilityDef will prevent this ability from being subject to the universal cooldown.
 
-### Start in Cooldown
+#### Start in Cooldown
 
 Abilities with an optional new field "StartInCooldown" set to true will start the contract in their cooldown period.
 
@@ -226,7 +229,7 @@ Abilifier now supports dynamic resolve costs for ability tooltips and descriptio
     },
 ```
 
-### Settings
+## Settings
 
 Settings available in the mod.json:
 ```
@@ -417,3 +420,76 @@ v1.2.0.0 and higher have integrated Retrainer; standalone Retrainer mod is no lo
 `ignoredAbilities`, List [strings]: list of AbilityDef names which will <i>not</i> be removed when retraining. Intended to be used with pre-set, non-tree abilities (if you put a normal ability here, you'd keep the ability but still get refunded the XP when retraininer).
 
 `confirmAbilityText`: string. if not empty, will replace in-game popup text when confirming abilities (mostly for use if Abilifier is allowing more than the default number of abilities) 
+
+## AbilityRealizer
+
+As of v1.3.0.0, Abilifier has absorbed the AbilityRealizer mod. Settings for AbilityRealizer module can be found in `AbilityRealizerSettings.json` in the Abilifier mod folder. All existing settings and behavior have been maintained. Original readme for AbilityRealizer follows:
+
+### What It Currently Does
+
+Provide support for modding the ability tree and abilities without requiring modders to completely redo all of the PilotDefs, as well as providing a mechanism for updating pilots that are already stored in saves.
+
+* Keeps all pilots/pilot defs up-to-date with the current state of the ability tree (stored in SimGameConstants)
+
+* Prevent crashes/save game loss from changing the ability tree
+
+* Changes the barracks UI to show tooltips for passive abilities that are not primary abilities
+
+* Can add abilities based on Faction or Tag
+
+* Can swap abilities for the AI (until adding to the AI is added)
+
+### Ignoring Pilots By Tag
+
+Pilots that have any of these tags will be ignored
+
+```json
+"IgnorePilotsWithTags": [ "pilot_release_skirmish", "pilot_release_ksbeta" ]
+```
+
+### Adding Abilities based on Faction/Tag
+
+Add to the `FactionAbilities` or `TagAbilities` in the settings
+
+```json
+"FactionAbilities": {
+    "AuriganPirates": [ "MyAbilityDef1", "MyAbilityDef2" ]
+},
+```
+
+```json
+"TagAbilities": {
+    "commander_career_soldier": [ "MyAbilityDef3", "MyAbilityDef4" ]
+},
+```
+
+### Swapping AI Abilities
+
+Add to the `SwapAIAbilities` in the settings
+
+```json
+"SwapAIAbilities": {
+    "AbilityDefG8": "AbilityDefG8AI"
+},
+```
+
+### Upgrading Abilities
+
+The setting "UpgradeAbilities" takes an array of "UpgradeAbiility" values which must have the following defined:
+
+"Prereq" - AbilityDef ID of the prerequisite ability which will be replaced
+"Skill" - skill type, e.g. Guts
+"Level" - level of the skill, e.g. 7
+"Upgrade" - AbilityDef ID of the "upgraded" ability that will replace the "Prereq" ability.
+
+e.g.:
+```
+"UpgradeAbilities": [
+			{
+				"Prereq": "AbilityDef_CarefulManeuvers",
+				"Skill": "Piloting",
+				"Level": 5,
+				"Upgrade": "AbilityDef_LessCarefulMoreManeuvers"
+			}
+		]
+```

@@ -1,10 +1,13 @@
 using System;
+using BattleTech;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
+using HBS.Logging;
 using Newtonsoft.Json;
+using Logger = Abilifier.Framework.Logger;
 
 // ReSharper disable UnassignedField.Global
 // ReSharper disable InconsistentNaming
@@ -15,8 +18,10 @@ namespace Abilifier
     {
         public static Logger modLog;
         public static string modDir;
+        public static ILog HBSLog;
 
-        public static Settings modSettings;
+        public static Settings modSettings = new Settings();
+        public static AbilityRealizerFramework.ModSettings AbilityRealizerSettings = new AbilityRealizerFramework.ModSettings();
         public static void FinishedLoading(List<string> loadOrder) {
             Mod.modLog.LogMessage($"FinishedLoading");
             MEHelper.AttachTo();
@@ -45,6 +50,8 @@ namespace Abilifier
             PilotResolveTracker.HolderInstance.Initialize();
             EffectDataExtensionManager.ManagerInstance.Initialize();
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "ca.gnivler.BattleTech.Abilifier");
+            HBSLog = HBS.Logging.Logger.GetLogger("AbilityRealizer");
+            AbilityRealizerSettings.InitAR();
         }
         public class Settings
         {
