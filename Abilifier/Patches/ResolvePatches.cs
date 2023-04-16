@@ -7,7 +7,6 @@ using BattleTech;
 using BattleTech.Save;
 using BattleTech.Save.Test;
 using BattleTech.UI;
-
 using SVGImporter;
 using UnityEngine;
 using Text = Localize.Text;
@@ -1403,8 +1402,7 @@ namespace Abilifier.Patches
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var actor = __instance.owningActor;
 
-                    __instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) *
-                                                             1); // this negates Team Morale loss from vanilla method
+                    //__instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) * 1); // this negates Team Morale loss from vanilla method
 
                     actor.ModifyResolve(Mathf.RoundToInt(actor.DefensivePushCost) * -1);
                     //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
@@ -1426,10 +1424,28 @@ namespace Abilifier.Patches
                     if (!__instance.isMoraleAttack) return;
                     var actor = __instance.owningActor;
 
-                    __instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) *
-                                                             1); // this negates Team Morale loss from vanilla method
+                    //__instance.owningActor.team.ModifyMorale(Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) * 1); // this negates Team Morale loss from vanilla method
 
                     actor.ModifyResolve(Mathf.RoundToInt(actor.OffensivePushCost) * -1);
+                }
+            }
+
+            [HarmonyPatch(typeof(Mech), "InspireActor")]
+            public static class Mech_InspireActor
+            {
+                public static bool Prepare() => Mod.modSettings.enableResolverator;
+
+                public static void Prefix(ref bool __runOriginal, Mech __instance, string sourceID, int stackItemID)
+                {
+                    if (!__runOriginal) return;
+                    __runOriginal = false;
+                    //var key = __instance.GetPilot().Fetch_rGUID();
+                    //if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(key, out var pilotResolveInfo)) return;
+                    //var activeMoraleDef = __instance.Combat.Constants.GetActiveMoraleDef(__instance.Combat);
+                    //if (pilotResolveInfo.PilotResolve >= activeMoraleDef.CanUseInspireLevel * __instance.GetResolveCostBaseMult())
+                   // {
+                   //     __instance.InspireResolverator("", -1);
+                   // }
                 }
             }
 

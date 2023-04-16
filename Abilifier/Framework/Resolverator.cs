@@ -80,9 +80,17 @@ namespace Abilifier.Framework
             return actor.StatCollection.GetValue<float>("resolveGenBaseMult");
         }
 
-        public static float GetResolveCostBaseMult(this AbstractActor actor)
+        public static float GetResolveCostBaseMult(this AbstractActor actor) // now incorporate high/low spirits
         {
-            return actor.StatCollection.GetValue<float>("resolveCostBaseMult");
+            if (actor.HasHighMorale)
+            {
+                return actor.StatCollection.GetValue<float>("resolveCostBaseMult") * Mod.modSettings.resolveCostHighMult;
+            }
+            else if (actor.HasLowMorale)
+            {
+                return actor.StatCollection.GetValue<float>("resolveCostBaseMult") * Mod.modSettings.resolveCostLowMult;
+            }
+            else return actor.StatCollection.GetValue<float>("resolveCostBaseMult");
         }
 
         public static float GetResolveRoundBaseMod(this AbstractActor actor)

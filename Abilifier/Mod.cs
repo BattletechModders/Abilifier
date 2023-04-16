@@ -58,6 +58,8 @@ namespace Abilifier
             //public float resolveCostTacticsMult = 0.05f;
             public float resolveGenBaseMult = 1.0f;
             public float resolveCostBaseMult = 1.0f;
+            public float resolveCostHighMult = 1.0f;
+            public float resolveCostLowMult = 1.0f;
             public int extraFirstTierAbilities = 0;
             public int extraAbilities = 0;
             public int extraAbilitiesAllowedPerSkill = 0;

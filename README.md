@@ -237,6 +237,8 @@ Settings available in the mod.json:
 	"disableResolveAttackGround": true,
 	"resolveGenBaseMult": 1.0,
 	"resolveCostBaseMult": 1.0,
+	"resolveCostHighMult": 1.0,
+	"resolveCostLowMult": 1.0,
 	"usePopUpsForAbilityDesc": false,
 	"debugXP": false,
 	"extraFirstTierAbilities": 0,
@@ -307,6 +309,10 @@ Settings available in the mod.json:
 `resolveGenBaseMult` - float, base multiplier for all resolve generation. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
 
 `resolveCostBaseMult` - float, base multiplier for all resolve costs. Initialized as an actor stat, which can be modified be equipment, abilities, etc.
+
+`resolveCostHighMult` - float, multiplier for resolve costs if pilot has high spirits. multiplied directly onto `resolveCostBaseMult`. NOTE: DefensivePushHighMoraleCost, OffensivePushLowMoraleCost, etc from MoraleConstants have been deprecated! Resolve cost of Vigilance/DefensivePush will be MoraleConstants.DefensivePushCost x resolveCostBaseMult x resolveCostHighMult or resolveCostLowMult as appropriate! Likewise for CalledShot/OffensivePush! Similarly, `MoraleCostDefendDescriptionLow`, etc in CombatUIConstants are deprecated. Only `MoraleCostAttackDescription` and `MoraleCostDefendDescription` will be used. Up to you to update them.
+
+`resolveCostLowMult` - float, multiplier for resolve costs if pilot has low spirits. multiplied directly onto `resolveCostBaseMult`. NOTE: DefensivePushHighMoraleCost, OffensivePushLowMoraleCost, etc from MoraleConstants have been deprecated! Resolve cost of Vigilance will be baseline MoraleConstants.DefensivePushCost x resolveCostBaseMult x resolveCostHighMult or resolveCostLowMult as appropriate! Likewise for CalledShot/OffensivePush! Similarly, `MoraleCostDefendDescriptionLow`, etc in CombatUIConstants are deprecated. Only `MoraleCostAttackDescription` and `MoraleCostDefendDescription` will be used. Up to you to update them.
 
 **NOTE** the unit statistic (float) `resolveRoundBaseMod` can be used to add a flat resolve gain each round *specific to the unit* (as opposed to vanilla statistic `MoraleBonusGain` which will still add bonus resolve to each unit on the team). Keep in mind this "flat" bonus will still be affected by `resolveGenBaseMult`, however.
 
