@@ -51,33 +51,85 @@ namespace Abilifier.Framework
         }
 
         [CanBeNull]
-        public static Text ParseResolveDetailsFromConstants(this AbstractActor actor, bool isAttack, int moraleState, CombatGameConstants constants) //high/low deprecated. only use base cost from constants and base description
+        public static Text ParseResolveDetailsFromConstants(this AbstractActor actor, bool isAttack, int moraleState, CombatGameConstants constants)
         {
             if (isAttack)
             {
-                string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescriptionHigh.Details);
-                List<object> list = new List<object>();
-                text = text.Replace("[ResolveCost]", "{0}");
-                list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushCost * actor.GetResolveCostBaseMult()) }));
-                if (list.Count <= 0)
+                if (moraleState == 0)
                 {
-                    return new Text(text, Array.Empty<object>());
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescriptionLow.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
                 }
-                return new Text(text, list.ToArray());
-                
+                else if (moraleState == 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescription.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState > 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostAttackDescriptionHigh.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.OffensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
             }
             else
             {
-                string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescriptionHigh.Details);
-                List<object> list = new List<object>();
-                text = text.Replace("[ResolveCost]", "{0}");
-                list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushCost * actor.GetResolveCostBaseMult()) }));
-                if (list.Count <= 0)
+                if (moraleState == 0)
                 {
-                    return new Text(text, Array.Empty<object>());
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescriptionLow.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
                 }
-                return new Text(text, list.ToArray());
-                
+                else if (moraleState == 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescription.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
+                else if (moraleState > 1)
+                {
+                    string text = Strings.T(constants.CombatUIConstants.MoraleCostDefendDescriptionHigh.Details);
+                    List<object> list = new List<object>();
+                    text = text.Replace("[ResolveCost]", "{0}");
+                    list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(constants.MoraleConstants.DefensivePushCost * actor.GetResolveCostBaseMult()) }));
+                    if (list.Count <= 0)
+                    {
+                        return new Text(text, Array.Empty<object>());
+                    }
+                    return new Text(text, list.ToArray());
+                }
             }
             return null;
         }
