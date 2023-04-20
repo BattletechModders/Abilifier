@@ -429,6 +429,14 @@ As of v1.3.0.0, Abilifier has absorbed the AbilityRealizer mod. Settings for Abi
 
 Provide support for modding the ability tree and abilities without requiring modders to completely redo all of the PilotDefs, as well as providing a mechanism for updating pilots that are already stored in saves.
 
+`DumpAbilityDefNamesAtAddToTeam` - bool, if true all pilot AbilityDefNames will be dumped to log when added to teams for debugging purposes
+
+`AddTreeAbilities` - bool, if true pilots will be given abilities as appropriate according to the ability tree in simgameconstants. doesnt play nicely with core Abilifier functionality of allowing multiple ability options, and may result in pilots being given moore abilities than they can legally have. No, I'm not updating it to work.
+
+`RemoveNonTreeAbilities` - bool, if true pilots will have abilities removed which are not present in the SGC ability tree. Really only useful if you change/deprecate an abilitydef ID, but can result in pilots losing unique abilities that are not in the ability tree.
+
+`IgnoreAbilities` - list<string> - list of abilitydef IDs which are ignored by above Add/Remove settings. 
+
 * Keeps all pilots/pilot defs up-to-date with the current state of the ability tree (stored in SimGameConstants)
 
 * Prevent crashes/save game loss from changing the ability tree
