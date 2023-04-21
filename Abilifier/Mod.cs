@@ -52,9 +52,11 @@ namespace Abilifier
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "ca.gnivler.BattleTech.Abilifier");
             HBSLog = HBS.Logging.Logger.GetLogger("AbilityRealizer");
             AbilityRealizerSettings.InitAR();
+            Mod.modLog.LogMessage($"Settings dump: {settings}");
         }
         public class Settings
         {
+            public bool debugExpiration = false;
             public bool enableTrace;
             public string modDirectory;
             public bool usePopUpsForAbilityDesc = false;

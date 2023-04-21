@@ -1,6 +1,5 @@
 ﻿using BattleTech.UI;
 using BattleTech;
-
 using HBS;
 using System;
 using System.Collections.Generic;
@@ -18,6 +17,7 @@ namespace Abilifier.Patches
         public int cost;
         public bool onceOnly;
         public bool trainingModuleRequired;
+        public List<string> ignoreSuffix = new List<string>();
         public List<string> ignoredAbilities = new List<string>();
         public string confirmAbilityText =
             "Confirming this Ability selection is permanent. You may only have two Primary Abilities and one Specialist Ability, and MechWarriors cannot be retrained.";
@@ -323,7 +323,16 @@ namespace Abilifier.Patches
                 pilotDef.BonusTactics = 1;
 
                 // pilotDef.abilityDefNames.Clear();
-                pilotDef.abilityDefNames.RemoveAll(x => !Mod.modSettings.retrainerSettings.ignoredAbilities.Contains(x));
+                for (var index = pilotDef.abilityDefNames.Count - 1; index >= 0; index--)
+                {
+                    var abilityName = pilotDef.abilityDefNames[index];
+                    if (!Mod.modSettings.retrainerSettings.ignoredAbilities.Contains(abilityName) &&
+                        !Mod.modSettings.retrainerSettings.ignoreSuffix.Any(x => abilityName.EndsWith(x)))
+                    {
+                        pilotDef.abilityDefNames.Remove(abilityName);
+                    }
+                }
+                //pilotDef.abilityDefNames.RemoveAll(x => !Mod.modSettings.retrainerSettings.ignoredAbilities.Contains(x));
 
 
                 pilotDef.SetSpentExperience(0);
