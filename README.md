@@ -234,6 +234,7 @@ Abilifier now supports dynamic resolve costs for ability tooltips and descriptio
 Settings available in the mod.json:
 ```
   "Settings": {
+  	"debugExpiration": false,
 	"enableTrace": false,
 	"enableLog": false,
 	"enableResolverator": true,
@@ -299,6 +300,9 @@ Settings available in the mod.json:
 			"confirmAbilityText": "Confirming this Ability selection is semi-permanent. You may only have two Level 5, one Level 8, and one level 10 Abilities. With the Training Module 2 argo upgrade, Mechwarriors can be retrained for 500,000 c-bills by shift-clicking on the Pilot's skills tab."
 		}
 ```
+
+`debugExpiration` - **this setting defaults to true!** unless you are explicitly working with me to debug effect duration, you should set this to false
+
 `enableTrace` and `enableLog` (bools) allow logging.
 
 `enableResolverator` - bool, enables pilot resolve overhaul module
