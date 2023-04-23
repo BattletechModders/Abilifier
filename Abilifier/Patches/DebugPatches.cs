@@ -1,5 +1,7 @@
 ﻿using BattleTech;
+using Steamworks;
 using System;
+using System.Collections.Generic;
 using Effect = BattleTech.Effect;
 
 namespace Abilifier.Patches
@@ -78,8 +80,41 @@ namespace Abilifier.Patches
         public static class EffectManager_NotifyEndOfMovement_DEBUG
         {
             public static bool Prepare() => Mod.modSettings.debugExpiration;
-            public static void Prefix(EffectManager __instance)
+            public static void Prefix(ref bool __runOriginal, EffectManager __instance, string targetGUID)
             {
+                if (!__runOriginal) return;
+                __runOriginal = false;
+                __instance.expiringEffects.Clear();
+                for (int i = 0; i < __instance.effects.Count; i++)
+                {
+                    Effect effect = __instance.effects[i];
+                    if (effect.Duration.activationActorGUID == targetGUID)
+                    {
+                        if (effect.Duration.isRunning)
+                        {
+                            effect.OnEffectMovementEnd();
+                        }
+                        if (!effect.Duration.DecrementMovements())
+                        {
+                            __instance.expiringEffects.Add(effect);
+                        }
+                        else if (effect.eTimer.numMovementsRemaining <= 0 &&
+                                  effect.EffectData.durationData.duration > 0)
+                        {
+                            __instance.expiringEffects.Add(effect);
+                            if (effect.target is Mech targetMech)
+                            {
+                                Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                                      $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numMovementsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
+                            }
+                        }
+                    }
+                }
+                for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
+                {
+                    __instance.expiringEffects[j].OnEffectExpiration();
+                }
+
                 foreach (var effectExp in __instance.expiringEffects)
                 {
                     if (effectExp.target is Mech targetMech)
@@ -127,8 +162,41 @@ namespace Abilifier.Patches
         public static class EffectManager_NotifyEndOfObjectActivation_DEBUG
         {
             public static bool Prepare() => Mod.modSettings.debugExpiration;
-            public static void Prefix(EffectManager __instance)
+            public static void Prefix(ref bool __runOriginal, EffectManager __instance, string targetGUID)
             {
+                if (!__runOriginal) return;
+                __runOriginal = false;
+                __instance.expiringEffects.Clear();
+                for (int i = 0; i < __instance.effects.Count; i++)
+                {
+                    Effect effect = __instance.effects[i];
+                    if (effect.Duration.activationActorGUID == targetGUID)
+                    {
+                        if (effect.Duration.isRunning)
+                        {
+                            effect.OnEffectActivationEnd();
+                        }
+                        if (!effect.Duration.DecrementActivations())
+                        {
+                            __instance.expiringEffects.Add(effect);
+                        }
+                        else if (effect.eTimer.numActivationsRemaining <= 0 &&
+                                 effect.EffectData.durationData.duration > 0)
+                        {
+                            __instance.expiringEffects.Add(effect);
+                            if (effect.target is Mech targetMech)
+                            {
+                                Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                                      $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numActivationsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
+                            }
+                        }
+                    }
+                }
+                for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
+                {
+                    __instance.expiringEffects[j].OnEffectExpiration();
+                }
+
                 foreach (var effectExp in __instance.expiringEffects)
                 {
                     if (effectExp.target is Mech targetMech)
@@ -176,8 +244,48 @@ namespace Abilifier.Patches
         public static class EffectManager_OnPhaseBegin_DEBUG
         {
             public static bool Prepare() => Mod.modSettings.debugExpiration;
-            public static void Prefix(EffectManager __instance)
+            public static void Prefix(ref bool __runOriginal, EffectManager __instance, int phase, ref List<IStackSequence> __result)
             {
+                if (!__runOriginal) return;
+                __runOriginal = false;
+                var baseTurnActor = __instance as TurnActor;
+                var list = new List<IStackSequence>();
+                if (baseTurnActor != null)
+                {
+                   list = baseTurnActor.OnPhaseBegin(phase);
+                }
+                
+                __instance.expiringEffects.Clear();
+                for (int i = 0; i < __instance.effects.Count; i++)
+                {
+                    Effect effect = __instance.effects[i];
+                    if (effect.Duration.isRunning)
+                    {
+                        effect.OnEffectPhaseBegin();
+                    }
+                    if (!effect.Duration.DecrementPhases())
+                    {
+                        __instance.expiringEffects.Add(effect);
+                    }
+                    else if (effect.eTimer.numPhasesRemaining <= 0 &&
+                             effect.EffectData.durationData.duration > 0)
+                    {
+                        __instance.expiringEffects.Add(effect);
+                        if (effect.target is Mech targetMech)
+                        {
+                            Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                                  $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numPhasesRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
+                        }
+                    }
+                }
+                for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
+                {
+                    __instance.expiringEffects[j].OnEffectExpiration();
+                }
+                __result = list;
+
+
+
                 foreach (var effectExp in __instance.expiringEffects)
                 {
                     if (effectExp.target is Mech targetMech)
@@ -225,8 +333,43 @@ namespace Abilifier.Patches
         public static class EffectManager_OnRoundEnd_DEBUG
         {
             public static bool Prepare() => Mod.modSettings.debugExpiration;
-            public static void Prefix(EffectManager __instance)
+            public static void Prefix(ref bool __runOriginal, EffectManager __instance, int round, ref List<IStackSequence> __result)
             {
+                if (!__runOriginal) return;
+                __runOriginal = false;
+                var baseTurnActor = __instance as TurnActor;
+                var list = new List<IStackSequence>();
+                if (baseTurnActor != null)
+                {
+                    list = baseTurnActor.OnRoundEnd(round);
+                }
+
+                __instance.expiringEffects.Clear();
+                for (int i = 0; i < __instance.effects.Count; i++)
+                {
+                    Effect effect = __instance.effects[i];
+                   
+                    if (!effect.Duration.DecrementRounds())
+                    {
+                        __instance.expiringEffects.Add(effect);
+                    }
+                    else if (effect.eTimer.numRoundsRemaining <= 0 &&
+                             effect.EffectData.durationData.duration > 0)
+                    {
+                        __instance.expiringEffects.Add(effect);
+                        if (effect.target is Mech targetMech)
+                        {
+                            Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                                  $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numRoundsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
+                        }
+                    }
+                }
+                for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
+                {
+                    __instance.expiringEffects[j].OnEffectExpiration();
+                }
+                __result = list;
+
                 foreach (var effectExp in __instance.expiringEffects)
                 {
                     if (effectExp.target is Mech targetMech)
