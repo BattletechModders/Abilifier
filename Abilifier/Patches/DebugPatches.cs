@@ -1,14 +1,5 @@
 ﻿using BattleTech;
-using BattleTech.Save.SaveGameStructure;
-using ShaderControl;
-using SVGImporter.LibTessDotNet;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static MonoMod.Cil.RuntimeILReferenceBag.FastDelegateInvokers;
 using Effect = BattleTech.Effect;
 
 namespace Abilifier.Patches

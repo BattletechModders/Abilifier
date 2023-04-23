@@ -107,12 +107,6 @@
     <Reference Include="System.Core">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Data">
-      <Private>False</Private>
-    </Reference>
-	    <Reference Include="System.Xml">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <Private>False</Private>
     </Reference>

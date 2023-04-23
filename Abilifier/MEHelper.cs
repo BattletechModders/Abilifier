@@ -1,7 +1,5 @@
 ﻿using Abilifier.Patches;
 using BattleTech;
-using BattleTech.Framework;
-
 using HBS.Collections;
 using System;
 using System.Linq;

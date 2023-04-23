@@ -1,14 +1,9 @@
 ﻿using BattleTech.UI;
 using BattleTech;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BattleTech.UI.Tooltips;
 using HBS.Extensions;
 using HBS;
-using SVGImporter;
 
 namespace Abilifier.Patches
 {

@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Abilifier.Patches;
 using BattleTech;
 using BattleTech.UI;
 using JetBrains.Annotations;
 using Localize;
-using Newtonsoft.Json;
 using UnityEngine;
-using static Abilifier.Patches.EffectDataExtensionManager;
 
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable InconsistentNaming

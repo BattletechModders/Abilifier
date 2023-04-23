@@ -1,7 +1,5 @@
 using System;
-using BattleTech;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
@@ -56,7 +54,7 @@ namespace Abilifier
         }
         public class Settings
         {
-            public bool debugExpiration = false;
+            public bool debugExpiration = true;
             public bool enableTrace;
             public string modDirectory;
             public bool usePopUpsForAbilityDesc = false;

@@ -1,16 +1,11 @@
 ﻿using BattleTech.Data;
 using BattleTech;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HBS;
 using Newtonsoft.Json.Linq;
-using Steamworks;
-using HBS.Logging;
 
 namespace Abilifier.Framework
 {

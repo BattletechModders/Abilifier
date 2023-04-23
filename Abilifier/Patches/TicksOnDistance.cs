@@ -1,12 +1,5 @@
 ﻿using BattleTech;
-
-using HBS.Util;
-using SVGImporter.LibTessDotNet;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Abilifier.Patches
@@ -18,7 +11,7 @@ namespace Abilifier.Patches
             if (timer.numMovementsRemaining > 0)
             {
                 var dist = Mathf.RoundToInt(actor.DistMovedThisRound);
-                timer.numMovementsRemaining -= dist;
+                timer.numMovementsRemaining = Mathf.Max(0, timer.numMovementsRemaining - dist);
                 Mod.modLog.LogMessage($"[DecrementMovementsByDistance] Processed {actor.DisplayName}, remaining dist in effect {timer.numMovementsRemaining} from {dist} movement");
                 if (timer.numMovementsRemaining <= 0)
                 {
