@@ -248,12 +248,8 @@ namespace Abilifier.Patches
             {
                 if (!__runOriginal) return;
                 __runOriginal = false;
-                var baseTurnActor = __instance as TurnActor;
+                __instance.CurrentPhase = phase;
                 var list = new List<IStackSequence>();
-                if (baseTurnActor != null)
-                {
-                   list = baseTurnActor.OnPhaseBegin(phase);
-                }
                 
                 __instance.expiringEffects.Clear();
                 for (int i = 0; i < __instance.effects.Count; i++)
@@ -337,12 +333,7 @@ namespace Abilifier.Patches
             {
                 if (!__runOriginal) return;
                 __runOriginal = false;
-                var baseTurnActor = __instance as TurnActor;
                 var list = new List<IStackSequence>();
-                if (baseTurnActor != null)
-                {
-                    list = baseTurnActor.OnRoundEnd(round);
-                }
 
                 __instance.expiringEffects.Clear();
                 for (int i = 0; i < __instance.effects.Count; i++)
