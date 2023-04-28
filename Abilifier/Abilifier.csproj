@@ -3,12 +3,11 @@
     <Error Text="BattleTechGameDir variable not set properly" />
   </Target>
 <PropertyGroup>
-<Configurations>Debug;Release;Debug-NoCAE</Configurations>
+<Configurations>Debug;Release;Debug-NoCAE;DurationDebug</Configurations>
 </PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Core\Abilifier')">
     <!-- RogueTech -->
     <AbilifierModPath>$(BattleTechGameDir)\Mods\Core\Abilifier</AbilifierModPath>
-    <Configurations>Debug;Release;NoCAE</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Abilifier')">
     <!-- flat dir -->
@@ -47,6 +46,16 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DurationDebug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\DurationDebug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;DurationDebug</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net472</TargetFramework>
@@ -67,8 +76,8 @@
   <PropertyGroup>
     <!-- avoids IgnoresAccessChecksToAttribute warnings -->
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
-    <AssemblyVersion>1.3.0.2</AssemblyVersion>
-    <FileVersion>1.3.0.2</FileVersion>
+    <AssemblyVersion>1.3.0.3</AssemblyVersion>
+    <FileVersion>1.3.0.3</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />

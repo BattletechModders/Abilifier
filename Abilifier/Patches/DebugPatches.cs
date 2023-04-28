@@ -1,5 +1,5 @@
-﻿using BattleTech;
-using Steamworks;
+﻿#if DurationDebug
+using BattleTech;
 using System;
 using System.Collections.Generic;
 using Effect = BattleTech.Effect;
@@ -405,3 +405,4 @@ namespace Abilifier.Patches
         }
     }
 }
+#endif

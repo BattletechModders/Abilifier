@@ -3,7 +3,7 @@
     <Error Text="BattleTechGameDir variable not set properly" />
   </Target>
   <PropertyGroup>
-<Configurations>Debug;Release;Debug-NoCAE</Configurations>
+<Configurations>Debug;Release;Debug-NoCAE;DurationDebug</Configurations>
 </PropertyGroup>
   <PropertyGroup Condition="'$(AbilifierInjectorPath)' == '' And Exists('$(BattleTechGameDir)\Mods\ModTek\Injectors')">
     <!-- flat dir -->

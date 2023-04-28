@@ -11,6 +11,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug-NoCAE|Any CPU = Debug-NoCAE|Any CPU
+		DurationDebug|Any CPU = DurationDebug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
@@ -18,12 +19,16 @@ Global
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.ActiveCfg = Debug-NoCAE|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Debug-NoCAE|Any CPU.Build.0 = Debug-NoCAE|Any CPU
+		{B1C39405-20CA-4883-956E-AE29270DE881}.DurationDebug|Any CPU.ActiveCfg = DurationDebug|Any CPU
+		{B1C39405-20CA-4883-956E-AE29270DE881}.DurationDebug|Any CPU.Build.0 = DurationDebug|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1C39405-20CA-4883-956E-AE29270DE881}.Release|Any CPU.Build.0 = Release|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Debug-NoCAE|Any CPU.ActiveCfg = Debug-NoCAE|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Debug-NoCAE|Any CPU.Build.0 = Debug-NoCAE|Any CPU
+		{254D2127-04CC-403D-806B-DB5B934B90E2}.DurationDebug|Any CPU.ActiveCfg = DurationDebug|Any CPU
+		{254D2127-04CC-403D-806B-DB5B934B90E2}.DurationDebug|Any CPU.Build.0 = DurationDebug|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{254D2127-04CC-403D-806B-DB5B934B90E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
