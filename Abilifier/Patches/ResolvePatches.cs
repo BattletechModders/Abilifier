@@ -1817,6 +1817,47 @@ namespace Abilifier.Patches
                     }
                 }
             }
+
+            [HarmonyPatch(typeof(SelectionStateSensorLock), "CreateFiringOrders")]
+            public static class SelectionStateSensorLock_CreateFiringOrders
+            {
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static void Postfix(SelectionStateSensorLock __instance, string button)
+                {
+                    if (button == "BTN_FireConfirm")
+                    {
+                        var combat = UnityGameInstance.BattleTechGame.Combat;
+                        if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                        var abilityDef = __instance.FromButton?.Ability?.Def;
+                        if (abilityDef == null) return;
+                        Mod.modLog.LogMessage($"Processing resolve costs for {abilityDef.Description.Name}");
+                        var HUD = __instance.HUD;
+                        var theActor = HUD.SelectedActor;
+                        if (theActor == null) return;
+                        if (!Mod.modSettings.enableResolverator)
+                        {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
+                            theActor.team.ModifyMorale(amt);
+                        }
+                        else
+                        {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
+                            theActor.ModifyResolve(amt);
+                        }
+                        HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                        if (!Mod.modSettings.disableCalledShotExploit) return;
+                        var selectionStack = HUD.selectionHandler.SelectionStack;
+                        var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                        if (moraleState != null)
+                        {
+                            moraleState.OnInactivate();
+                            moraleState.OnRemoveFromStack();
+                            selectionStack.Remove(moraleState);
+                        }
+                    }
+                }
+            }
         }
     }
 }
