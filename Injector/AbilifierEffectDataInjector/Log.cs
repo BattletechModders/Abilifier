@@ -18,12 +18,12 @@ namespace AbilifierEffectDataInjector {
     }
     public void TW(int initiation, string line) {
       string init = new string(' ', initiation);
-      line = "[" + DateTime.Now.ToString("HH:mm:ss.fff") + "]" + init + line;
+      line = "[" + DateTime.UtcNow.ToString("HH:mm:ss.ffff") + "]" + init + line;
       W(line);
     }
     public void TWL(int initiation, string line) {
       string init = new string(' ', initiation);
-      line = "[" + DateTime.Now.ToString("HH:mm:ss.fff") + "]" + init + line;
+      line = "[" + DateTime.UtcNow.ToString("HH:mm:ss.ffff") + "]" + init + line;
       WL(line);
     }
   }
