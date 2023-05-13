@@ -222,7 +222,7 @@ namespace Abilifier.Framework
                     if (sim.CanPilotTakeAbility(pilotDef, t))
                     {
                         pilotDef.abilityDefNames.Add(t.Description.Id);
-                        Logger.LogTrace($"[SetPilotAbilitiesNonProcedural] Autofilling trait {t.Description.Id} on {pilotDef.Description.Id}");
+                        Mod.modLog?.Trace?.Write($"[SetPilotAbilitiesNonProcedural] Autofilling trait {t.Description.Id} on {pilotDef.Description.Id}");
                     }
                 }
                 pilotDef.ForceRefreshAbilityDefs();
@@ -322,13 +322,13 @@ namespace Abilifier.Framework
                 var abilityDef = upgradedAbilities.FindAll(x => x.ReqSkill.ToString() == keyValuePair.Key && x.ReqSkillLevel == keyValuePair.Value + 1);
                 if (abilityDef.Count > 0)
                 {
-                    Logger.LogTrace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
+                    Mod.modLog?.Trace?.Write($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                     // this is the only change - calling public implementation
                     SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), abilityDef[0]);
                 }
                 else
                 {
-                    Logger.LogTrace($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
+                    Mod.modLog?.Trace?.Write($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                     // this is the only change - calling public implementation
                     SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
                 }
@@ -362,7 +362,7 @@ namespace Abilifier.Framework
 
             for (var i = 0; i < abilityTree.Count; i++)
             {
-                Logger.LogTrace($"Looping {type} {skill}: {abilityTree[i].Id}");
+                Mod.modLog?.Trace?.Write($"Looping {type} {skill}: {abilityTree[i].Id}");
                 if (expAmount > 0)
                 {
                     //    var skillKey = Traverse.Create(panel).Method("GetSkillKey", type, skill).GetValue<string>();
@@ -371,16 +371,16 @@ namespace Abilifier.Framework
                     if (!upgradedSkills.Contains(skillKey))
                     {
                         upgradedSkills.Add(skillKey, new KeyValuePair<string, int>(type, skill));
-                        Logger.LogTrace($"Add trait {abilityTree[i].Id}");
+                        Mod.modLog?.Trace?.Write($"Add trait {abilityTree[i].Id}");
                     }
 
                     if (!pilotDef.abilityDefNames.Contains(abilityTree[i].Id) && !abilityTree[i].IsPrimaryAbility && sim.CanPilotTakeAbility(pilotDef, abilityTree[i]))
                     {
-                        Logger.LogTrace("SAFETY FALLBACK Add trait " + abilityTree[i].Id);
+                        Mod.modLog?.Trace?.Write("SAFETY FALLBACK Add trait " + abilityTree[i].Id);
                         pilotDef.abilityDefNames.Add(abilityTree[i].Id);
                     }
                     var abilityToUse = abilityDef ?? abilityTree[i];
-                    Logger.LogTrace($"abilityToUse: {abilityToUse.Id}");
+                    Mod.modLog?.Trace?.Write($"abilityToUse: {abilityToUse.Id}");
                 pilotDef.ForceRefreshAbilityDefs();
 
                 // extra condition blocks skills from being taken at incorrect location
@@ -398,7 +398,7 @@ namespace Abilifier.Framework
                     !HasExistingAbilityAtTier(pilotDef, abilityToUse))
 
                     {
-                        Logger.LogTrace("Add primary " + abilityToUse.Id);
+                        Mod.modLog?.Trace?.Write("Add primary " + abilityToUse.Id);
                         pilotDef.abilityDefNames.Add(abilityToUse.Id);
                         if (abilityToUse.IsPrimaryAbility)
                         {
@@ -407,7 +407,7 @@ namespace Abilifier.Framework
                         else
                         {
                             // still need to add it, even if it can't be a primary at location
-                            Logger.LogTrace("Add trait " + abilityToUse.Id);
+                            Mod.modLog?.Trace?.Write("Add trait " + abilityToUse.Id);
                             pilotDef.abilityDefNames.Add(abilityToUse.Id);
                         }
                     }
@@ -420,12 +420,12 @@ namespace Abilifier.Framework
                     upgradedSkills.Remove(skillKey2);
                     upgradedPrimarySkills.Remove(abilityTree[i]);
 
-                    Logger.LogTrace($"Removing {skillKey2}: {abilityTree[i].Id}");
+                    Mod.modLog?.Trace?.Write($"Removing {skillKey2}: {abilityTree[i].Id}");
                     return;
                 }
             }
 
-            Logger.LogTrace("\n");
+            Mod.modLog?.Trace?.Write("\n");
 
             pilotDef.ForceRefreshAbilityDefs();
 

@@ -43,7 +43,7 @@ namespace Abilifier.Framework
                     string jdata = reader.ReadToEnd(); //dictionary key should match EffectData.Description.Id of whatever Effect you want to, ahem, affect.
                     Mod.AbilityRealizerSettings = JsonConvert.DeserializeObject<ModSettings>(jdata);
                     //deser separate setting thing here
-                    Mod.modLog.LogMessage($"Parsed AbilityRealizerSettings: {jdata}");
+                    Mod.modLog?.Info?.Write($"Parsed AbilityRealizerSettings: {jdata}");
                 }
             }
         }

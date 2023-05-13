@@ -6,11 +6,9 @@ using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Framework;
 using BattleTech.UI;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using Logger = Abilifier.Framework.Logger;
 
 namespace Abilifier.Patches
 {
@@ -181,7 +179,7 @@ namespace Abilifier.Patches
 
                     ModState.PendingAbilityDefExtension = state;
                     json = abilityDefJO.ToString(Formatting.Indented);
-                    Logger.LogTrace($"[INFO] AbilityDef_FromJSON PREFIX RAN");
+                    Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON PREFIX RAN");
                 }
 
                 public static void Postfix(AbilityDef __instance, string json)
@@ -192,7 +190,7 @@ namespace Abilifier.Patches
                     //    return;
                     //}
                     abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
-                    Logger.LogTrace($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown {ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost {ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown {ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit {ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
+                    Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown {ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost {ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown {ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit {ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
                 }
             }
 
@@ -281,14 +279,14 @@ namespace Abilifier.Patches
                     if (!__runOriginal) return;
                     if (pilotedActor == null || string.IsNullOrEmpty(abilityName))
                     {
-                        Mod.modLog.LogMessage("[ERROR] Invalid parameters passes to ConfirmAbility");
+                        Mod.modLog?.Info?.Write("[ERROR] Invalid parameters passes to ConfirmAbility");
                         __runOriginal = false;
                         return;
                     }
                     Ability ability = __instance.Abilities.Find((Ability x) => x.Def.Id == abilityName);
                     if (ability == null)
                     {
-                        Mod.modLog.LogMessage("[ERROR] ConfirmAbility: pilot " + __instance.Description.Name + " does not have ability " + abilityName);
+                        Mod.modLog?.Info?.Write("[ERROR] ConfirmAbility: pilot " + __instance.Description.Name + " does not have ability " + abilityName);
                         __runOriginal = false;
                         return;
                     }
@@ -306,7 +304,7 @@ namespace Abilifier.Patches
                         ICombatant combatant = combat.FindCombatantByGUID(targetGUID, false);
                         if (combatant == null)
                         {
-                            Mod.modLog.LogMessage("[ERROR] ConfirmAbility: no valid target found for id " + targetGUID);
+                            Mod.modLog?.Info?.Write("[ERROR] ConfirmAbility: no valid target found for id " + targetGUID);
                             __runOriginal = false;
                             return;
                         }
@@ -399,19 +397,19 @@ namespace Abilifier.Patches
                         var abilityUse = new AbilityUseInfo(__instance.Ability.Def.Id, __instance.Ability.Def.Description.Name, __instance.Ability.Def.getAbilityDefExtension().CBillCost);
 
                         ModState.AbilityUses.Add(abilityUse);
-                        Mod.modLog.LogMessage($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}");
+                        Mod.modLog?.Info?.Write($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}");
                     }
                     else
                     {
                         var abilityUse = ModState.AbilityUses.FirstOrDefault(x => x.AbilityID == __instance.Ability.Def.Id);
                         if (abilityUse == null)
                         {
-                            Mod.modLog.LogMessage($"ERROR: AbilityUseInfo was null");
+                            Mod.modLog?.Info?.Write($"ERROR: AbilityUseInfo was null");
                         }
                         else
                         {
                             abilityUse.UseCount += 1;
-                            Mod.modLog.LogMessage($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}, used {abilityUse.UseCount} times");
+                            Mod.modLog?.Info?.Write($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}, used {abilityUse.UseCount} times");
                         }
                     }
                 }
@@ -427,19 +425,19 @@ namespace Abilifier.Patches
                         var abilityUse = new AbilityUseInfo(__instance.Ability.Def.Id, __instance.Ability.Def.Description.Name, __instance.Ability.Def.getAbilityDefExtension().CBillCost);
 
                         ModState.AbilityUses.Add(abilityUse);
-                        Mod.modLog.LogMessage($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}");
+                        Mod.modLog?.Info?.Write($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}");
                     }
                     else
                     {
                         var abilityUse = ModState.AbilityUses.FirstOrDefault(x => x.AbilityID == __instance.Ability.Def.Id);
                         if (abilityUse == null)
                         {
-                            Mod.modLog.LogMessage($"ERROR: AbilityUseInfo was null");
+                            Mod.modLog?.Info?.Write($"ERROR: AbilityUseInfo was null");
                         }
                         else
                         {
                             abilityUse.UseCount += 1;
-                            Mod.modLog.LogMessage($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}, used {abilityUse.UseCount} times");
+                            Mod.modLog?.Info?.Write($"Added usage cost for {abilityUse.AbilityName} - {abilityUse.UseCost}, used {abilityUse.UseCount} times");
                         }
                     }
                 }
@@ -478,7 +476,7 @@ namespace Abilifier.Patches
                     foreach (var abilityUse in ModState.AbilityUses)
                     {
                         finalAbilityCosts += abilityUse.TotalCost;
-                        Mod.modLog.LogMessage($"{abilityUse.TotalCost} in command costs for {abilityUse.AbilityName}: {abilityUse.UseCost}. Current Total Command Cost: {finalAbilityCosts}");
+                        Mod.modLog?.Info?.Write($"{abilityUse.TotalCost} in command costs for {abilityUse.AbilityName}: {abilityUse.UseCost}. Current Total Command Cost: {finalAbilityCosts}");
                     }
                     var moneyResults = __instance.MoneyResults - finalAbilityCosts;
                     //Traverse.Create(__instance).Property("MoneyResults").SetValue(moneyResults);

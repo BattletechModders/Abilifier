@@ -19,8 +19,8 @@ namespace Abilifier.Patches
             {
                 if (target is Mech mech)
                 {
-                    Mod.modLog.LogMessage($"[Effect_cctor - Prefix] Constrtucting Effect with ID {effectID} / {effectData.Description.Id} on target {mech.DisplayName} {mech.GUID}");
-                    Mod.modLog.LogMessage($"[Effect_cctor - Prefix] Effect with ID {effectData.Description.Id} should have following duration: {effectData.durationData.duration} with\r ticksOnActivations {effectData.durationData.ticksOnActivations}\r ticksOnMovements {effectData.durationData.ticksOnMovements}\r ticksOnEndOfRound {effectData.durationData.ticksOnEndOfRound} or default phases");
+                    Mod.modLog?.Info?.Write($"[Effect_cctor - Prefix] Constrtucting Effect with ID {effectID} / {effectData.Description.Id} on target {mech.DisplayName} {mech.GUID}");
+                    Mod.modLog?.Info?.Write($"[Effect_cctor - Prefix] Effect with ID {effectData.Description.Id} should have following duration: {effectData.durationData.duration} with\r ticksOnActivations {effectData.durationData.ticksOnActivations}\r ticksOnMovements {effectData.durationData.ticksOnMovements}\r ticksOnEndOfRound {effectData.durationData.ticksOnEndOfRound} or default phases");
                 }
             }
             public static void Postfix(Effect __instance, CombatGameState combat, string effectID, int stackItemUID, object creator, object target,
@@ -28,8 +28,8 @@ namespace Abilifier.Patches
             {
                 if (target is Mech mech)
                 {
-                    Mod.modLog.LogMessage($"[Effect_cctor - Postfix] Constructed Effect with ID {effectID} / {__instance.effectData.Description.Id} on target {mech.DisplayName} {mech.GUID}");
-                    Mod.modLog.LogMessage($"[Effect_cctor - Postfix] Effect with ID {__instance.effectData.Description.Id} should have following durations: {__instance.eTimer.numActivationsRemaining} activations\r, {__instance.eTimer.numMovementsRemaining} movements\r," +
+                    Mod.modLog?.Info?.Write($"[Effect_cctor - Postfix] Constructed Effect with ID {effectID} / {__instance.effectData.Description.Id} on target {mech.DisplayName} {mech.GUID}");
+                    Mod.modLog?.Info?.Write($"[Effect_cctor - Postfix] Effect with ID {__instance.effectData.Description.Id} should have following durations: {__instance.eTimer.numActivationsRemaining} activations\r, {__instance.eTimer.numMovementsRemaining} movements\r," +
                                           $"{__instance.eTimer.numRoundsRemaining} rounds\r, and {__instance.eTimer.numPhasesRemaining} phases remaining");
                 }
             }
@@ -42,7 +42,7 @@ namespace Abilifier.Patches
             public static bool Prepare() => Mod.modSettings.debugExpiration;
             public static void Postfix(int numRoundsRemaining, string effectCreatorGUID, ref ETimer __result)
             {
-                Mod.modLog.LogMessage($"[DurationInRounds - Postfix] Constructed ETimer with {numRoundsRemaining} for creator {effectCreatorGUID}. {__result.numRoundsRemaining} rounds, isRunning {__result.isRunning}");
+                Mod.modLog?.Info?.Write($"[DurationInRounds - Postfix] Constructed ETimer with {numRoundsRemaining} for creator {effectCreatorGUID}. {__result.numRoundsRemaining} rounds, isRunning {__result.isRunning}");
             }
         }
 
@@ -52,7 +52,7 @@ namespace Abilifier.Patches
             public static bool Prepare() => Mod.modSettings.debugExpiration;
             public static void Postfix(int numMovementsRemaining, string effectCreatorGUID, ref ETimer __result)
             {
-                Mod.modLog.LogMessage($"[DurationInMovements - Postfix] Constructed ETimer with {numMovementsRemaining} for creator {effectCreatorGUID}. {__result.numMovementsRemaining} movements, isRunning {__result.isRunning}");
+                Mod.modLog?.Info?.Write($"[DurationInMovements - Postfix] Constructed ETimer with {numMovementsRemaining} for creator {effectCreatorGUID}. {__result.numMovementsRemaining} movements, isRunning {__result.isRunning}");
             }
         }
 
@@ -62,7 +62,7 @@ namespace Abilifier.Patches
             public static bool Prepare() => Mod.modSettings.debugExpiration;
             public static void Postfix(int numPhasesRemaining, string effectCreatorGUID, ref ETimer __result)
             {
-                Mod.modLog.LogMessage($"[ETimer_DurationInPhases - Postfix] Constructed ETimer with {numPhasesRemaining} for creator {effectCreatorGUID}. {__result.numPhasesRemaining} phases, isRunning {__result.isRunning}");
+                Mod.modLog?.Info?.Write($"[ETimer_DurationInPhases - Postfix] Constructed ETimer with {numPhasesRemaining} for creator {effectCreatorGUID}. {__result.numPhasesRemaining} phases, isRunning {__result.isRunning}");
             }
         }
 
@@ -72,7 +72,7 @@ namespace Abilifier.Patches
             public static bool Prepare() => Mod.modSettings.debugExpiration;
             public static void Postfix(int numActivationsRemaining, string activationActorGUID, string effectCreatorGUID, ref ETimer __result)
             {
-                Mod.modLog.LogMessage($"[ETimer_DurationInActivations - Postfix] Constructed ETimer with {numActivationsRemaining} for creator {effectCreatorGUID}. {__result.numActivationsRemaining} activations, isRunning {__result.isRunning}");
+                Mod.modLog?.Info?.Write($"[ETimer_DurationInActivations - Postfix] Constructed ETimer with {numActivationsRemaining} for creator {effectCreatorGUID}. {__result.numActivationsRemaining} activations, isRunning {__result.isRunning}");
             }
         }
 
@@ -104,7 +104,7 @@ namespace Abilifier.Patches
                             __instance.expiringEffects.Add(effect);
                             if (effect.target is Mech targetMech)
                             {
-                                Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
                                                       $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numMovementsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
                             }
                         }
@@ -119,7 +119,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -128,7 +128,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -141,7 +141,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -150,7 +150,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -186,7 +186,7 @@ namespace Abilifier.Patches
                             __instance.expiringEffects.Add(effect);
                             if (effect.target is Mech targetMech)
                             {
-                                Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                                Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
                                                       $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numActivationsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
                             }
                         }
@@ -201,7 +201,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -210,7 +210,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -223,7 +223,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -232,7 +232,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfObjectActivation_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -269,7 +269,7 @@ namespace Abilifier.Patches
                         __instance.expiringEffects.Add(effect);
                         if (effect.target is Mech targetMech)
                         {
-                            Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                            Mod.modLog?.Info?.Write($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
                                                   $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numPhasesRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
                         }
                     }
@@ -286,7 +286,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -295,7 +295,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnPhaseBegin_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -308,7 +308,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnPhaseBegin_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -317,7 +317,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnPhaseBegin_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnPhaseBegin_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -350,7 +350,7 @@ namespace Abilifier.Patches
                         __instance.expiringEffects.Add(effect);
                         if (effect.target is Mech targetMech)
                         {
-                            Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
+                            Mod.modLog?.Info?.Write($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effect.EffectData.Description.Id} on unit " +
                                                   $"{targetMech.DisplayName} {effect.targetID} added to expiring effects due to {effect.eTimer.numRoundsRemaining} <= 0 but {effect.EffectData.durationData.duration} > 0 ");
                         }
                     }
@@ -365,7 +365,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -374,7 +374,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnRoundEnd_DEBUG - Prefix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }
@@ -387,7 +387,7 @@ namespace Abilifier.Patches
                 {
                     if (effectExp.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnRoundEnd_DEBUG - Postfix] Effect with ID {effectExp.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectExp.targetID} should have expired");
                     }
                 }
@@ -396,7 +396,7 @@ namespace Abilifier.Patches
                 {
                     if (effectActive.target is Mech targetMech)
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_OnRoundEnd_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
+                        Mod.modLog?.Info?.Write($"[EffectManager_OnRoundEnd_DEBUG - Postfix] Effect with ID {effectActive.EffectData.Description.Id} on unit " +
                                               $"{targetMech.DisplayName} {effectActive.targetID} should be active with\r{effectActive.eTimer.numActivationsRemaining} activations\r, {effectActive.eTimer.numMovementsRemaining} movements\r," +
                                               $"{effectActive.eTimer.numRoundsRemaining} rounds\r, and {effectActive.eTimer.numPhasesRemaining} phases remaining");
                     }

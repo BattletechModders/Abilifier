@@ -66,10 +66,10 @@ namespace Abilifier.Framework
         public void ModifyPendingMoraleForUnit(ref Dictionary<AbstractActor, int> moraleChanges, AbstractActor unit, int amount)
         {
             moraleChanges.TryGetValue(unit, out var num);
-            Mod.modLog.LogMessage($"Tried to get current moraleChanges for unit {unit.DisplayName}: {num} to add {amount}");
+            Mod.modLog?.Info?.Write($"Tried to get current moraleChanges for unit {unit.DisplayName}: {num} to add {amount}");
             num += amount;
             moraleChanges[unit] = num;
-            Mod.modLog.LogMessage($"moraleChanges should now be {moraleChanges[unit]}");
+            Mod.modLog?.Info?.Write($"moraleChanges should now be {moraleChanges[unit]}");
         }
     }
 
@@ -134,21 +134,21 @@ namespace Abilifier.Framework
             if (actorTeam.IsMoraleSuppressed)
             {
                 moraleLogger.Log("Morale is suppressed for this mission; doing nothing");
-                Mod.modLog.LogMessage("Morale is suppressed for this mission; doing nothing");
+                Mod.modLog?.Info?.Write("Morale is suppressed for this mission; doing nothing");
 
                 return;
             }
             if (amt == 0)
             {
                 moraleLogger.Log("Attempted to modify morale by 0; doing nothing");
-                Mod.modLog.LogMessage("Attempted to modify morale by 0; doing nothing");
+                Mod.modLog?.Info?.Write("Attempted to modify morale by 0; doing nothing");
                 return;
             }
             MoraleConstantsDef activeMoraleDef = combat.Constants.GetActiveMoraleDef(combat);
             if (!activeMoraleDef.CanAIBeInspired && actorTeam is AITeam)
             {
                 moraleLogger.Log("Attempted to modify AI team morale when it cannot be inspired; doing nothing");
-                Mod.modLog.LogMessage("Attempted to modify AI team morale when it cannot be inspired; doing nothing");
+                Mod.modLog?.Info?.Write("Attempted to modify AI team morale when it cannot be inspired; doing nothing");
                 return;
             }
 
@@ -156,12 +156,12 @@ namespace Abilifier.Framework
             {
                 //var resolveGenBaseMult = actor.StatCollection.GetValue<float>("resolveGenBaseMult");
                 //var resolveGenTacticsMult = actor.StatCollection.GetValue<float>("resolveGenTacticsMult");
-                Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve gain: {amt} * resolveGenBaseMult {resolveGenBaseMult} = {Mathf.RoundToInt(amt * resolveGenBaseMult)}");
+                Mod.modLog?.Info?.Write($"Unit {actor.DisplayName} Base resolve gain: {amt} * resolveGenBaseMult {resolveGenBaseMult} = {Mathf.RoundToInt(amt * resolveGenBaseMult)}");
                 amt = Mathf.RoundToInt(amt * resolveGenBaseMult);
                 
                 //if (resolveGenTacticsMult != 0)
                 //{
-                //    Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve gain: {amt} * Tactics {actor.SkillTactics} * resolveGenTacticsMult {resolveGenTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)}");
+                //    Mod.modLog?.Info?.Write($"Unit {actor.DisplayName} Base resolve gain: {amt} * Tactics {actor.SkillTactics} * resolveGenTacticsMult {resolveGenTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult)}");
                 //    amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveGenTacticsMult);
                 //}
             }
@@ -169,11 +169,11 @@ namespace Abilifier.Framework
             else
             {
                 //var resolveCostTacticsMult = actor.StatCollection.GetValue<float>("resolveCostTacticsMult");
-                Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve loss: {amt} * resolveCostBaseMult {resolveCostBaseMult} = {Mathf.RoundToInt(amt * resolveCostBaseMult)}");
+                Mod.modLog?.Info?.Write($"Unit {actor.DisplayName} Base resolve loss: {amt} * resolveCostBaseMult {resolveCostBaseMult} = {Mathf.RoundToInt(amt * resolveCostBaseMult)}");
                 amt = Mathf.RoundToInt(amt * resolveCostBaseMult);
                 //if (resolveCostTacticsMult != 0)
                // {
-               //     Mod.modLog.LogMessage($"Unit {actor.DisplayName} Base resolve loss: {amt} * Tactics {actor.SkillTactics} * resolveCostTacticsMult {resolveCostTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)}");
+               //     Mod.modLog?.Info?.Write($"Unit {actor.DisplayName} Base resolve loss: {amt} * Tactics {actor.SkillTactics} * resolveCostTacticsMult {resolveCostTacticsMult} = {Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)} + {amt} = {amt + Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult)}");
                //     amt += Mathf.RoundToInt(amt * actor.SkillTactics * resolveCostTacticsMult);
                // }
             }
@@ -184,7 +184,7 @@ namespace Abilifier.Framework
             pilotResolveInfo.PilotResolve = totalResolve;
             combat.MessageCenter.PublishMessage(new MoraleChangedMessage(actorTeam.GUID));
             attackLogger.Log($"RESOLVE: Unit {actor.DisplayName} now has {pilotResolveInfo.PilotResolve} resolve");
-            Mod.modLog.LogMessage($"RESOLVE: Unit {actor.DisplayName} now has {pilotResolveInfo.PilotResolve} resolve");
+            Mod.modLog?.Info?.Write($"RESOLVE: Unit {actor.DisplayName} now has {pilotResolveInfo.PilotResolve} resolve");
 
             if (pilotResolveInfo.PilotResolve >= pilotResolveInfo.PilotMaxResolve)
             {
@@ -251,7 +251,7 @@ namespace Abilifier.Framework
             var guid = pilot.pilotDef.PilotTags.FirstOrDefault(x => x.StartsWith(rGUID));
             if (string.IsNullOrEmpty(guid))
             {
-                Mod.modLog.LogMessage($"WTF IS {pilot.Callsign}'s GUID NULL?!");
+                Mod.modLog?.Info?.Write($"WTF IS {pilot.Callsign}'s GUID NULL?!");
             }
             return guid;
         }

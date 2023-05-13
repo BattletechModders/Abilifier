@@ -1,9 +1,14 @@
 ﻿using Abilifier.Patches;
 using BattleTech;
+using BattleTech.Save.SaveGameStructure;
 using HBS.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Abilifier.Framework;
+using static Abilifier.Patches.AbilityExtensions;
+using static Org.BouncyCastle.Crypto.Modes.EaxBlockCipher;
 
 namespace Abilifier
 {
@@ -16,77 +21,207 @@ namespace Abilifier
         public static bool Filter(MechDef mechDef, MechComponentDef componentDef, EffectData effectData)
         {
             bool result = FilterReal(mechDef, componentDef, effectData);
-            Mod.modLog.LogMessage($"Filter {mechDef.ChassisID} component:{(componentDef==null?"null":componentDef.Description.Id)} effect:{effectData.Description.Id} result:{result}");
+            Mod.modLog?.Info?.Write($"Filter {mechDef.ChassisID} component:{(componentDef==null?"null":componentDef.Description.Id)} effect:{effectData.Description.Id} result:{result}");
             return result;
         }
-        private static bool FilterReal(MechDef mechDef, MechComponentDef componentDef, EffectData effectData)
+
+        public static bool FilterReal(MechDef mechDef, MechComponentDef componentDef, EffectData effectData)
         {
-            if (mechDef == null) { return false; }
-            var extData = effectData.getStatDataExtension();
-            //return true;
-            switch (extData.TargetCollectionForSearch)
+            if (mechDef == null)
             {
-                case EffectDataExtensionManager.EffectTargetTagSet.NotSet: break;
-                case EffectDataExtensionManager.EffectTargetTagSet.Pilot: return false;
-                case EffectDataExtensionManager.EffectTargetTagSet.Unit:
-                    if (extData.TargetCollectionTagMatch.Overlaps(mechDef.GetTags()) == false) { return false; };
-                    break;
-                case EffectDataExtensionManager.EffectTargetTagSet.Component:
+                return false;
+            }
+
+            var extension = effectData.getStatDataExtension();
+            //return true;
+
+            var targetCollectionsForSearch = extension.TargetCollectionsForSearch;
+            if (targetCollectionsForSearch.Count > 0)
+            {
+                var foundMatch = false;
+                var foundNotMatch = false;
+                var matchComponentCollection = true;
+                var matchUnitCollection = true;
+
+                if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.NotSet,
+                        out var configNotSet))
+                {
+                    //found NotSet in config, skipping everything else?
+                    goto skipCollections;
+                }
+
+                if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.Component,
+                        out var configComponent))
+                {
+                    if (!configComponent.MustMatchAll)
                     {
-                        bool found = false;
-                        foreach (var componentRef in mechDef.inventory)
+                        for (int i = 0; i < mechDef.Inventory.Length; i++)
                         {
-                            if (componentRef == null) { continue; }
-                            if (componentRef.Def == null) { continue; }
-                            if (extData.TargetCollectionTagMatch.Overlaps(componentRef.Def.ComponentTags))
+                            foreach (var tag in mechDef.Inventory[i].Def.ComponentTags)
                             {
-                                found = true;
-                                break;
+                                if (configComponent.TargetCollectionTagMatch
+                                    .Contains(tag))
+                                {
+                                    Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
+                                    foundMatch = true;
+                                }
+
+                                if (configComponent.TargetCollectionNotMatch
+                                    .Contains(tag))
+                                {
+                                    Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
+                                    foundNotMatch = true;
+                                }
                             }
                         }
-                        if (found == false) { return false; }
-                    }; break;
-            }
-            if (extData.TargetComponentTagMatch.Count == 0) { return true; }
-            if (componentDef == null)
-            {
-                return extData.TargetComponentTagMatch.Overlaps(mechDef.GetTags());
-            }
-            else
-            {
-                return extData.TargetComponentTagMatch.Overlaps(componentDef.ComponentTags);
-            }
-        }
-        public static void AttachTo()
-        {
-            try
-            {
-                var assemblyName = "MechEngineer";
-                var typeName = "MechEngineer.Features.OverrideStatTooltips.Helper.MechDefStatisticModifier";
-
-                var MEHelperType = AppDomain.CurrentDomain
-                    .GetAssemblies()
-                    .Where(assembly => assembly.GetName().Name == assemblyName)
-                    .Select(assembly => assembly.GetType(typeName))
-                    .SingleOrDefault(type => type != null);
-
-                if (MEHelperType != null)
-                {
-                    Mod.modLog.LogMessage($"{typeName} found");
-                    MethodInfo RegisterFilter = AccessTools.Method(MEHelperType, "RegisterFilter");
-                    if(RegisterFilter != null)
+                    }
+                    else
                     {
-                        Mod.modLog.LogMessage($"{typeName}.RegisterFilter found");
-                        RegisterFilter.Invoke(null, new object[] { "Abilifier", new Func<MechDef, MechComponentDef, EffectData, bool>(Filter) });
+                        var flattenedComponentTags = new List<string>();
+                        for (int i = 0; i < mechDef.Inventory.Length; i++)
+                        {
+                            foreach (var tag in mechDef.Inventory[i].Def.ComponentTags)
+                            {
+                                flattenedComponentTags.Add(tag);
+                            }
+                        }
+
+                        if (configComponent.TargetCollectionTagMatch.All(x =>
+                                flattenedComponentTags.Contains(x)))
+                        {
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
+                            foundMatch = true;
+                        }
+
+                        if (configComponent.TargetCollectionNotMatch.All(x =>
+                                flattenedComponentTags.Contains(x)))
+                        {
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
+                            foundNotMatch = true;
+                        }
+                    }
+
+                    if (!configComponent.TargetCollectionTagMatch.Any()) foundMatch = true;
+                    if (!foundMatch || foundNotMatch)
+                    {
+                        Mod.modLog?.Trace?.Write($"matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        matchComponentCollection = false;
                     }
                 }
 
-            }
-            catch (Exception e)
-            {
-                Mod.modLog.LogMessage(e.ToString());
+                if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.Unit,
+                        out var configUnit))
+                {
+                    foundMatch = false;
+                    foundNotMatch = false;
+                    if (!configUnit.MustMatchAll)
+                    {
+                        foreach (var tag in mechDef.GetTags())
+                        {
+                            if (!configUnit.TargetCollectionTagMatch.Contains(tag))
+                            {
+                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
+                                foundMatch = true;
+                            }
+
+                            if (configUnit.TargetCollectionNotMatch.Contains(tag))
+                            {
+                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
+                                foundNotMatch = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (configUnit.TargetCollectionTagMatch.All(x => mechDef.GetTags().Contains(x)))
+                        {
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", mechDef.GetTags())}");
+                            foundMatch = true;
+                        }
+
+                        if (configUnit.TargetCollectionNotMatch.All(x => mechDef.GetTags().Contains(x)))
+                        {
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
+                            foundNotMatch = true;
+                        }
+                    }
+
+                    if (!configUnit.TargetCollectionTagMatch.Any()) foundMatch = true;
+                    if (!foundMatch || foundNotMatch)
+                    {
+                        Mod.modLog?.Trace?.Write($"matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        matchUnitCollection = false;
+                    }
+                }
+
+                if (!matchComponentCollection || !matchUnitCollection)
+                {
+                    Mod.modLog?.Trace?.Write($"returned false due to !matchComponentCollection {matchComponentCollection} or !matchUnitCollection {matchUnitCollection}");
+                    return false;
+                }
             }
 
+            skipCollections:
+
+            if (extension.TargetComponentTagMatch.Count == 0)
+            {
+                return true;
+            }
+
+            if (componentDef == null)
+            {
+                if (!extension.MustMatchAllComponent)
+                {
+                    return extension.TargetComponentTagMatch.Overlaps(mechDef.GetTags());
+                }
+                else
+                {
+                    return (extension.TargetComponentTagMatch.All(x => mechDef.GetTags().Contains(x)));
+                }
+            }
+            else
+            {
+                if (!extension.MustMatchAllComponent)
+                {
+                    return extension.TargetComponentTagMatch.Overlaps(componentDef.ComponentTags);
+                }
+                else
+                {
+                    return (extension.TargetComponentTagMatch.All(x => componentDef.ComponentTags.Contains(x)));
+                }
+            }
         }
+
+        public static void AttachTo()
+            {
+                try
+                {
+                    var assemblyName = "MechEngineer";
+                    var typeName = "MechEngineer.Features.OverrideStatTooltips.Helper.MechDefStatisticModifier";
+
+                    var MEHelperType = AppDomain.CurrentDomain
+                        .GetAssemblies()
+                        .Where(assembly => assembly.GetName().Name == assemblyName)
+                        .Select(assembly => assembly.GetType(typeName))
+                        .SingleOrDefault(type => type != null);
+
+                    if (MEHelperType != null)
+                    {
+                        Mod.modLog?.Info?.Write($"{typeName} found");
+                        MethodInfo RegisterFilter = AccessTools.Method(MEHelperType, "RegisterFilter");
+                        if(RegisterFilter != null)
+                        {
+                            Mod.modLog?.Info?.Write($"{typeName}.RegisterFilter found");
+                            RegisterFilter.Invoke(null, new object[] { "Abilifier", new Func<MechDef, MechComponentDef, EffectData, bool>(Filter) });
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Mod.modLog?.Info?.Write(e.ToString());
+                }
+
+            }
     }
 }

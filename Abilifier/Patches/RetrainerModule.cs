@@ -141,7 +141,7 @@ namespace Abilifier.Patches
                 }
                 catch (Exception e)
                 {
-                    Framework.Logger.LogException(e);
+                    Mod.modLog?.Error?.Write($"EXCEPTION: {e}");
                 }
 
                 ui_inited = true;
@@ -211,7 +211,7 @@ namespace Abilifier.Patches
                 }
                 catch (Exception e)
                 {
-                    Framework.Logger.LogException(e);
+                    Mod.modLog?.Error?.Write($"EXCEPTION: {e}");
                 }
             }
         }
@@ -304,8 +304,8 @@ namespace Abilifier.Patches
             try
             {
 
-                Mod.modLog.LogMessage($"Base:\t {pilotDef.BaseGunnery} / {pilotDef.BasePiloting} / {pilotDef.BaseGuts} / {pilotDef.BaseTactics}");
-                Mod.modLog.LogMessage($"Bonus:\t {pilotDef.BonusGunnery} / {pilotDef.BonusPiloting} / {pilotDef.BonusGuts} / {pilotDef.BonusTactics}");
+                Mod.modLog?.Info?.Write($"Base:\t {pilotDef.BaseGunnery} / {pilotDef.BasePiloting} / {pilotDef.BaseGuts} / {pilotDef.BaseTactics}");
+                Mod.modLog?.Info?.Write($"Bonus:\t {pilotDef.BonusGunnery} / {pilotDef.BonusPiloting} / {pilotDef.BonusGuts} / {pilotDef.BonusTactics}");
 
                 var num = 0;
                 num += sim.GetLevelRangeCost(1, pilotDef.SkillGunnery - 1);
@@ -343,7 +343,7 @@ namespace Abilifier.Patches
             }
             catch (Exception e)
             {
-                Framework.Logger.LogException(e);
+                Mod.modLog?.Error?.Write($"EXCEPTION: {e}");
             }
         }
     }

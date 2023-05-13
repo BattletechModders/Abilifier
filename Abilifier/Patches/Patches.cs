@@ -8,7 +8,7 @@ using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 
 using static Abilifier.Mod;
-using Logger = Abilifier.Framework.Logger;
+
 
 // ReSharper disable InconsistentNaming
 
@@ -166,11 +166,12 @@ namespace Abilifier.Patches
                 // removal of pip
                 if (__instance.curPilot.StatCollection.GetValue<int>(type) > value)
                 {
-                    Logger.LogTrace($"Removing {type} {value}");
-                    Logger.LogTrace($"{pips[type][value].Ability}");
+                    Mod.modLog?.Trace?.Write($"Removing {type} {value}");
+                    Mod.modLog?.Trace?.Write($"{pips[type][value].Ability}");
                     Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
-                    __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
-                    Logger.LogTrace("\n");
+                    Mod.modLog?.Trace?.Write($"{string.Join(", ", __instance.curPilot.pilotDef.abilityDefNames)}");
+                    //__instance.curPilot.pilotDef.abilityDefNames.Do(Mod.modLog?.Trace?.Write);
+                    Mod.modLog?.Trace?.Write("\n");
                     Helpers.ForceResetCharacter(__instance);
                     //    Traverse.Create(__instance).Method("ForceResetCharacter").GetValue();
                     __runOriginal = false;
@@ -181,10 +182,11 @@ namespace Abilifier.Patches
                 if (!pips[type][value]
                         .hasAbility) //!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
                 {
-                    Logger.LogTrace("Non-ability pip");
+                    Mod.modLog?.Trace?.Write("Non-ability pip");
                     Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
-                    __instance.curPilot.pilotDef.abilityDefNames.Do(Logger.LogTrace);
-                    Logger.LogTrace("\n");
+                    Mod.modLog?.Trace?.Write($"{string.Join(", ", __instance.curPilot.pilotDef.abilityDefNames)}");
+                    //__instance.curPilot.pilotDef.abilityDefNames.Do(Mod.modLog?.Trace?.Write);
+                    Mod.modLog?.Trace?.Write("\n");
                     __runOriginal = false;
                     return;
                 }
@@ -210,7 +212,7 @@ namespace Abilifier.Patches
                 // don't create choice popups with 1 option
                 if (abilityDefs.Count <= 1)
                 {
-                    Logger.LogTrace($"Single ability for {type}|{value}, skipping");
+                    Mod.modLog?.Trace?.Write($"Single ability for {type}|{value}, skipping");
                     Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
                     __runOriginal = false;
                     return;
@@ -226,8 +228,8 @@ namespace Abilifier.Patches
                         .skillButton; //Traverse.Create(pips[type][value]).Field("skillButton").GetValue<HBSDOTweenToggle>();
                 if (curButton != skillButton)
                 {
-                    Logger.LogTrace(new string('=', 50));
-                    Logger.LogTrace("curButton != skillButton");
+                    Mod.modLog?.Trace?.Write(new string('=', 50));
+                    Mod.modLog?.Trace?.Write("curButton != skillButton");
                     Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
                     __runOriginal = false;
                     return;
@@ -412,7 +414,7 @@ namespace Abilifier.Patches
                         {
                             if (pilot.PilotTags.Remove(removal))
                             {
-                                Mod.modLog.LogMessage(
+                                Mod.modLog?.Info?.Write(
                                     $"Removed {removal} from {pilot.Description.Callsign} due to proceduralTagCleanup");
                             }
                         }

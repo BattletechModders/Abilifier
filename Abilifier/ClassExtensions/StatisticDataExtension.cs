@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BattleTech;
-
 using HBS.Collections;
 using Newtonsoft.Json;
 
@@ -18,11 +18,24 @@ namespace Abilifier.Patches
             Unit
         }
 
+        public class EffectTargetCollectionConfig
+        {
+            public bool MustMatchAll = false;
+            public TagSet TargetCollectionTagMatch = new TagSet();
+            public TagSet TargetCollectionNotMatch = new TagSet();
+        }
         public class EffectDataExtension
         {
-            public EffectTargetTagSet TargetCollectionForSearch = EffectTargetTagSet.NotSet;
-            public TagSet TargetCollectionTagMatch = new TagSet();
+            public Dictionary<EffectTargetTagSet, EffectTargetCollectionConfig> TargetCollectionsForSearch = new();
+
+            //public List<EffectTargetTagSet> TargetCollectionsForSearch = new List<EffectTargetTagSet>();
+            //public TagSet TargetCollectionTagMatch = new TagSet();
+            //public TagSet TargetCollectionNotMatch = new TagSet();
+            //public bool MustMatchAllCollection = false;
             public TagSet TargetComponentTagMatch = new TagSet();
+            public TagSet TargetComponentTagNotMatch = new TagSet();
+            public bool MustMatchAllComponent= false;
+
         }
 
         public static EffectDataExtensionManager _instance;
@@ -46,7 +59,7 @@ namespace Abilifier.Patches
                 string jdata = reader.ReadToEnd(); //dictionary key should match EffectData.Description.Id of whatever Effect you want to, ahem, affect.
                 ExtendedEffectDataDict = JsonConvert.DeserializeObject<ConcurrentDictionary<string, EffectDataExtension>>(jdata);
                 //deser separate setting thing here
-                Mod.modLog.LogMessage($"Adding effectData restriction for ExtendedEffectDataDict: \r{jdata}");
+                Mod.modLog?.Info?.Write($"Adding effectData restriction for ExtendedEffectDataDict: \r{jdata}");
             }
         }
     }
@@ -55,54 +68,47 @@ namespace Abilifier.Patches
     {
         public static EffectDataExtensionManager.EffectDataExtension getStatDataExtension(this EffectData statData)
         {
-            string id = statData.statisticData.abilifierId;
-            if (string.IsNullOrEmpty(id)) { id = statData.Description.Id; }
-            if (string.IsNullOrEmpty(id)) { return new EffectDataExtensionManager.EffectDataExtension(); }
-            if(EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.TryGetValue(id, out var result) == false)
-            {
-                result = new EffectDataExtensionManager.EffectDataExtension();
-                EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[id] = result;
-            }
-            return result;
+            return EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.ContainsKey(
+                statData.Description.Id)
+                ? EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[statData.Description.Id]
+                : new EffectDataExtensionManager.EffectDataExtension();
         }
 
         public static List<MechComponent> GetTargetComponentsMatchingTags(ICombatant target,
             StatisticEffectData.TargetCollection targetCollection, WeaponSubType weaponSubType, WeaponType weaponType,
-            WeaponCategoryValue weaponCategoryValue, AmmoCategoryValue ammoCategoryValue, TagSet tagSet)
+            WeaponCategoryValue weaponCategoryValue, AmmoCategoryValue ammoCategoryValue, TagSet tagSet, bool mustMatchAll)
         {
             List<MechComponent> list = new List<MechComponent>();
             if (targetCollection == StatisticEffectData.TargetCollection.SingleRandomWeapon)
             {
-                AbstractActor abstractActor = target as AbstractActor;
-                if (abstractActor != null)
+                if (target is AbstractActor abstractActor)
                 {
                     List<Weapon> list2 = abstractActor.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && tagSet.Overlaps(x.componentDef.ComponentTags));
+                        !x.IsDisabled && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     if (list2.Count > 0)
                     {
                         list.Add(list2.GetRandomElement());
                     }
+                    
                 }
             }
             else if (targetCollection == StatisticEffectData.TargetCollection.StrongestWeapon)
             {
-                AbstractActor abstractActor2 = target as AbstractActor;
-                if (abstractActor2 != null)
+                if (target is AbstractActor abstractActor2)
                 {
                     List<Weapon> list3 = abstractActor2.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && tagSet.Overlaps(x.componentDef.ComponentTags));
+                        !x.IsDisabled && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     if (list3.Count > 0)
                     {
                         list3.Sort((Weapon a, Weapon b) =>
-                            b.DamagePerShot.CompareTo(a.DamagePerShot * (float) a.ShotsWhenFired));
+                            b.DamagePerShot.CompareTo(a.DamagePerShot * (float)a.ShotsWhenFired));
                         list.Add(list3[0]);
                     }
                 }
             }
             else if (targetCollection == StatisticEffectData.TargetCollection.Weapon)
             {
-                AbstractActor abstractActor3 = target as AbstractActor;
-                if (abstractActor3 != null)
+                if (target is AbstractActor abstractActor3)
                 {
                     List<Weapon> list4 = new List<Weapon>();
                     if (weaponSubType != WeaponSubType.NotSet)
@@ -126,13 +132,13 @@ namespace Abilifier.Patches
                         else
                         {
                             list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                                x.WeaponSubType == weaponSubType && tagSet.Overlaps(x.componentDef.ComponentTags));
+                                x.WeaponSubType == weaponSubType && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                         }
                     }
                     else if (weaponType != WeaponType.NotSet)
                     {
                         list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                            x.Type == weaponType && tagSet.Overlaps(x.componentDef.ComponentTags));
+                            x.Type == weaponType && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     }
                     else if (!weaponCategoryValue.Is_NotSet)
                     {
@@ -143,7 +149,7 @@ namespace Abilifier.Patches
                     else
                     {
                         list4 = new List<Weapon>(
-                            abstractActor3.Weapons.FindAll(x => tagSet.Overlaps(x.componentDef.ComponentTags)));
+                            abstractActor3.Weapons.FindAll(x => (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags))));
                     }
 
                     for (int i = 0; i < list4.Count; i++)
@@ -154,20 +160,19 @@ namespace Abilifier.Patches
             }
             else if (targetCollection == StatisticEffectData.TargetCollection.AmmoBox)
             {
-                AbstractActor abstractActor4 = target as AbstractActor;
-                if (abstractActor4 != null)
+                if (target is AbstractActor abstractActor4)
                 {
                     List<AmmunitionBox> list5 = new List<AmmunitionBox>();
                     if (!ammoCategoryValue.Is_NotSet)
                     {
                         list5 = abstractActor4.ammoBoxes.FindAll((AmmunitionBox x) =>
-                            x.ammoCategoryValue.Equals(ammoCategoryValue) &&
-                            tagSet.Overlaps(x.componentDef.ComponentTags));
+                            x.ammoCategoryValue.Equals(ammoCategoryValue) && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) :
+                            tagSet.Overlaps(x.componentDef.ComponentTags)));
                     }
                     else
                     {
                         list5 = new List<AmmunitionBox>(
-                            abstractActor4.ammoBoxes.FindAll(x => tagSet.Overlaps(x.componentDef.ComponentTags)));
+                            abstractActor4.ammoBoxes.FindAll(x => (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags))));
                     }
 
                     for (int j = 0; j < list5.Count; j++)
@@ -197,101 +202,235 @@ namespace Abilifier.Patches
                     WeaponCategoryValue targetWeaponCategoryValue = effectData.statisticData.TargetWeaponCategoryValue;
                     AmmoCategoryValue targetAmmoCategoryValue = effectData.statisticData.TargetAmmoCategoryValue;
 
-                    var targetCollectionForSearch = effectData.getStatDataExtension().TargetCollectionForSearch;
-
-                    var targetActor = target as AbstractActor;
-
-                    if (targetCollectionForSearch > 0)
+                    if (target is AbstractActor targetActor)
                     {
-                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Component)
+                        var extension = effectData.getStatDataExtension();
+                        var targetCollectionsForSearch = extension.TargetCollectionsForSearch;
+                        if (targetCollectionsForSearch.Count > 0)
                         {
-                            if (targetActor == null)
+                            var foundMatch = false;
+                            var foundNotMatch = false;
+                            var collectionsToCheck = targetCollectionsForSearch.Count;
+                            var collectionsSuccess = 0;
+
+                            if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.NotSet, out var configNotSet))
+                            {
+                                //found NotSet in config, skipping everything else?
+                                goto skipCollections;
+                            }
+
+                            if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.Component, out var configComponent))
+                            {
+                                foundMatch = false;
+                                foundNotMatch = false;
+                                if (!configComponent.MustMatchAll)
+                                {
+                                    for (int i = 0; i < targetActor.allComponents.Count; i++)
+                                    {
+                                        foreach (var tag in targetActor.allComponents[i].componentDef.ComponentTags)
+                                        {
+                                            if (configComponent.TargetCollectionTagMatch
+                                                    .Contains(tag))
+                                            {
+                                                foundMatch = true;
+
+                                            }
+
+                                            if (configComponent.TargetCollectionNotMatch
+                                                .Contains(tag))
+                                            {
+                                                foundNotMatch = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    var flattenedComponentTags = new List<string>();
+                                    for (int i = 0; i < targetActor.allComponents.Count; i++)
+                                    {
+                                        foreach (var tag in targetActor.allComponents[i].componentDef.ComponentTags)
+                                        {
+                                            flattenedComponentTags.Add(tag);
+                                        }
+                                    }
+
+                                    if (configComponent.TargetCollectionTagMatch.All(x => flattenedComponentTags.Contains(x)))
+                                    {
+                                        foundMatch = true;
+                                    }
+                                    if (configComponent.TargetCollectionNotMatch.All(x => flattenedComponentTags.Contains(x)))
+                                    {
+                                        foundNotMatch = true;
+                                    }
+                                }
+                                if (!configComponent.TargetCollectionTagMatch.Any()) foundMatch = true;
+                                if (!foundMatch || foundNotMatch)
+                                {
+                                    __runOriginal = false;
+                                    return;
+                                }
+                                collectionsSuccess++;
+                            }
+
+                            if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.Pilot, out var configPilot))
+                            {
+                                foundMatch = false;
+                                foundNotMatch = false;
+                                if (!configPilot.MustMatchAll)
+                                {
+                                    foreach (var tag in targetActor.GetPilot().pilotDef.PilotTags)
+                                    {
+                                        if (configPilot.TargetCollectionTagMatch.Contains(tag))
+                                        {
+                                            foundMatch = true;
+                                        }
+
+                                        if (configPilot.TargetCollectionNotMatch.Contains(tag))
+                                        {
+                                            foundNotMatch = true;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (configPilot.TargetCollectionTagMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
+                                    {
+                                        foundMatch = true;
+                                    }
+
+                                    if (configPilot.TargetCollectionNotMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
+                                    {
+                                        foundNotMatch = true;
+                                    }
+                                }
+                                if (!configPilot.TargetCollectionTagMatch.Any()) foundMatch = true;
+                                if (!foundMatch || foundNotMatch)
+                                {
+                                    __runOriginal = false;
+                                    return;
+                                }
+                                collectionsSuccess++;
+                            }
+
+                            if (targetCollectionsForSearch.TryGetValue(EffectDataExtensionManager.EffectTargetTagSet.Unit, out var configUnit))
+                            {
+                                foundMatch = false;
+                                foundNotMatch = false;
+                                if (!configUnit.MustMatchAll)
+                                {
+                                    foreach (var tag in targetActor.GetTags())
+                                    {
+                                        if (!configUnit.TargetCollectionTagMatch.Contains(tag))
+                                        {
+                                            foundMatch = true;
+                                        }
+
+                                        if (configUnit.TargetCollectionNotMatch.Contains(tag))
+                                        {
+                                            foundNotMatch = true;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (configUnit.TargetCollectionTagMatch.All(x => targetActor.GetTags().Contains(x)))
+                                    {
+                                        foundMatch = true;
+                                    }
+
+                                    if (configUnit.TargetCollectionNotMatch.All(x => targetActor.GetTags().Contains(x)))
+                                    {
+                                        foundNotMatch = true;
+                                    }
+                                }
+
+                                if (!configUnit.TargetCollectionTagMatch.Any()) foundMatch = true;
+                                if (!foundMatch || foundNotMatch)
+                                {
+                                    __runOriginal = false;
+                                    return;
+                                }
+                                collectionsSuccess++;
+                            }
+
+                            if (collectionsSuccess < collectionsToCheck)
                             {
                                 __runOriginal = false;
                                 return;
                             }
+                        }
+                        skipCollections:
+                        if (extension.TargetComponentTagMatch.Count <= 0)
+                        {
+                            __runOriginal = true;
+                            return;
+                        }
 
-                            var foundMatch = false;
-                            for (int i = 0; i < targetActor.allComponents.Count; i++)
+                        if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
+                        {
+                            __runOriginal = true;
+                            return;
+                        }
+
+                        if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor != null)
+                        {
+                            if (!extension.MustMatchAllComponent)
                             {
-                                if (effectData.getStatDataExtension().TargetCollectionTagMatch
-                                    .Overlaps(targetActor.allComponents[i].componentDef.ComponentTags))
+                                if (extension.TargetComponentTagMatch
+                                    .Overlaps(targetActor.GetTags()))
+                                    list.Add(target.StatCollection);
+                            }
+                            else
+                            {
+                                if (extension.TargetComponentTagMatch.All(x => targetActor.GetTags().Contains(x)))
                                 {
-                                    foundMatch = true;
-                                    break;
+                                    list.Add(target.StatCollection);
                                 }
                             }
-
-                            if (!foundMatch)
-                            {
-                                __runOriginal = false;
-                                return;
-                            }
+                           
                         }
 
-                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Pilot)
+                        if (targetCollection == StatisticEffectData.TargetCollection.Pilot)
                         {
-                            if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
-                                    .Overlaps(targetActor.GetPilot().pilotDef.PilotTags))
+                            if (target.IsPilotable)
                             {
-                                __runOriginal = false;
-                                return;
+                                var pilot = target.GetPilot();
+                                if (!extension.MustMatchAllComponent)
+                                {
+                                    if (extension.TargetComponentTagMatch
+                                        .Overlaps(pilot.pilotDef.PilotTags))
+                                        list.Add(target.GetPilot().StatCollection);
+                                }
+                                else
+                                {
+                                    if (extension.TargetComponentTagMatch.All(x => pilot.pilotDef.PilotTags.Contains(x)))
+                                    {
+                                        list.Add(target.GetPilot().StatCollection);
+                                    }
+                                }
                             }
                         }
 
-                        if (targetCollectionForSearch == EffectDataExtensionManager.EffectTargetTagSet.Unit)
+                        else
                         {
-                            if (targetActor == null || !effectData.getStatDataExtension().TargetCollectionTagMatch
-                                    .Overlaps(targetActor.GetTags()))
+                            List<MechComponent> targetComponents = GetTargetComponentsMatchingTags(target,
+                                targetCollection,
+                                targetWeaponSubType, targetWeaponType, targetWeaponCategoryValue,
+                                targetAmmoCategoryValue,
+                                extension.TargetComponentTagMatch, extension.MustMatchAllComponent);
+                            for (int i = 0; i < targetComponents.Count; i++)
                             {
-                                __runOriginal = false;
-                                return;
+                                list.Add(targetComponents[i].StatCollection);
                             }
                         }
 
-                    }
-                    if (effectData.getStatDataExtension().TargetComponentTagMatch.Count <= 0)
-                    {
-                        __runOriginal = true;
+                        __result = list;
+                        __runOriginal = false;
                         return;
                     }
 
-                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
-                    {
-                        __runOriginal = true;
-                        return;
-                    }
-
-                    if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor != null)
-                    {
-                        if (effectData.getStatDataExtension().TargetComponentTagMatch.Overlaps(targetActor.GetTags()))
-                            list.Add(target.StatCollection);
-                    }
-
-                    if (targetCollection == StatisticEffectData.TargetCollection.Pilot)
-                    {
-                        if (target.IsPilotable)
-                        {
-                            var pilot = target.GetPilot();
-                            if (effectData.getStatDataExtension().TargetComponentTagMatch
-                                .Overlaps(pilot.pilotDef.PilotTags))
-                                list.Add(target.GetPilot().StatCollection);
-                        }
-                    }
-
-                    else
-                    {
-                        List<MechComponent> targetComponents = GetTargetComponentsMatchingTags(target, targetCollection,
-                            targetWeaponSubType, targetWeaponType, targetWeaponCategoryValue, targetAmmoCategoryValue,
-                            effectData.getStatDataExtension().TargetComponentTagMatch);
-                        for (int i = 0; i < targetComponents.Count; i++)
-                        {
-                            list.Add(targetComponents[i].StatCollection);
-                        }
-                    }
-
-                    __result = list;
-                    __runOriginal = false;
+                    __runOriginal = true;
                     return;
                 }
             }

@@ -12,7 +12,7 @@ namespace Abilifier.Patches
             {
                 var dist = Mathf.RoundToInt(actor.DistMovedThisRound);
                 timer.numMovementsRemaining = Mathf.Max(0, timer.numMovementsRemaining - dist);
-                Mod.modLog.LogMessage($"[DecrementMovementsByDistance] Processed {actor.DisplayName}, remaining dist in effect {timer.numMovementsRemaining} from {dist} movement");
+                Mod.modLog?.Info?.Write($"[DecrementMovementsByDistance] Processed {actor.DisplayName}, remaining dist in effect {timer.numMovementsRemaining} from {dist} movement");
                 if (timer.numMovementsRemaining <= 0)
                 {
                     timer.isRunning = false;
@@ -34,17 +34,17 @@ namespace Abilifier.Patches
                     __runOriginal = true;
                     return;
                 }
-                //Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] Processing end of movement for {actor.DisplayName} - {actor.GetPilot().Callsign}");
+                //Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement] Processing end of movement for {actor.DisplayName} - {actor.GetPilot().Callsign}");
 
                 __instance.expiringEffects.Clear();
                 for (int i = 0; i < __instance.effects.Count; i++)
                 {
                     Effect effect = __instance.effects[i];
 
-                    //Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] checking {effect.EffectData.Description.Id}");
+                    //Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement] checking {effect.EffectData.Description.Id}");
                     if (Mod.modSettings.ticksOnMovementDistanceIDs.Contains(effect.EffectData.Description.Id))
                     {
-                        Mod.modLog.LogMessage($"[EffectManager_NotifyEndOfMovement] found settings for {effect.EffectData.Description.Id}");
+                        Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement] found settings for {effect.EffectData.Description.Id}");
                         if (effect.Duration.activationActorGUID == targetGUID)
                         {
                             if (effect.Duration.isRunning)

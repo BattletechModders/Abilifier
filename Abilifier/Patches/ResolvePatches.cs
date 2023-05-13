@@ -316,15 +316,15 @@ namespace Abilifier.Patches
                     {
                         p.pilotDef.PilotTags.Add(
                             $"{rGUID}{p.Description.Id}{Guid.NewGuid()}{aiPilotFlag}"); //changed to sys NewGuid instead of simguid for skirmish compatibility
-                        Mod.modLog.LogMessage($"Added {p.Callsign} rGUID tag");
+                        Mod.modLog?.Info?.Write($"Added {p.Callsign} rGUID tag");
                     }
 
                     var pKey = p.Fetch_rGUID();
-                    Mod.modLog.LogMessage($"Fetched {p.Callsign} rGUID");
+                    Mod.modLog?.Info?.Write($"Fetched {p.Callsign} rGUID");
 
                     if (PilotResolveTracker.HolderInstance.pilotResolveDict.ContainsKey(pKey)) return;
                     PilotResolveTracker.HolderInstance.pilotResolveDict.Add(pKey, new PilotResolveInfo());
-                    Mod.modLog.LogMessage($"{p.Callsign} missing, added to pilotResolveDict and initialized at 0 resolve");
+                    Mod.modLog?.Info?.Write($"{p.Callsign} missing, added to pilotResolveDict and initialized at 0 resolve");
 
                     if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(pKey,
                             out var actorResolveInfo)) return;
@@ -334,7 +334,7 @@ namespace Abilifier.Patches
                         .GetInstance(UnityGameInstance.BattleTechGame)
                         .MoraleConstants.MoraleMax + maxMod;
 
-                    Mod.modLog.LogMessage($"{p.Callsign} Max Resolve: {actorResolveInfo.PilotMaxResolve}. {maxMod} from maxResolveMod");
+                    Mod.modLog?.Info?.Write($"{p.Callsign} Max Resolve: {actorResolveInfo.PilotMaxResolve}. {maxMod} from maxResolveMod");
 
                     //add actorlink to active abilities
                     foreach (var ability in unit.GetPilot().Abilities)
@@ -342,7 +342,7 @@ namespace Abilifier.Patches
                         var component = unit.GenerateDummyActorAbilityComponent();
                         if (component == null) return;
                         ability.parentComponent = component;
-                        Framework.Logger.LogTrace($"Team_AddUnit: Ability {ability.Def.Id} added dummy parentComponent with actor link ID {ability.parentComponent.GUID}");
+                        Mod.modLog?.Trace?.Write($"Team_AddUnit: Ability {ability.Def.Id} added dummy parentComponent with actor link ID {ability.parentComponent.GUID}");
                     }
                 }
             }
@@ -405,7 +405,7 @@ namespace Abilifier.Patches
                             flag = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack caused critical hit (+{activeMoraleDef.ChangeEnemyCrit})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack caused critical hit (+{activeMoraleDef.ChangeEnemyCrit})");
                             if (!flag8 && !flag9)
                             {
@@ -419,7 +419,7 @@ namespace Abilifier.Patches
                             flag2 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack caused ammo explosion (+{activeMoraleDef.ChangeEnemyAmmoExplodes}/{activeMoraleDef.ChangeAllyAmmoExplodes})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack caused ammo explosion (+{activeMoraleDef.ChangeEnemyAmmoExplodes}/{activeMoraleDef.ChangeAllyAmmoExplodes})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -432,7 +432,7 @@ namespace Abilifier.Patches
                             flag3 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack destroyed weapon (+{activeMoraleDef.ChangeEnemyWeaponDestroyed}/{activeMoraleDef.ChangeAllyWeaponDestroyed})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack destroyed weapon (+{activeMoraleDef.ChangeEnemyWeaponDestroyed}/{activeMoraleDef.ChangeAllyWeaponDestroyed})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -445,7 +445,7 @@ namespace Abilifier.Patches
                             flag4 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack destroyed location (+{activeMoraleDef.ChangeEnemyLocationDestroyed}/{activeMoraleDef.ChangeAllyLocationDestroyed})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack destroyed location (+{activeMoraleDef.ChangeEnemyLocationDestroyed}/{activeMoraleDef.ChangeAllyLocationDestroyed})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -458,7 +458,7 @@ namespace Abilifier.Patches
                         {
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack damaged more than {activeMoraleDef.ThresholdMajorArmor * 100f}% of starting armor (+{activeMoraleDef.ThresholdMajorArmor * 100f}/{activeMoraleDef.ChangeEnemyMajorArmorDamage})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack damaged more than {activeMoraleDef.ThresholdMajorArmor * 100f}% of starting armor (+{activeMoraleDef.ThresholdMajorArmor * 100f}/{activeMoraleDef.ChangeEnemyMajorArmorDamage})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -471,7 +471,7 @@ namespace Abilifier.Patches
                             flag5 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack damaged more than {activeMoraleDef.ThresholdMinorArmor * 100f}% of starting armor (+{activeMoraleDef.ThresholdMinorArmor * 100f})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack damaged more than {activeMoraleDef.ThresholdMinorArmor * 100f}% of starting armor (+{activeMoraleDef.ThresholdMinorArmor * 100f})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -484,7 +484,7 @@ namespace Abilifier.Patches
                             flag6 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack caused knockdown (+{activeMoraleDef.ChangeEnemyKnockedDown}/{activeMoraleDef.ChangeAllyKnockedDown})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack caused knockdown (+{activeMoraleDef.ChangeEnemyKnockedDown}/{activeMoraleDef.ChangeAllyKnockedDown})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -498,7 +498,7 @@ namespace Abilifier.Patches
                             flag7 = true;
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: attack was succesful DFA (+{activeMoraleDef.ChangeDFADealt}/{activeMoraleDef.ChangeDFAReceived})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: attack was succesful DFA (+{activeMoraleDef.ChangeDFADealt}/{activeMoraleDef.ChangeDFAReceived})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor, activeMoraleDef.ChangeDFADealt,
@@ -583,14 +583,14 @@ namespace Abilifier.Patches
                         }
 
                         AttackDirector.attackLogger.Log($"MORALE: target killed (+{num}/{num2})");
-                        Mod.modLog.LogMessage($"MORALE: target killed (+{num}/{num2})");
+                        Mod.modLog?.Info?.Write($"MORALE: target killed (+{num}/{num2})");
                         PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                             targetActor, num, num2, flag8, flag9);
                         if (sequence.isMelee)
                         {
                             AttackDirector.attackLogger.Log(
                                 $"MORALE: target killed via melee (+{activeMoraleDef.ChangeEnemyDestroyedMeleeAdditional}/{activeMoraleDef.ChangeAllyDestroyedMeleeAdditional})");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: target killed via melee (+{activeMoraleDef.ChangeEnemyDestroyedMeleeAdditional}/{activeMoraleDef.ChangeAllyDestroyedMeleeAdditional})");
                             PilotResolveTracker.HolderInstance.ModifyPendingMoraleOverride(ref dictionary, attacker,
                                 targetActor,
@@ -628,7 +628,7 @@ namespace Abilifier.Patches
                                 }
                             }
                         }
-                        Framework.Logger.LogTrace($"[AttackDirector_ResolveSequenceMorale]: Recalculated shots hit for resolve: {attackTotalShotsHit} / {attackTotalShotsFired} vs unmodified {sequence.attackTotalShotsHit} / {sequence.attackTotalShotsFired}");
+                        Mod.modLog?.Trace?.Write($"[AttackDirector_ResolveSequenceMorale]: Recalculated shots hit for resolve: {attackTotalShotsHit} / {attackTotalShotsFired} vs unmodified {sequence.attackTotalShotsHit} / {sequence.attackTotalShotsFired}");
 
                         if (attackTotalShotsFired == 0)
                         {
@@ -643,7 +643,7 @@ namespace Abilifier.Patches
                     {
                         AttackDirector.attackLogger.Log(
                             $"MORALE: attack hit more than {activeMoraleDef.ThresholdMajorityHit * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityHit * 100f})");
-                        Mod.modLog.LogMessage(
+                        Mod.modLog?.Info?.Write(
                             $"MORALE: attack hit more than {activeMoraleDef.ThresholdMajorityHit * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityHit * 100f})");
                         PilotResolveTracker.HolderInstance.ModifyPendingMoraleForUnit(ref dictionary, attacker,
                             activeMoraleDef.ChangeMajorityAttackingShotsHit);
@@ -654,7 +654,7 @@ namespace Abilifier.Patches
                     {
                         AttackDirector.attackLogger.Log(
                             $"MORALE: attack missed more than {activeMoraleDef.ThresholdMajorityMiss * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityMiss * 100f})");
-                        Mod.modLog.LogMessage(
+                        Mod.modLog?.Info?.Write(
                             $"MORALE: attack missed more than {activeMoraleDef.ThresholdMajorityMiss * 100f}% of shots (+{activeMoraleDef.ThresholdMajorityMiss * 100f})");
 
                         PilotResolveTracker.HolderInstance.ModifyPendingMoraleForUnit(ref dictionary, attacker,
@@ -666,7 +666,7 @@ namespace Abilifier.Patches
                         int num3 = dictionary[unit];
                         AttackDirector.attackLogger.Log(string.Format("MORALE: {1} unit change = {0:+#;-#} morale",
                             num3, unit));
-                        Mod.modLog.LogMessage(string.Format("MORALE: {1} unit change = {0:+#;-#} morale", num3, unit));
+                        Mod.modLog?.Info?.Write(string.Format("MORALE: {1} unit change = {0:+#;-#} morale", num3, unit));
                         if (num3 != 0)
                         {
                             unit.ModifyResolve(sequence, num3);
@@ -708,7 +708,7 @@ namespace Abilifier.Patches
                                 unit.ModifyResolve(totalUnitBaseline);
                                 moraleLogger.Log(
                                     $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {baselineUnitMoraleGain}");
-                                Mod.modLog.LogMessage(
+                                Mod.modLog?.Info?.Write(
                                     $"MORALE: Unit {unit.DisplayName} gains {totalUnitBaseline} baseline morale from team baseline {baselineMoraleGain} and unit flat bonus {baselineUnitMoraleGain}");
                             }
 
@@ -720,7 +720,7 @@ namespace Abilifier.Patches
                         else
                         {
                             moraleLogger.Log($"MORALE: team {__instance.DisplayName} gains 0 baseline morale");
-                            Mod.modLog.LogMessage(
+                            Mod.modLog?.Info?.Write(
                                 $"MORALE: team {__instance.DisplayName} gains 0 baseline morale");
                         }
                     }
@@ -747,10 +747,10 @@ namespace Abilifier.Patches
 
                     //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
                     tray.moraleDisplay.RefreshMoraleBarTarget(true);
-                    Mod.modLog.LogMessage($"Invoked CHMB RefreshMoraleBarTarget");
+                    Mod.modLog?.Info?.Write($"Invoked CHMB RefreshMoraleBarTarget");
                     tray.moraleDisplay.Update();
                     //_CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
-                    Mod.modLog.LogMessage($"Invoked CHMB Update");
+                    Mod.modLog?.Info?.Write($"Invoked CHMB Update");
 
 
                 }
@@ -1157,7 +1157,7 @@ namespace Abilifier.Patches
 
                     __instance.StatCollection.AddStatistic<int>("maxResolveMod", 0);
 
-                    Mod.modLog.LogMessage($"Added actor stats to {__instance.GetPilot().Callsign}: resolveGenBaseMult, resolveCostBaseMult, resolveRoundBaseMod, maxResolveMod");
+                    Mod.modLog?.Info?.Write($"Added actor stats to {__instance.GetPilot().Callsign}: resolveGenBaseMult, resolveCostBaseMult, resolveRoundBaseMod, maxResolveMod");
                 }
             }
 
@@ -1189,11 +1189,11 @@ namespace Abilifier.Patches
                         return;
                     }
                     __instance.maxMorale = pilotResolveInfo.PilotMaxResolve;
-                    Mod.modLog.LogMessage($"{pilot.Callsign} ___maxMorale set to {pilotResolveInfo.PilotMaxResolve}");
-                    Mod.modLog.LogMessage($"{pilot.Callsign} current Resolve is {pilotResolveInfo.PilotResolve}");
+                    Mod.modLog?.Info?.Write($"{pilot.Callsign} ___maxMorale set to {pilotResolveInfo.PilotMaxResolve}");
+                    Mod.modLog?.Info?.Write($"{pilot.Callsign} current Resolve is {pilotResolveInfo.PilotResolve}");
 
                     int num = pilotResolveInfo.PilotResolve - __instance.moralePrevious;
-                    Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} old resolve - {__instance.moralePrevious} = {num}");
+                    Mod.modLog?.Trace?.Write($"RMBT: {pilot.Callsign} old resolve - {__instance.moralePrevious} = {num}");
                     if (num != 0 || forceRefresh)
                     {
                         float num2 = (float) pilotResolveInfo.PilotResolve;
@@ -1202,7 +1202,7 @@ namespace Abilifier.Patches
                             __instance.moraleBarPreviousWidth = __instance.moraleBar.rect.width;
                             float num3 = num2 / (float) __instance.maxMorale;
                             __instance.moraleBarTargetWidth = __instance.moraleBarMaxWidth * num3;
-                            Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {__instance.moraleBarTargetWidth}");
+                            Mod.modLog?.Trace?.Write($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {__instance.moraleBarTargetWidth}");
                             if (num2 >= (float) __instance.maxMorale)
                             {
                                 __instance.moraleTweens.SetState(ButtonState.Highlighted, true);
@@ -1228,11 +1228,11 @@ namespace Abilifier.Patches
                         else
                         {
                             CombatHUDMoraleBar.uiLogger.LogWarning($"No morale bar in UI! new morale is {num2}");
-                            Mod.modLog.LogMessage($"No morale bar in UI! new morale is {num2}");
+                            Mod.modLog?.Info?.Write($"No morale bar in UI! new morale is {num2}");
                         }
 
                         __instance.moralePrevious = pilotResolveInfo.PilotResolve;
-                        Framework.Logger.LogTrace($"RMBT: {pilot.Callsign} pilot resolve set to {__instance.moralePrevious} (___moralePrevious)");
+                        Mod.modLog?.Trace?.Write($"RMBT: {pilot.Callsign} pilot resolve set to {__instance.moralePrevious} (___moralePrevious)");
                     }
 
                     __runOriginal = false;
@@ -1270,7 +1270,7 @@ namespace Abilifier.Patches
 
                     __instance.width = __instance.moraleBarTargetWidth;
 
-                    Framework.Logger.LogTrace($"TRACE: Moralebar max height for {selectedUnitFromTraverse.GetPilot().Callsign}: {__instance.maxMorale}, width set to {__instance.width}");
+                    Mod.modLog?.Trace?.Write($"TRACE: Moralebar max height for {selectedUnitFromTraverse.GetPilot().Callsign}: {__instance.maxMorale}, width set to {__instance.width}");
 
                     __instance.lerping = false;
                     if (__instance.moraleBarTimeLerping < __instance.moraleBarLerpTime)
@@ -1310,7 +1310,7 @@ namespace Abilifier.Patches
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
                             __instance.predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.ConfirmMorale (vigilance): {__instance.predictWidth}");
+                            Mod.modLog?.Trace?.Write($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.ConfirmMorale (vigilance): {__instance.predictWidth}");
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.FireMorale)
                         {
@@ -1319,7 +1319,7 @@ namespace Abilifier.Patches
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
                             __instance.predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.FireMorale (called shot): {__instance.predictWidth}");
+                            Mod.modLog?.Trace?.Write($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for SelectionType.FireMorale (called shot): {__instance.predictWidth}");
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.MWInstant)
                         {
@@ -1332,7 +1332,7 @@ namespace Abilifier.Patches
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
                             __instance.predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
+                            Mod.modLog?.Trace?.Write($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
                         }
                         else if (__instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandTargetTwoPoints || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandSpawnTarget || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandBase || __instance.HUD.SelectionHandler.ActiveState.SelectionType == SelectionType.CommandInstant)
                         {
@@ -1345,7 +1345,7 @@ namespace Abilifier.Patches
                             __instance.predictWidth = Mathf.Max(0f, __instance.predictWidth);
                             
                             __instance.predicting = true;
-                            Framework.Logger.LogTrace($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
+                            Mod.modLog?.Trace?.Write($"TRACE: Moralebar for {selectedUnitFromTraverse.GetPilot().Callsign}: predicting width for other ability with morale cost: {__instance.predictWidth}");
                         }
                     }
 
@@ -1407,10 +1407,10 @@ namespace Abilifier.Patches
                     actor.ModifyResolve(Mathf.RoundToInt(actor.DefensivePushCost) * -1);
                     //_CHMB_RefreshMoraleBarTarget.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] {true });
                     CombatHUDMoraleBarInstance.CHMB.RefreshMoraleBarTarget(true);
-                    Mod.modLog.LogMessage($"Invoked CHMB RefreshMoraleBarTarget");
+                    Mod.modLog?.Info?.Write($"Invoked CHMB RefreshMoraleBarTarget");
                     CombatHUDMoraleBarInstance.CHMB.Update();
                     //_CHMB_Update.Invoke(CombatHUDMoraleBarInstance.CHMB, new object[] { });
-                    Mod.modLog.LogMessage($"Invoked CHMB Update");
+                    Mod.modLog?.Info?.Write($"Invoked CHMB Update");
                 }
             }
 
@@ -1486,7 +1486,7 @@ namespace Abilifier.Patches
                 {
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
@@ -1524,7 +1524,7 @@ namespace Abilifier.Patches
                 {
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;//Traverse.Create(__instance).Property("HUD").GetValue<CombatHUD>();
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
@@ -1562,7 +1562,7 @@ namespace Abilifier.Patches
                 {
 
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
@@ -1602,7 +1602,7 @@ namespace Abilifier.Patches
                 {
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor ?? combat.FindActorByGUID(creatorGUID);
                     if (theActor == null) return;
@@ -1640,7 +1640,7 @@ namespace Abilifier.Patches
                 {
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
@@ -1679,7 +1679,7 @@ namespace Abilifier.Patches
                 {
                     var combat = UnityGameInstance.BattleTechGame.Combat;
                     if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
+                    Mod.modLog?.Info?.Write($"Processing resolve costs for {__instance.Ability.Def.Description.Name}");
                     var HUD = __instance.HUD;
                     var theActor = HUD.SelectedActor;
                     if (theActor == null) return;
@@ -1759,7 +1759,7 @@ namespace Abilifier.Patches
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     var cost = Mathf.RoundToInt(__instance.Ability.Def.getAbilityDefExtension().ResolveCost * __instance.HUD.selectedUnit.GetResolveCostBaseMult());
-                    Mod.modLog.LogMessage($"Activating {__instance.Ability.Def.Description.Name} and setting predicted Resolve Cost to {cost}");
+                    Mod.modLog?.Info?.Write($"Activating {__instance.Ability.Def.Description.Name} and setting predicted Resolve Cost to {cost}");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = cost;
                 }
             }
@@ -1772,7 +1772,7 @@ namespace Abilifier.Patches
                 public static void Postfix(CombatHUDActionButton __instance)
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-                    Mod.modLog.LogMessage($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
+                    Mod.modLog?.Info?.Write($"Deactivating {__instance.Ability.Def.Description.Name} and resetting predicted Resolve Cost to 0");
                     PilotResolveTracker.HolderInstance.selectedAbilityResolveCost = 0;
                 }
             }
@@ -1789,7 +1789,7 @@ namespace Abilifier.Patches
                         if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                         var abilityDef = __instance.FromButton?.Ability?.Def;
                         if (abilityDef == null) return;
-                        Mod.modLog.LogMessage($"Processing resolve costs for {abilityDef.Description.Name}");
+                        Mod.modLog?.Info?.Write($"Processing resolve costs for {abilityDef.Description.Name}");
                         var HUD = __instance.HUD;
                         var theActor = HUD.SelectedActor;
                         if (theActor == null) return;
@@ -1830,7 +1830,7 @@ namespace Abilifier.Patches
                         if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                         var abilityDef = __instance.FromButton?.Ability?.Def;
                         if (abilityDef == null) return;
-                        Mod.modLog.LogMessage($"Processing resolve costs for {abilityDef.Description.Name}");
+                        Mod.modLog?.Info?.Write($"Processing resolve costs for {abilityDef.Description.Name}");
                         var HUD = __instance.HUD;
                         var theActor = HUD.SelectedActor;
                         if (theActor == null) return;

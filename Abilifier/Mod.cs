@@ -4,8 +4,8 @@ using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
 using HBS.Logging;
+using IRBTModUtils.Logging;
 using Newtonsoft.Json;
-using Logger = Abilifier.Framework.Logger;
 
 // ReSharper disable UnassignedField.Global
 // ReSharper disable InconsistentNaming
@@ -14,14 +14,15 @@ namespace Abilifier
 {
     public static class Mod
     {
-        public static Logger modLog;
+        //public static Logger modLog;
+        public static DeferringLogger modLog;
         public static string modDir;
         public static ILog HBSLog;
 
         public static Settings modSettings = new Settings();
         public static AbilityRealizerFramework.ModSettings AbilityRealizerSettings = new AbilityRealizerFramework.ModSettings();
         public static void FinishedLoading(List<string> loadOrder) {
-            Mod.modLog.LogMessage($"FinishedLoading");
+            Mod.modLog?.Info?.Write($"FinishedLoading");
             MEHelper.AttachTo();
         }
         
@@ -29,7 +30,8 @@ namespace Abilifier
         public static void Init(string directory, string settings)
         {
             modDir = directory;
-            modLog = new Logger(modDir, "Abilifier", true);
+            modLog = new DeferringLogger(modDir, "Abilifier", modSettings.enableDebugLog, modSettings.enableTrace);
+            //modLog = new Logger(modDir, "Abilifier", true);
             // read settings
             try
             {
@@ -39,10 +41,11 @@ namespace Abilifier
             catch (Exception e)
             {
                 modSettings = new Settings();
-                Framework.Logger.LogException(e);
+                Mod.modLog?.Error?.Write($"EXCEPTION: {e}");
+                //ModInit.modLog?.Error?.Write($"EXCEPTION: {e}");
             }
 
-            Mod.modLog.LogMessage($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
+            Mod.modLog?.Info?.Write($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
             //            Helpers.PopulateAbilities();
 
             PilotResolveTracker.HolderInstance.Initialize();
@@ -50,12 +53,13 @@ namespace Abilifier
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "ca.gnivler.BattleTech.Abilifier");
             HBSLog = HBS.Logging.Logger.GetLogger("AbilityRealizer");
             AbilityRealizerSettings.InitAR();
-            Mod.modLog.LogMessage($"Settings dump: {settings}");
+            Mod.modLog?.Info?.Write($"Settings dump: {settings}");
         }
         public class Settings
         {
             public bool debugExpiration = true;
             public bool enableTrace;
+            public bool enableDebugLog;
             public string modDirectory;
             public bool usePopUpsForAbilityDesc = false;
             public bool debugXP = false;
