@@ -1,6 +1,7 @@
 # Abilifier
 
 **Versions 1.2.0.4 and higher require modtek v3 or higher**
+
 **Versions 1.4.0.0 amd higher require IRBTModUtils, available here: https://github.com/BattletechModders/IRBTModUtils/releases**
 
 This is a mod for HBS Battletech that allows developers to give players <b>choices</b> when it comes to leveling up abilities. Special thanks to kMiSSioN for allowing the reuse of their code adding additional ability buttons to the Combat HUD.
