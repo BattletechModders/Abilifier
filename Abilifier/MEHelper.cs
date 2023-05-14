@@ -96,7 +96,7 @@ namespace Abilifier
                         if (configComponent.TargetCollectionNotMatch.All(x =>
                                 flattenedComponentTags.Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
                             foundNotMatch = true;
                         }
                     }
@@ -118,7 +118,7 @@ namespace Abilifier
                     {
                         foreach (var tag in mechDef.GetTags())
                         {
-                            if (!configUnit.TargetCollectionTagMatch.Contains(tag))
+                            if (configUnit.TargetCollectionTagMatch.Contains(tag))
                             {
                                 Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
                                 foundMatch = true;
@@ -141,7 +141,7 @@ namespace Abilifier
 
                         if (configUnit.TargetCollectionNotMatch.All(x => mechDef.GetTags().Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
                             foundNotMatch = true;
                         }
                     }

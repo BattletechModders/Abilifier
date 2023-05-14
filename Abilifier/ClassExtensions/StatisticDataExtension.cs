@@ -68,10 +68,15 @@ namespace Abilifier.Patches
     {
         public static EffectDataExtensionManager.EffectDataExtension getStatDataExtension(this EffectData statData)
         {
-            return EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.ContainsKey(
-                statData.Description.Id)
-                ? EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[statData.Description.Id]
-                : new EffectDataExtensionManager.EffectDataExtension();
+            var id = statData.statisticData.abilifierId;
+            if (string.IsNullOrEmpty(id)) { id = statData.Description.Id; }
+            if (string.IsNullOrEmpty(id)) { return new EffectDataExtensionManager.EffectDataExtension(); }
+            if (EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict.TryGetValue(id, out var result) == false)
+            {
+                result = new EffectDataExtensionManager.EffectDataExtension();
+                EffectDataExtensionManager.ManagerInstance.ExtendedEffectDataDict[id] = result;
+            }
+            return result;
         }
 
         public static List<MechComponent> GetTargetComponentsMatchingTags(ICombatant target,
@@ -84,7 +89,7 @@ namespace Abilifier.Patches
                 if (target is AbstractActor abstractActor)
                 {
                     List<Weapon> list2 = abstractActor.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                        !x.IsDisabled && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     if (list2.Count > 0)
                     {
                         list.Add(list2.GetRandomElement());
@@ -97,7 +102,7 @@ namespace Abilifier.Patches
                 if (target is AbstractActor abstractActor2)
                 {
                     List<Weapon> list3 = abstractActor2.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                        !x.IsDisabled && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     if (list3.Count > 0)
                     {
                         list3.Sort((Weapon a, Weapon b) =>
@@ -132,13 +137,13 @@ namespace Abilifier.Patches
                         else
                         {
                             list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                                x.WeaponSubType == weaponSubType && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                                x.WeaponSubType == weaponSubType && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                         }
                     }
                     else if (weaponType != WeaponType.NotSet)
                     {
                         list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                            x.Type == weaponType && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                            x.Type == weaponType && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
                     }
                     else if (!weaponCategoryValue.Is_NotSet)
                     {
@@ -149,7 +154,7 @@ namespace Abilifier.Patches
                     else
                     {
                         list4 = new List<Weapon>(
-                            abstractActor3.Weapons.FindAll(x => (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags))));
+                            abstractActor3.Weapons.FindAll(x => (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags))));
                     }
 
                     for (int i = 0; i < list4.Count; i++)
@@ -166,13 +171,13 @@ namespace Abilifier.Patches
                     if (!ammoCategoryValue.Is_NotSet)
                     {
                         list5 = abstractActor4.ammoBoxes.FindAll((AmmunitionBox x) =>
-                            x.ammoCategoryValue.Equals(ammoCategoryValue) && (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) :
+                            x.ammoCategoryValue.Equals(ammoCategoryValue) && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) :
                             tagSet.Overlaps(x.componentDef.ComponentTags)));
                     }
                     else
                     {
                         list5 = new List<AmmunitionBox>(
-                            abstractActor4.ammoBoxes.FindAll(x => (mustMatchAll ? x.componentDef.ComponentTags.All(tagSet.Contains) : tagSet.Overlaps(x.componentDef.ComponentTags))));
+                            abstractActor4.ammoBoxes.FindAll(x => (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags))));
                     }
 
                     for (int j = 0; j < list5.Count; j++)
@@ -232,6 +237,7 @@ namespace Abilifier.Patches
                                             if (configComponent.TargetCollectionTagMatch
                                                     .Contains(tag))
                                             {
+                                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
                                                 foundMatch = true;
 
                                             }
@@ -239,6 +245,7 @@ namespace Abilifier.Patches
                                             if (configComponent.TargetCollectionNotMatch
                                                 .Contains(tag))
                                             {
+                                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
                                                 foundNotMatch = true;
                                             }
                                         }
@@ -257,16 +264,19 @@ namespace Abilifier.Patches
 
                                     if (configComponent.TargetCollectionTagMatch.All(x => flattenedComponentTags.Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
                                         foundMatch = true;
                                     }
                                     if (configComponent.TargetCollectionNotMatch.All(x => flattenedComponentTags.Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
                                         foundNotMatch = true;
                                     }
                                 }
                                 if (!configComponent.TargetCollectionTagMatch.Any()) foundMatch = true;
                                 if (!foundMatch || foundNotMatch)
                                 {
+                                    Mod.modLog?.Trace?.Write($"matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
                                     __runOriginal = false;
                                     return;
                                 }
@@ -283,11 +293,13 @@ namespace Abilifier.Patches
                                     {
                                         if (configPilot.TargetCollectionTagMatch.Contains(tag))
                                         {
+                                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configPilot.TargetCollectionTagMatch}");
                                             foundMatch = true;
                                         }
 
                                         if (configPilot.TargetCollectionNotMatch.Contains(tag))
                                         {
+                                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configPilot.TargetCollectionNotMatch}");
                                             foundNotMatch = true;
                                         }
                                     }
@@ -296,17 +308,20 @@ namespace Abilifier.Patches
                                 {
                                     if (configPilot.TargetCollectionTagMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configPilot.TargetCollectionTagMatch)} should be in {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
                                         foundMatch = true;
                                     }
 
                                     if (configPilot.TargetCollectionNotMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configPilot.TargetCollectionNotMatch)} should be in {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
                                         foundNotMatch = true;
                                     }
                                 }
                                 if (!configPilot.TargetCollectionTagMatch.Any()) foundMatch = true;
                                 if (!foundMatch || foundNotMatch)
                                 {
+                                    Mod.modLog?.Trace?.Write($"matchPilotCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
                                     __runOriginal = false;
                                     return;
                                 }
@@ -321,13 +336,15 @@ namespace Abilifier.Patches
                                 {
                                     foreach (var tag in targetActor.GetTags())
                                     {
-                                        if (!configUnit.TargetCollectionTagMatch.Contains(tag))
+                                        if (configUnit.TargetCollectionTagMatch.Contains(tag))
                                         {
+                                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
                                             foundMatch = true;
                                         }
 
                                         if (configUnit.TargetCollectionNotMatch.Contains(tag))
                                         {
+                                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
                                             foundNotMatch = true;
                                         }
                                     }
@@ -336,11 +353,13 @@ namespace Abilifier.Patches
                                 {
                                     if (configUnit.TargetCollectionTagMatch.All(x => targetActor.GetTags().Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", targetActor.GetTags())}");
                                         foundMatch = true;
                                     }
 
                                     if (configUnit.TargetCollectionNotMatch.All(x => targetActor.GetTags().Contains(x)))
                                     {
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", targetActor.GetTags())}");
                                         foundNotMatch = true;
                                     }
                                 }
@@ -348,6 +367,7 @@ namespace Abilifier.Patches
                                 if (!configUnit.TargetCollectionTagMatch.Any()) foundMatch = true;
                                 if (!foundMatch || foundNotMatch)
                                 {
+                                    Mod.modLog?.Trace?.Write($"matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
                                     __runOriginal = false;
                                     return;
                                 }
@@ -356,6 +376,7 @@ namespace Abilifier.Patches
 
                             if (collectionsSuccess < collectionsToCheck)
                             {
+                                Mod.modLog?.Trace?.Write($"returned false due to collectionsSuccess {collectionsSuccess} < collectionsToCheck {collectionsToCheck}");
                                 __runOriginal = false;
                                 return;
                             }
@@ -363,12 +384,14 @@ namespace Abilifier.Patches
                         skipCollections:
                         if (extension.TargetComponentTagMatch.Count <= 0)
                         {
+                            Mod.modLog?.Trace?.Write($"return true due to extension.TargetComponentTagMatch.Count = {extension.TargetComponentTagMatch.Count}");
                             __runOriginal = true;
                             return;
                         }
 
                         if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
                         {
+                            Mod.modLog?.Trace?.Write($"return true due to targetCollection = NotSet && actor null");
                             __runOriginal = true;
                             return;
                         }
@@ -388,7 +411,6 @@ namespace Abilifier.Patches
                                     list.Add(target.StatCollection);
                                 }
                             }
-                           
                         }
 
                         if (targetCollection == StatisticEffectData.TargetCollection.Pilot)

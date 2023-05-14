@@ -30,21 +30,23 @@ namespace Abilifier
         public static void Init(string directory, string settings)
         {
             modDir = directory;
-            modLog = new DeferringLogger(modDir, "Abilifier", modSettings.enableDebugLog, modSettings.enableTrace);
+            
             //modLog = new Logger(modDir, "Abilifier", true);
             // read settings
             try
             {
                 modSettings = JsonConvert.DeserializeObject<Settings>(settings);
                 modSettings.modDirectory = modDir;
+                modLog = new DeferringLogger(modDir, "Abilifier", modSettings.enableDebugLog, modSettings.enableTrace);
             }
             catch (Exception e)
             {
                 modSettings = new Settings();
+                modLog = new DeferringLogger(modDir, "Abilifier", modSettings.enableDebugLog, modSettings.enableTrace);
                 Mod.modLog?.Error?.Write($"EXCEPTION: {e}");
                 //ModInit.modLog?.Error?.Write($"EXCEPTION: {e}");
             }
-
+            
             Mod.modLog?.Info?.Write($"Initializing Abilifier - Version {typeof(Settings).Assembly.GetName().Version}");
             //            Helpers.PopulateAbilities();
 
@@ -54,6 +56,8 @@ namespace Abilifier
             HBSLog = HBS.Logging.Logger.GetLogger("AbilityRealizer");
             AbilityRealizerSettings.InitAR();
             Mod.modLog?.Info?.Write($"Settings dump: {settings}");
+            Mod.modLog?.Trace?.Write($"TRACE ENABLED");
+            Mod.modLog?.Debug?.Write($"DEBUG ENABLED");
         }
         public class Settings
         {
