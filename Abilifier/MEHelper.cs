@@ -62,14 +62,14 @@ namespace Abilifier
                                 if (configComponent.TargetCollectionTagMatch
                                     .Contains(tag))
                                 {
-                                    Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
+                                    Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
                                     foundMatch = true;
                                 }
 
                                 if (configComponent.TargetCollectionNotMatch
                                     .Contains(tag))
                                 {
-                                    Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
+                                    Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
                                     foundNotMatch = true;
                                 }
                             }
@@ -89,22 +89,23 @@ namespace Abilifier
                         if (configComponent.TargetCollectionTagMatch.All(x =>
                                 flattenedComponentTags.Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
                             foundMatch = true;
                         }
 
                         if (configComponent.TargetCollectionNotMatch.All(x =>
                                 flattenedComponentTags.Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
                             foundNotMatch = true;
                         }
                     }
 
                     if (!configComponent.TargetCollectionTagMatch.Any()) foundMatch = true;
+                    if (!configComponent.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                     if (!foundMatch || foundNotMatch)
                     {
-                        Mod.modLog?.Trace?.Write($"matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        Mod.modLog?.Trace?.Write($"{extension.id} matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
                         matchComponentCollection = false;
                     }
                 }
@@ -120,13 +121,13 @@ namespace Abilifier
                         {
                             if (configUnit.TargetCollectionTagMatch.Contains(tag))
                             {
-                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
+                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
                                 foundMatch = true;
                             }
 
                             if (configUnit.TargetCollectionNotMatch.Contains(tag))
                             {
-                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
+                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
                                 foundNotMatch = true;
                             }
                         }
@@ -135,28 +136,29 @@ namespace Abilifier
                     {
                         if (configUnit.TargetCollectionTagMatch.All(x => mechDef.GetTags().Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", mechDef.GetTags())}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", mechDef.GetTags())}");
                             foundMatch = true;
                         }
 
                         if (configUnit.TargetCollectionNotMatch.All(x => mechDef.GetTags().Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {effectData.Description.Id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
                             foundNotMatch = true;
                         }
                     }
 
                     if (!configUnit.TargetCollectionTagMatch.Any()) foundMatch = true;
+                    if (!configUnit.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                     if (!foundMatch || foundNotMatch)
                     {
-                        Mod.modLog?.Trace?.Write($"matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        Mod.modLog?.Trace?.Write($"{extension.id} matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
                         matchUnitCollection = false;
                     }
                 }
 
                 if (!matchComponentCollection || !matchUnitCollection)
                 {
-                    Mod.modLog?.Trace?.Write($"returned false due to !matchComponentCollection {matchComponentCollection} or !matchUnitCollection {matchUnitCollection}");
+                    Mod.modLog?.Trace?.Write($"{extension.id} returned false due to !matchComponentCollection {matchComponentCollection} or !matchUnitCollection {matchUnitCollection}");
                     return false;
                 }
             }
