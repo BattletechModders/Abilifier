@@ -41,6 +41,8 @@ namespace Abilifier.Patches
             public bool TriggersUniversalCooldown { get; set; } = true;
             public bool IgnoresUniversalCooldown { get; set; } = false;
             public bool StartInCooldown { get; set; } = false;
+
+            public List<string> RestrictedTags = new List<string>();
         }
 
         public class AbilityUseInfo
@@ -177,6 +179,12 @@ namespace Abilifier.Patches
                         abilityDefJO.Remove("StartInCooldown");
                     }
 
+                    if (abilityDefJO["RestrictedTags"] != null)
+                    {
+                        state.RestrictedTags = abilityDefJO["RestrictedTags"].ToObject<string[]>().ToList();
+                        abilityDefJO.Remove("RestrictedTags");
+                    }
+
                     ModState.PendingAbilityDefExtension = state;
                     json = abilityDefJO.ToString(Formatting.Indented);
                     Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON PREFIX RAN");
@@ -190,7 +198,7 @@ namespace Abilifier.Patches
                     //    return;
                     //}
                     abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
-                    Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost {ModState.PendingAbilityDefExtension.CBillCost}, CMDPilotOverride {ModState.PendingAbilityDefExtension.CMDPilotOverride}, IgnoresUniversalCooldown {ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}, ResolveCost {ModState.PendingAbilityDefExtension.ResolveCost}, StartInCooldown {ModState.PendingAbilityDefExtension.StartInCooldown}, TargetFriendlyUnit {ModState.PendingAbilityDefExtension.TargetFriendlyUnit}, and TriggersUniversalCooldown {ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}");
+                    Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost [{ModState.PendingAbilityDefExtension.CBillCost}], CMDPilotOverride [{ModState.PendingAbilityDefExtension.CMDPilotOverride}], IgnoresUniversalCooldown [{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}], ResolveCost [{ModState.PendingAbilityDefExtension.ResolveCost}], StartInCooldown [{ModState.PendingAbilityDefExtension.StartInCooldown}], TargetFriendlyUnit [{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}], TriggersUniversalCooldown [{ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}], RestrictedTags [{string.Join(", ", ModState.PendingAbilityDefExtension.RestrictedTags)}]");
                 }
             }
 
@@ -213,6 +221,26 @@ namespace Abilifier.Patches
                             //Traverse.Create(__instance).Property("CurrentCooldown").SetValue(__instance.Def.ActivationCooldown);
                         }
                     }
+                }
+            }
+
+            [HarmonyPatch(typeof(Ability), "IsAvailable", MethodType.Getter)]
+
+            public static class Ability_IsAvailable_Getter
+            {
+                [HarmonyPriority(Priority.Last)]
+                public static void Postfix(Ability __instance, ref bool __result)
+                {
+                    if (!__result) return;
+                    if (__instance.Def.getAbilityDefExtension().RestrictedTags.Count == 0) return;
+                    if (!__instance.TryFetchParentFromAbility(out var parent)) return;
+                    if (__instance.Def.getAbilityDefExtension().RestrictedTags.Any(x => parent.GetTags().Contains(x)))
+                    {
+                        __result = false;
+                        return;
+                    }
+                    if (__instance.Def.getAbilityDefExtension().RestrictedTags.Any(x => parent.GetPilot().pilotDef.PilotTags.Contains(x)))
+                        __result = false;
                 }
             }
 

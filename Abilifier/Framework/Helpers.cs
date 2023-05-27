@@ -37,7 +37,26 @@ namespace Abilifier.Framework
         //        }
 
         // modified copy from assembly
-        [CanBeNull]
+        public static bool TryFetchParentFromAbility(this Ability ability, out AbstractActor parent)
+        {
+            parent = null;
+            if (ability?.parentComponent?.parent != null)
+            {
+                Mod.modLog?.Info?.Write($"[FetchParentFromAbility] found parent actor {ability?.parentComponent?.parent.DisplayName} {ability?.parentComponent?.parent.GUID} for ability {ability.Def.Id}");
+                parent = ability?.parentComponent?.parent;
+                return true;
+
+            }
+            else if (ability?.parentComponent?.GUID != null)
+            {
+                var guidFromAbilifier = ability.parentComponent.GUID.Substring(20);
+                parent = ability.Combat.FindActorByGUID(guidFromAbilifier);
+                Mod.modLog?.Info?.Write($"[FetchParentFromAbility] found component GUID {ability.parentComponent.GUID} for ability {ability.Def.Id}, and fetched actor from CGS");
+                if (parent != null) return true;
+            }
+            return false;
+        }
+
         public static MechComponent GenerateDummyActorAbilityComponent(this AbstractActor actor)
         {
             var mechComponent = new MechComponent();
@@ -46,7 +65,7 @@ namespace Abilifier.Framework
             return mechComponent;
         }
 
-        [CanBeNull]
+        
         public static Text ParseResolveDetailsFromConstants(this AbstractActor actor, bool isAttack, int moraleState, CombatGameConstants constants)
         {
             if (isAttack)
@@ -155,7 +174,8 @@ namespace Abilifier.Framework
             list.Add(new Text("{0}", new object[] { abilityDef.NumberOfUses }));
             text = text.Replace("[ResolveCost]", "{10}");
             list.Add(new Text("{0}", new object[] { abilityDef.getAbilityDefExtension().ResolveCost}));
-
+            text = text.Replace("[RestrictedTags]", "{11}");
+            list.Add(new Text("{0}", new object[] { string.Join(", ", abilityDef.getAbilityDefExtension().RestrictedTags) }));
             List<EffectData> effectData = abilityDef.EffectData;
             if (list.Count <= 0)
             {

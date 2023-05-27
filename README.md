@@ -212,6 +212,10 @@ Additionally, an optional new field in AbilityDefs "IgnoresUniversalCooldown" de
 
 Abilities with an optional new field "StartInCooldown" set to true will start the contract in their cooldown period.
 
+#### Ability use restricted by tags
+
+Abilities with an optional new array of string "RestrictedTags" will be unable to be used if the unit with the ability has any of the defined tags. Also applies to pilot tags. In addition, ability description text can now accept either `[RestrictedTags]` or `{11}` to parse the description tags into the description so you don't have to manually type them. 
+
 ## New Module - Resolverator!
 **This module depends on CustomActivateableEquipment**
 

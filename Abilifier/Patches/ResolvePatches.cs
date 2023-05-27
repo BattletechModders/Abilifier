@@ -12,6 +12,7 @@ using UnityEngine;
 using Text = Localize.Text;
 using CustAmmoCategories;
 using CustomAmmoCategoriesPatches;
+using BattleTech.Save.SaveGameStructure;
 
 namespace Abilifier.Patches
 {
@@ -190,14 +191,11 @@ namespace Abilifier.Patches
                     }
                     else
                     {
-                        var subStringGUID = ability.parentComponent.GUID.Substring(20);
-                        actor = combat.FindActorByGUID(subStringGUID);
-                    }
-                    
-                    if (actor == null)
-                    {
-                        __runOriginal = true;
-                        return;
+                        if (!ability.TryFetchParentFromAbility(out actor))
+                        {
+                            __runOriginal = true;
+                            return;
+                        }
                     }
 
                     string text = Localize.Strings.T(ability.Def.Description.Details);
@@ -224,6 +222,8 @@ namespace Abilifier.Patches
                     list.Add(new Text("{0}", new object[] { ability.Def.NumberOfUses }));
                     text = text.Replace("[ResolveCost]", "{10}");
                     list.Add(new Text("{0}", new object[] { Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()) }));
+                    text = text.Replace("[RestrictedTags]", "{11}");
+                    list.Add(new Text("{0}", new object[] { string.Join(", ", ability.Def.getAbilityDefExtension().RestrictedTags) }));
                     List<EffectData> effectData = ability.Def.EffectData;
                     if (list.Count <= 0)
                     {

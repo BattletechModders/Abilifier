@@ -348,50 +348,47 @@ namespace Abilifier.Patches
             public static void Postfix(SGBarracksSkillPip __instance, SGBarracksSkillPip.PurchaseState purchaseState,
                 bool canClick, bool showXP, bool needXP, bool isLocked)
             {
-                if (purchaseState == SGBarracksSkillPip.PurchaseState.Unselected)
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+
+                var abilityDefs = new List<AbilityDef>();
+                foreach (var abilityDictionary in abilityDictionaries)
                 {
-                    var sim = UnityGameInstance.BattleTechGame.Simulation;
-                    var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
-
-                    var abilityDefs = new List<AbilityDef>();
-                    foreach (var abilityDictionary in abilityDictionaries)
-                    {
-                        abilityDefs.AddRange(abilityDictionary[__instance.idx]
-                            .Where(x => x.ReqSkill.ToString() == __instance.type));
-                    }
-
-                    var title = $"{__instance.type}: Level {__instance.idx + 1} Ability Options";
-
-                    var desc = "";
-
-
-                    foreach (var ability in abilityDefs)
-                    {
-                        var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
-
-                        List<AbilityDef> abilitiesWithReqs =
-                            abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
-
-                        if (abilitiesWithReqs.Contains(ability))
-                        {
-                            var reqAbilityName = modSettings.abilityReqs
-                                .FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
-
-                            sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
-
-                            desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
-                                    reqAbility.Description.Name + "\n\n" + Helpers.ProcessAbilityDefDetailString(ability) + "\n\n\n";
-                        }
-                        else
-                        {
-                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + Helpers.ProcessAbilityDefDetailString(ability) +
-                                    "\n\n\n";
-                        }
-                    }
-
-                    var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
-                    __instance.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
+                    abilityDefs.AddRange(abilityDictionary[__instance.idx]
+                        .Where(x => x.ReqSkill.ToString() == __instance.type));
                 }
+
+                var title = $"{__instance.type}: Level {__instance.idx + 1} Ability Options";
+
+                var desc = "";
+
+
+                foreach (var ability in abilityDefs)
+                {
+                    var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                    List<AbilityDef> abilitiesWithReqs =
+                        abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
+
+                    if (abilitiesWithReqs.Contains(ability))
+                    {
+                        var reqAbilityName = modSettings.abilityReqs
+                            .FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
+
+                        sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
+
+                        desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
+                                reqAbility.Description.Name + "\n\n" + Helpers.ProcessAbilityDefDetailString(ability) + "\n\n\n";
+                    }
+                    else
+                    {
+                        desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + Helpers.ProcessAbilityDefDetailString(ability) +
+                                "\n\n\n";
+                    }
+                }
+
+                var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
+                __instance.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
             }
         }
 
