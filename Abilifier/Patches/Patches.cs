@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using Abilifier.Framework;
 using BattleTech;
 using BattleTech.Save;
@@ -720,24 +722,18 @@ namespace Abilifier.Patches
             }
         }
 
-        [HarmonyPatch(typeof(ActiveProbeSequence), "OnAdded")]
+        [HarmonyPatch(typeof(ActiveProbeSequence), "OnAdded")] //get rid of cooldown here, handle at CreateFiringOrders
         public static class ActiveProbeSequence_OnAdded_Patch
         {
+            //public static bool Prepare() => false;
             static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
-//                var codes = instructions.ToList();
-//                for (var index = 0; index < codes.Count; index++)
-//                {
-//                    if (codes[index].opcode == OpCodes.Ldfld)
-//                    {
-                return instructions.MethodReplacer(
-                    AccessTools.Property(typeof(AbstractActor), nameof(AbstractActor.ComponentAbilities))
-                        .GetGetMethod(),
-                    AccessTools.Method(typeof(Helpers), nameof(Helpers.FetchAllActorAbilities))
-                );
-//                    }
-//                }
-//                return codes.AsEnumerable();
+                var codes = instructions.ToList();
+                var targetMethod = AccessTools.Method(typeof(Ability), "ActivateCooldown", null, null);
+                var idx = codes.FindIndex(x=> x.opcode == OpCodes.Callvirt && (MethodInfo) x.operand == targetMethod);
+                codes[idx-1].opcode = OpCodes.Nop;
+                codes[idx].opcode = OpCodes.Nop;
+                return codes.AsEnumerable();
             }
         }
 

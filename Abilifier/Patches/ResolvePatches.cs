@@ -13,6 +13,7 @@ using Text = Localize.Text;
 using CustAmmoCategories;
 using CustomAmmoCategoriesPatches;
 using BattleTech.Save.SaveGameStructure;
+using CustomActivatableEquipment;
 
 namespace Abilifier.Patches
 {
@@ -1777,6 +1778,13 @@ namespace Abilifier.Patches
                 }
             }
 
+            //jneed to unfuck cooldown for sensorlock and active probe as both pilot abilities and componentns, and properly handle if poilot has both. compatiblity with flexibile sensor lock too ballsacks.
+            //add sEectionstateacriveprobeartc from CAE
+            // selectionstate firing orders will work for player, AI needs to use makeinvocation (or theyre just immune?)
+            // FSL already does cooldown for pilot ability SL if used, need to add for component
+            // Active probe does cooldown if from equipment, need to add for pilot.
+            //I hate everything.
+
             [HarmonyPatch(typeof(SelectionStateActiveProbe), "CreateFiringOrders")]
             public static class SelectionStateActiveProbe_CreateFiringOrders
             {
@@ -1785,6 +1793,49 @@ namespace Abilifier.Patches
                 {
                     if (button == "BTN_FireConfirm")
                     {
+                        __instance.FromButton.Ability.ActivateCooldown();
+                        var combat = UnityGameInstance.BattleTechGame.Combat;
+                        if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+                        var abilityDef = __instance.FromButton?.Ability?.Def;
+                        if (abilityDef == null) return;
+                        Mod.modLog?.Info?.Write($"Processing resolve costs for {abilityDef.Description.Name}");
+                        var HUD = __instance.HUD;
+                        var theActor = HUD.SelectedActor;
+                        if (theActor == null) return;
+                        if (!Mod.modSettings.enableResolverator)
+                        {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
+                            theActor.team.ModifyMorale(amt);
+                        }
+                        else
+                        {
+                            var amt = -Mathf.RoundToInt(abilityDef.getAbilityDefExtension().ResolveCost);
+                            theActor.ModifyResolve(amt);
+                        }
+                        HUD.MechWarriorTray.ResetMechwarriorButtons(theActor);
+
+                        if (!Mod.modSettings.disableCalledShotExploit) return;
+                        var selectionStack = HUD.selectionHandler.SelectionStack;
+                        var moraleState = selectionStack.FirstOrDefault(x => x is SelectionStateMoraleAttack);
+                        if (moraleState != null)
+                        {
+                            moraleState.OnInactivate();
+                            moraleState.OnRemoveFromStack();
+                            selectionStack.Remove(moraleState);
+                        }
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(SelectionStateActiveProbeArc), "CreateFiringOrders")]
+            public static class SelectionStateActiveProbeArc_CreateFiringOrders
+            {
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static void Postfix(SelectionStateActiveProbeArc __instance, string button)
+                {
+                    if (button == "BTN_FireConfirm")
+                    {
+                        __instance.FromButton.Ability.ActivateCooldown();
                         var combat = UnityGameInstance.BattleTechGame.Combat;
                         if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                         var abilityDef = __instance.FromButton?.Ability?.Def;
@@ -1826,6 +1877,7 @@ namespace Abilifier.Patches
                 {
                     if (button == "BTN_FireConfirm")
                     {
+                        __instance.FromButton.Ability.ActivateCooldown();
                         var combat = UnityGameInstance.BattleTechGame.Combat;
                         if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                         var abilityDef = __instance.FromButton?.Ability?.Def;
@@ -1855,6 +1907,42 @@ namespace Abilifier.Patches
                             moraleState.OnRemoveFromStack();
                             selectionStack.Remove(moraleState);
                         }
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(AITeam), "makeActiveAbilityInvocation")]
+            public static class AITeam_makeActiveAbilityInvocation
+            {
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static void Postfix(AITeam __instance, AbstractActor unit, OrderInfo order)
+                {
+                    //for AI we cool down both pilot and component because it sucks to suck.
+                    ActiveAbilityOrderInfo activeAbilityOrderInfo = order as ActiveAbilityOrderInfo;
+                    ActiveAbilityID activeAbilityID = activeAbilityOrderInfo.GetActiveAbilityID();
+                    if (activeAbilityID == ActiveAbilityID.SensorLock)
+                    {
+                        var pilotAbility = unit.GetPilot().GetActiveAbility(ActiveAbilityID.SensorLock);
+                        pilotAbility?.ActivateCooldown();
+                        var componentAbility = unit.ComponentAbilities.Find((Ability x) => x.Def.Targeting == AbilityDef.TargetingType.SensorLock);
+                        componentAbility?.ActivateCooldown();
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(AITeam), "makeActiveProbeInvocation")]
+            public static class AITeam_makeActiveProbeInvocation
+            {
+                //public static bool Prepare() => Mod.modSettings.enableResolverator;
+                public static void Postfix(AITeam __instance, OrderInfo order)
+                {
+                    //for AI we cool down both pilot and component because it sucks to suck.
+                    if (order is ActiveProbeOrderInfo activeProbeOrderInfo)
+                    {
+                        var pilotAbility = activeProbeOrderInfo.MovingUnit.GetPilot().Abilities.Find((Ability x) => x.Def.Targeting == AbilityDef.TargetingType.ActiveProbe);
+                        pilotAbility?.ActivateCooldown();
+                        var componentAbility = activeProbeOrderInfo.MovingUnit.ComponentAbilities.Find((Ability x) => x.Def.Targeting == AbilityDef.TargetingType.ActiveProbe);
+                        componentAbility?.ActivateCooldown();
                     }
                 }
             }
