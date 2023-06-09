@@ -41,8 +41,8 @@ namespace Abilifier.Patches
             public bool TriggersUniversalCooldown { get; set; } = true;
             public bool IgnoresUniversalCooldown { get; set; } = false;
             public bool StartInCooldown { get; set; } = false;
-
-            public List<string> RestrictedTags = new List<string>();
+            public List<string> RestrictedTags { get; set; } = new List<string>();
+            public bool ShouldLoad = false;
         }
 
         public class AbilityUseInfo
@@ -146,43 +146,51 @@ namespace Abilifier.Patches
                     {
                         state.CBillCost = (int)abilityDefJO["CBillCost"];
                         abilityDefJO.Remove("CBillCost");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
                     if (abilityDefJO["ResolveCost"] != null)
                     {
                         state.ResolveCost = (int)abilityDefJO["ResolveCost"];
                         abilityDefJO.Remove("ResolveCost");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
                     if (abilityDefJO["CMDPilotOverride"] != null)
                     {
                         state.CMDPilotOverride = (string)abilityDefJO["CMDPilotOverride"];
                         abilityDefJO.Remove("CMDPilotOverride");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
                     if (abilityDefJO["TargetFriendlyUnit"] != null)
                     {
                         state.TargetFriendlyUnit = (TargetTeam) Enum.Parse(typeof(TargetTeam), (string)abilityDefJO["TargetFriendlyUnit"]);
                         abilityDefJO.Remove("TargetFriendlyUnit");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
 
                     if (abilityDefJO["TriggersUniversalCooldown"] != null)
                     {
                         state.TriggersUniversalCooldown = (bool)abilityDefJO["TriggersUniversalCooldown"];
                         abilityDefJO.Remove("TriggersUniversalCooldown");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
                     if (abilityDefJO["IgnoresUniversalCooldown"] != null)
                     {
                         state.IgnoresUniversalCooldown = (bool)abilityDefJO["IgnoresUniversalCooldown"];
                         abilityDefJO.Remove("IgnoresUniversalCooldown");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
                     if (abilityDefJO["StartInCooldown"] != null)
                     {
                         state.StartInCooldown = (bool)abilityDefJO["StartInCooldown"];
                         abilityDefJO.Remove("StartInCooldown");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
 
                     if (abilityDefJO["RestrictedTags"] != null)
                     {
                         state.RestrictedTags = abilityDefJO["RestrictedTags"].ToObject<string[]>().ToList();
                         abilityDefJO.Remove("RestrictedTags");
+                        ModState.PendingAbilityDefExtension.ShouldLoad = true;
                     }
 
                     ModState.PendingAbilityDefExtension = state;
@@ -197,8 +205,12 @@ namespace Abilifier.Patches
                     //    abilityDefExtensionDict[__instance.Id] = __state;
                     //    return;
                     //}
-                    abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
-                    Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost [{ModState.PendingAbilityDefExtension.CBillCost}], CMDPilotOverride [{ModState.PendingAbilityDefExtension.CMDPilotOverride}], IgnoresUniversalCooldown [{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}], ResolveCost [{ModState.PendingAbilityDefExtension.ResolveCost}], StartInCooldown [{ModState.PendingAbilityDefExtension.StartInCooldown}], TargetFriendlyUnit [{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}], TriggersUniversalCooldown [{ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}], RestrictedTags [{string.Join(", ", ModState.PendingAbilityDefExtension.RestrictedTags)}]");
+                    if (ModState.PendingAbilityDefExtension.ShouldLoad)
+                    {
+                        abilityDefExtensionDict.AddOrUpdate(__instance.Id, ModState.PendingAbilityDefExtension, (k, v) => ModState.PendingAbilityDefExtension);
+                        Mod.modLog?.Trace?.Write($"[INFO] AbilityDef_FromJSON - added {__instance.Id} to dict with values CBillCost [{ModState.PendingAbilityDefExtension.CBillCost}], CMDPilotOverride [{ModState.PendingAbilityDefExtension.CMDPilotOverride}], IgnoresUniversalCooldown [{ModState.PendingAbilityDefExtension.IgnoresUniversalCooldown}], ResolveCost [{ModState.PendingAbilityDefExtension.ResolveCost}], StartInCooldown [{ModState.PendingAbilityDefExtension.StartInCooldown}], TargetFriendlyUnit [{ModState.PendingAbilityDefExtension.TargetFriendlyUnit}], TriggersUniversalCooldown [{ModState.PendingAbilityDefExtension.TriggersUniversalCooldown}], RestrictedTags [{string.Join(", ", ModState.PendingAbilityDefExtension.RestrictedTags)}]");
+                    }
+                    ModState.PendingAbilityDefExtension = new AbilityDefExtension();
                 }
             }
 
