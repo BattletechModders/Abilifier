@@ -76,8 +76,8 @@
   <PropertyGroup>
     <!-- avoids IgnoresAccessChecksToAttribute warnings -->
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
-    <AssemblyVersion>1.4.1.2</AssemblyVersion>
-    <FileVersion>1.4.1.2</FileVersion>
+    <AssemblyVersion>1.4.1.1</AssemblyVersion>
+    <FileVersion>1.4.1.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Framework\Logger.cs" />
