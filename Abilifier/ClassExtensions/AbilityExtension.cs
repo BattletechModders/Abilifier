@@ -18,10 +18,34 @@ namespace Abilifier.Patches
         FRIENDLY,
         BOTH
     }
+
+    public enum FakeAbilityDefType
+    {
+        BTN_Fire,
+        BTN_Move,
+        BTN_Sprint,
+        BTN_Jump,
+        BTN_MoraleAttack,
+        BTN_MoraleDefend
+    }
+    
     public static class AbilityExtensions
     {
+        public class FakeAbilityDef
+        {
+            public string Name { get; set; }
+            public FakeAbilityDefType FakeAbilityDefType { get; set; }
+            public int ResolveCost { get; set; } = 0;
+            public int CBillCost { get; set; } = 0;
+            public int ActivationCooldown { get; set; } = 1;
+            public bool TriggersUniversalCooldown { get; set; } = true;
+            public bool IgnoresUniversalCooldown { get; set; } = false;
+            public bool StartInCooldown { get; set; } = false;
+        }
         public static class ModState
         {
+            public static Dictionary<FakeAbilityDefType, FakeAbilityDef> FakeAbilityDefs =
+                new Dictionary<FakeAbilityDefType, FakeAbilityDef>();
             public static AbilityDefExtension PendingAbilityDefExtension = new AbilityDefExtension();
             public static List<AbilityUseInfo> AbilityUses = new List<AbilityUseInfo>();
 

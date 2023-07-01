@@ -888,6 +888,8 @@ namespace Abilifier.Patches
                 {
                     if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
                     if (actor == null || ability == null) return;
+                    var moraleBar = __instance.moraleDisplay;//Traverse.Create(__instance).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
+                    var predicting = moraleBar.predicting;//Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
                     if (!Mod.modSettings.enableResolverator)
                     {
                         if (actor.team.Morale < ability.Def.getAbilityDefExtension().ResolveCost)
@@ -895,8 +897,6 @@ namespace Abilifier.Patches
                             button.DisableButton();
                         }
 
-                        var moraleBar = __instance.moraleDisplay;//Traverse.Create(__instance).Property("moraleDisplay").GetValue<CombatHUDMoraleBar>();
-                        var predicting = moraleBar.predicting;//Traverse.Create(moraleBar).Field("predicting").GetValue<bool>();
                         if (predicting)
                         {
                             var predictWidth = moraleBar.predictWidth;//Traverse.Create(moraleBar).Field("predictWidth").GetValue<float>();
@@ -914,12 +914,15 @@ namespace Abilifier.Patches
                         if (pilotResolveInfo.PilotResolve < Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
+                            Mod.modLog?.Trace?.Write($"[CombatHUDMechwarriorTray_ResetAbilityButton_Patch] disabled {ability.Def.Id} for {actorKey} due to pilotResolve {pilotResolveInfo.PilotResolve} < cost {ability.Def.getAbilityDefExtension().ResolveCost}  x {actor.GetResolveCostBaseMult()}");
                         }
 
-                        if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
+                        if (false && pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
                             Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
+                            Mod.modLog?.Trace?.Write($"[CombatHUDMechwarriorTray_ResetAbilityButton_Patch] disabled {ability.Def.Id} for {actorKey} due to PREDICTING pilotResolve {pilotResolveInfo.PredictedResolve} < cost {ability.Def.getAbilityDefExtension().ResolveCost}  x {actor.GetResolveCostBaseMult()}");
+
                         }
                     }
                 }
@@ -1063,7 +1066,7 @@ namespace Abilifier.Patches
                             button.DisableButton();
                         }
 
-                        if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
+                        if (false && pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
                             Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                         {
                             button.DisableButton();
@@ -1087,10 +1090,17 @@ namespace Abilifier.Patches
                     var actorKey = actor.GetPilot().Fetch_rGUID();
                     if (!PilotResolveTracker.HolderInstance.pilotResolveDict.TryGetValue(actorKey, out var pilotResolveInfo))
                         return;
-                    bool flag2 = activeMoraleDef.UseOffensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
-                    bool flag3 = activeMoraleDef.UseDefensivePush &&
-                                 (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
+                    //original//bool flag2 = activeMoraleDef.UseOffensivePush && (pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
+
+                    bool flag2 = activeMoraleDef.UseOffensivePush && Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0 || pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult());
+                    //originalv2//bool flag2 = activeMoraleDef.UseOffensivePush && Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) <= 0 || (pilotResolveInfo.Predicting ? pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()) : pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.OffensivePushCost * actor.GetResolveCostBaseMult()));
+                    //original//bool flag3 = activeMoraleDef.UseDefensivePush &&(pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) && (!pilotResolveInfo.Predicting || pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult())) || Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0);
+                    //originalv2//bool flag3 = activeMoraleDef.UseDefensivePush && Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0 || (pilotResolveInfo.Predicting ? pilotResolveInfo.PredictedResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) : pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()));
+                    bool flag3 = activeMoraleDef.UseDefensivePush && Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult()) <= 0 || pilotResolveInfo.PilotResolve >= Mathf.RoundToInt(actor.DefensivePushCost * actor.GetResolveCostBaseMult());
+
+                    if (!flag2) Mod.modLog?.Trace?.Write($"[CombatHUDMechwarriorTray_ResetMechwarriorButtons_Patch] disabled called shot for {actorKey} due to PREDICTING? {pilotResolveInfo.Predicting}: pilotResolve {pilotResolveInfo.PilotResolve} || PredictedResolve {pilotResolveInfo.PredictedResolve} < cost {actor.OffensivePushCost}  x {actor.GetResolveCostBaseMult()}");
+                    if (!flag3) Mod.modLog?.Trace?.Write($"[CombatHUDMechwarriorTray_ResetMechwarriorButtons_Patch] disabled viglinence for {actorKey} due to PREDICTING? {pilotResolveInfo.Predicting}: pilotResolve {pilotResolveInfo.PilotResolve} || PredictedResolve {pilotResolveInfo.PredictedResolve} < cost {actor.DefensivePushCost}  x {actor.GetResolveCostBaseMult()}");
+
                     var flag5 = false;
 
                     foreach (var t in abilityButtons)
@@ -1103,7 +1113,8 @@ namespace Abilifier.Patches
                         }
                     }
 
-                    if (!actor.IsProne && actor.IsOperational && !actor.HasFiredThisRound &&
+                    if (!actor.IsProne && actor.IsOperational && actor.IsAvailableThisPhase &&
+                        !actor.HasFiredThisRound &&
                         __instance.Combat.TurnDirector.IsInterleaved && !flag5)
                     {
                         if (flag2)
@@ -1135,8 +1146,8 @@ namespace Abilifier.Patches
                             moraleButtons[1].DisableButton();
                             moraleButtons[1].isAutoHighlighted = false;
                         }
-
                     }
+                    else Mod.modLog?.Trace?.Write($"[CombatHUDMechwarriorTray_ResetMechwarriorButtons_Patch] not resetting buttons due to found activatedability? {flag5} or actor notavailable this phase?? {actor.IsAvailableThisPhase} or some other bullshit");
                 }
             }
 
@@ -1203,7 +1214,7 @@ namespace Abilifier.Patches
                             __instance.moraleBarPreviousWidth = __instance.moraleBar.rect.width;
                             float num3 = num2 / (float) __instance.maxMorale;
                             __instance.moraleBarTargetWidth = __instance.moraleBarMaxWidth * num3;
-                            Mod.modLog?.Trace?.Write($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {__instance.moraleBarTargetWidth}");
+                            Mod.modLog?.Debug?.Write($"RMBT: {pilot.Callsign} set ___moraleBarTargetWidth to {__instance.moraleBarTargetWidth}");
                             if (num2 >= (float) __instance.maxMorale)
                             {
                                 __instance.moraleTweens.SetState(ButtonState.Highlighted, true);
@@ -1513,6 +1524,15 @@ namespace Abilifier.Patches
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
                     }
+
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDActionButton_ActivateAbility_Confirmed] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
+                    }
                 }
             }
 
@@ -1550,6 +1570,14 @@ namespace Abilifier.Patches
                         moraleState.OnInactivate();
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
+                    }
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDActionButton_ActivateAbility_noparams] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
                     }
                 }
             }
@@ -1590,6 +1618,14 @@ namespace Abilifier.Patches
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
                     }
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDActionButton_ActivateCommandAbility_Confirmed] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
+                    }
                 }
             }
 
@@ -1629,6 +1665,14 @@ namespace Abilifier.Patches
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
                     }
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDEquipmentSlot_ActivateAbility_Confirmed] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
+                    }
                 }
             }
 
@@ -1666,6 +1710,14 @@ namespace Abilifier.Patches
                         moraleState.OnInactivate();
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
+                    }
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDEquipmentSlot_ActivateAbility_noparams] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
                     }
                 }
             }
@@ -1706,6 +1758,14 @@ namespace Abilifier.Patches
                         moraleState.OnInactivate();
                         moraleState.OnRemoveFromStack();
                         selectionStack.Remove(moraleState);
+                    }
+                    if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                    {
+                        Mod.modLog?.Trace?.Write($"[CombatHUDEquipmentSlot_ActivateCommandAbility_Confirmed] Dumping selection stack for {theActor.DisplayName}");
+                        foreach (var selection in selectionStack)
+                        {
+                            Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                        }
                     }
                 }
             }
@@ -1823,6 +1883,14 @@ namespace Abilifier.Patches
                             moraleState.OnRemoveFromStack();
                             selectionStack.Remove(moraleState);
                         }
+                        if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                        {
+                            Mod.modLog?.Trace?.Write($"[SelectionStateActiveProbe_CreateFiringOrders] Dumping selection stack for {theActor.DisplayName}");
+                            foreach (var selection in selectionStack)
+                            {
+                                Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                            }
+                        }
                     }
                 }
             }
@@ -1865,6 +1933,14 @@ namespace Abilifier.Patches
                             moraleState.OnRemoveFromStack();
                             selectionStack.Remove(moraleState);
                         }
+                        if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                        {
+                            Mod.modLog?.Trace?.Write($"[SelectionStateActiveProbeArc_CreateFiringOrders] Dumping selection stack for {theActor.DisplayName}");
+                            foreach (var selection in selectionStack)
+                            {
+                                Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                            }
+                        }
                     }
                 }
             }
@@ -1906,6 +1982,14 @@ namespace Abilifier.Patches
                             moraleState.OnInactivate();
                             moraleState.OnRemoveFromStack();
                             selectionStack.Remove(moraleState);
+                        }
+                        if (Mod.modLog?.IsTrace != null && Mod.modLog.IsTrace)
+                        {
+                            Mod.modLog?.Trace?.Write($"[SelectionStateSensorLock_CreateFiringOrders] Dumping selection stack for {theActor.DisplayName}");
+                            foreach (var selection in selectionStack)
+                            {
+                                Mod.modLog?.Trace?.Write($"--- {selection.SelectionType}");
+                            }
                         }
                     }
                 }

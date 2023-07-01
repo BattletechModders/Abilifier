@@ -28,7 +28,7 @@ namespace Abilifier.Patches
                 {
                     button.DisableButton();
                 }
-                if (pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
+                if (false && pilotResolveInfo.Predicting && pilotResolveInfo.PredictedResolve <
                     Mathf.RoundToInt(ability.Def.getAbilityDefExtension().ResolveCost * actor.GetResolveCostBaseMult()))
                 {
                     button.DisableButton();

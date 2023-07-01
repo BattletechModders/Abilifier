@@ -42,7 +42,7 @@ namespace Abilifier.Framework
             parent = null;
             if (ability?.parentComponent?.parent != null)
             {
-                Mod.modLog?.Info?.Write($"[FetchParentFromAbility] found parent actor {ability?.parentComponent?.parent.DisplayName} {ability?.parentComponent?.parent.GUID} for ability {ability.Def.Id}");
+                Mod.modLog?.Trace?.Write($"[FetchParentFromAbility] found parent actor {ability?.parentComponent?.parent.DisplayName} {ability?.parentComponent?.parent.GUID} for ability {ability.Def.Id}");
                 parent = ability?.parentComponent?.parent;
                 return true;
 
@@ -51,7 +51,7 @@ namespace Abilifier.Framework
             {
                 var guidFromAbilifier = ability.parentComponent.GUID.Substring(20);
                 parent = ability.Combat.FindActorByGUID(guidFromAbilifier);
-                Mod.modLog?.Info?.Write($"[FetchParentFromAbility] found component GUID {ability.parentComponent.GUID} for ability {ability.Def.Id}, and fetched actor from CGS");
+                Mod.modLog?.Trace?.Write($"[FetchParentFromAbility] found component GUID {ability.parentComponent.GUID} for ability {ability.Def.Id}, and fetched actor from CGS");
                 if (parent != null) return true;
             }
             return false;

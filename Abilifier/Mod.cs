@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Abilifier.Framework;
 using Abilifier.Patches;
+using BattleTech;
 using HBS.Logging;
+using HBS.Util;
 using IRBTModUtils.Logging;
 using Newtonsoft.Json;
+using static Abilifier.Patches.AbilityExtensions;
 
 // ReSharper disable UnassignedField.Global
 // ReSharper disable InconsistentNaming
@@ -59,6 +63,19 @@ namespace Abilifier
             Mod.modLog?.Trace?.Write($"TRACE ENABLED");
             Mod.modLog?.Debug?.Write($"DEBUG ENABLED");
         }
+
+        public static void FinishedLoading(Dictionary<string, Dictionary<string, VersionManifestEntry>> customResources)
+        {
+            if (customResources.ContainsKey(nameof(AbilityExtensions.FakeAbilityDef)))
+            {
+                foreach (var entry in customResources[nameof(AbilityExtensions.FakeAbilityDef)].Values)
+                {
+                    var fakeAbilityDef = JsonConvert.DeserializeObject<FakeAbilityDef>(File.ReadAllText(entry.FilePath));
+                    ModState.FakeAbilityDefs.Add(fakeAbilityDef.FakeAbilityDefType, fakeAbilityDef);
+                }
+            }
+        }
+
         public class Settings
         {
             public bool debugExpiration = true;
