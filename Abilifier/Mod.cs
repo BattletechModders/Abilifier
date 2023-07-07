@@ -25,12 +25,7 @@ namespace Abilifier
 
         public static Settings modSettings = new Settings();
         public static AbilityRealizerFramework.ModSettings AbilityRealizerSettings = new AbilityRealizerFramework.ModSettings();
-        public static void FinishedLoading(List<string> loadOrder) {
-            Mod.modLog?.Info?.Write($"FinishedLoading");
-            MEHelper.AttachTo();
-        }
         
-
         public static void Init(string directory, string settings)
         {
             modDir = directory;
@@ -63,9 +58,11 @@ namespace Abilifier
             Mod.modLog?.Trace?.Write($"TRACE ENABLED");
             Mod.modLog?.Debug?.Write($"DEBUG ENABLED");
         }
-
-        public static void FinishedLoading(Dictionary<string, Dictionary<string, VersionManifestEntry>> customResources)
+        public static void FinishedLoading(List<string> loadOrder, Dictionary<string, Dictionary<string, VersionManifestEntry>> customResources)
         {
+            Mod.modLog?.Info?.Write($"FinishedLoading");
+            MEHelper.AttachTo();
+
             if (customResources.ContainsKey(nameof(AbilityExtensions.FakeAbilityDef)))
             {
                 foreach (var entry in customResources[nameof(AbilityExtensions.FakeAbilityDef)].Values)
@@ -75,7 +72,6 @@ namespace Abilifier
                 }
             }
         }
-
         public class Settings
         {
             public bool debugExpiration = true;
