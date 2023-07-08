@@ -58,19 +58,19 @@ namespace Abilifier
             Mod.modLog?.Trace?.Write($"TRACE ENABLED");
             Mod.modLog?.Debug?.Write($"DEBUG ENABLED");
         }
-        public static void FinishedLoading(List<string> loadOrder, Dictionary<string, Dictionary<string, VersionManifestEntry>> customResources)
+        public static void FinishedLoading(List<string> loadOrder)//, Dictionary<string, Dictionary<string, VersionManifestEntry>> customResources)
         {
             Mod.modLog?.Info?.Write($"FinishedLoading");
             MEHelper.AttachTo();
 
-            if (customResources.ContainsKey(nameof(AbilityExtensions.FakeAbilityDef)))
-            {
-                foreach (var entry in customResources[nameof(AbilityExtensions.FakeAbilityDef)].Values)
-                {
-                    var fakeAbilityDef = JsonConvert.DeserializeObject<FakeAbilityDef>(File.ReadAllText(entry.FilePath));
-                    ModState.FakeAbilityDefs.Add(fakeAbilityDef.FakeAbilityDefType, fakeAbilityDef);
-                }
-            }
+            //if (customResources.TryGetValue(nameof(AbilityExtensions.FakeAbilityDef), out var resource))
+            //{
+            //    foreach (var entry in resource.Values)
+            //    {
+            //        var fakeAbilityDef = JsonConvert.DeserializeObject<FakeAbilityDef>(File.ReadAllText(entry.FilePath));
+            //        ModState.FakeAbilityDefs.Add(fakeAbilityDef.FakeAbilityDefType, fakeAbilityDef);
+            //    }
+            //}
         }
         public class Settings
         {

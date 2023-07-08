@@ -25,10 +25,12 @@ namespace Abilifier.Patches
 
     public static class RetrainerModule
     {
-        public static T? FindObject<T>(this GameObject go, string name) where T : Component
+        public static T FindObject<T>(this GameObject go, string name) where T : Component
         {
-            T?[] arr = go.GetComponentsInChildren<T>(true);
-            foreach (T? component in arr)
+            if (go == null) return null;
+            T[] arr = go.GetComponentsInChildren<T>(true);
+            if (arr == null) return null;
+            foreach (T component in arr)
             {
                 if (component?.gameObject.transform.name == name)
                 {
