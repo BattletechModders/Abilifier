@@ -50,6 +50,11 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
     "Icon" : ""
 }
 ```
+## Settings
+
+Settings available in the mod.json:
+
+[**More Details**](doc/abilifier-json.md)
 
 ## StatisticEffectData Extensions
 
@@ -62,13 +67,6 @@ Abilifier now ships with an additional config .json called `EffectDataExtensions
 A few new fields have been added to AbilityDefs, providing some additional functionality.
 
 [**More Details**](doc/ability-def.md)
-
-
-## Settings
-
-Settings available in the mod.json:
-
-[**More Details**](doc/abilifier-json.md)
 
 ## AbilityRealizer
 
