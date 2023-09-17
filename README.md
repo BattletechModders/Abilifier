@@ -55,14 +55,13 @@ To use a hover tooltip, you will need to create BaseDescriptionDef (essentially 
 
 Abilifier now ships with an additional config .json called `EffectDataExtensions.json`. This file defines optional new capabilities and restrictions for EffectData affecting StatCollections in game. The config comprises a Dictionary, where the "key" is equal to the EffectData.Description.Id for which you want to impose additional restrictions.
 
-[**More Details**](doc/abilifier-json.md)
+[**More Details**](doc/statistic-effect-data.md)
 
 ## Additional AbilityDef Fields
 
 A few new fields have been added to AbilityDefs, providing some additional functionality.
 
 [**More Details**](doc/ability-def.md)
-
 
 ## Settings
 
@@ -75,3 +74,9 @@ Settings available in the mod.json:
 As of v1.3.0.0, Abilifier has absorbed the AbilityRealizer mod. Settings for AbilityRealizer module can be found in `AbilityRealizerSettings.json` in the Abilifier mod folder. All existing settings and behavior have been maintained.
 
 [**More Details**](doc/ability_realizer-json.md)
+
+## Traits
+
+Troubleshooting information for trait pip generation.
+
+[**More Details**](doc/traits.md)

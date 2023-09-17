@@ -147,7 +147,7 @@ Guts: 5, 8
 		},
 ```
 
-`tagTraitForTree` dictionary<string, string> - further supports ability "tree" restrictions for procedurally generated piots. The "key" in this case is a Pilot Tag (primarily added by Human Resources mod.
+`tagTraitForTree` dictionary<string, string> - further supports ability "tree" restrictions for procedurally generated piots. The "key" in this case is a Pilot Tag (primarily added by Human Resources mod).
    - If the pilot in question has the "key", then the ability/trait ID indicated in the "value" is given to the pilot. The intent is for this "trait" to be the required prereq for subsequent abilities in the "tree". This ability/trait can simply be a "dummy" trait as in the following:
 ```
 {
