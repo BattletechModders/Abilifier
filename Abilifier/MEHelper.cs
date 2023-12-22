@@ -21,7 +21,7 @@ namespace Abilifier
         public static bool Filter(MechDef mechDef, MechComponentDef componentDef, EffectData effectData)
         {
             bool result = FilterReal(mechDef, componentDef, effectData);
-            Mod.modLog?.Info?.Write($"Filter {mechDef.ChassisID} component:{(componentDef==null?"null":componentDef.Description.Id)} effect:{effectData.Description.Id} result:{result}");
+            Mod.modLog?.Info?.Write($"Filter {mechDef.ChassisID} - component:{(componentDef==null?"null":componentDef.Description.Id)} - effect:{effectData.Description.Id} - result:{result}");
             return result;
         }
 
@@ -62,14 +62,14 @@ namespace Abilifier
                                 if (configComponent.TargetCollectionTagMatch
                                     .Contains(tag))
                                 {
-                                    Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
+                                    Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id} - component tag {tag} found in {configComponent.TargetCollectionTagMatch}");
                                     foundMatch = true;
                                 }
 
                                 if (configComponent.TargetCollectionNotMatch
                                     .Contains(tag))
                                 {
-                                    Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
+                                    Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id} - component tag {tag} found in {configComponent.TargetCollectionNotMatch}");
                                     foundNotMatch = true;
                                 }
                             }
@@ -89,14 +89,14 @@ namespace Abilifier
                         if (configComponent.TargetCollectionTagMatch.All(x =>
                                 flattenedComponentTags.Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id}.\r\nTags in Component TargetCollectionTagMatch: {string.Join(", ", configComponent.TargetCollectionTagMatch)}.\r\nTags in Component tags: {string.Join(", ", flattenedComponentTags)}");
                             foundMatch = true;
                         }
 
                         if (configComponent.TargetCollectionNotMatch.All(x =>
                                 flattenedComponentTags.Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id}.\r\nTags in Component TargetCollectionNotMatch: {string.Join(", ", configComponent.TargetCollectionNotMatch)}.\r\nTags in Component tags: {string.Join(", ", flattenedComponentTags)}");
                             foundNotMatch = true;
                         }
                     }
@@ -105,7 +105,7 @@ namespace Abilifier
                     if (!configComponent.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                     if (!foundMatch || foundNotMatch)
                     {
-                        Mod.modLog?.Trace?.Write($"{extension.id} matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        Mod.modLog?.Trace?.Write($"{extension.id} did not meet the tag matching criteria. Match found: {foundMatch}, Non-match found: {foundNotMatch}");
                         matchComponentCollection = false;
                     }
                 }
@@ -121,13 +121,13 @@ namespace Abilifier
                         {
                             if (configUnit.TargetCollectionTagMatch.Contains(tag))
                             {
-                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
+                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id} - component tag {tag} found in {configUnit.TargetCollectionTagMatch}");
                                 foundMatch = true;
                             }
 
                             if (configUnit.TargetCollectionNotMatch.Contains(tag))
                             {
-                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
+                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id} - component tag {tag} found in {configUnit.TargetCollectionNotMatch}");
                                 foundNotMatch = true;
                             }
                         }
@@ -136,13 +136,13 @@ namespace Abilifier
                     {
                         if (configUnit.TargetCollectionTagMatch.All(x => mechDef.GetTags().Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", mechDef.GetTags())}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id}.\r\nTags in Mech TargetCollectionTagMatch: {string.Join(", ", configUnit.TargetCollectionTagMatch)}.\r\nTags in Mech tags: {string.Join(", ", mechDef.GetTags())}");
                             foundMatch = true;
                         }
 
                         if (configUnit.TargetCollectionNotMatch.All(x => mechDef.GetTags().Contains(x)))
                         {
-                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", mechDef.GetTags())}");
+                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id}.\r\nTags in Mech TargetCollectionNotMatch: {string.Join(", ", configUnit.TargetCollectionNotMatch)}.\r\nTags in Mech tags: {string.Join(", ", mechDef.GetTags())}");
                             foundNotMatch = true;
                         }
                     }
@@ -151,14 +151,14 @@ namespace Abilifier
                     if (!configUnit.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                     if (!foundMatch || foundNotMatch)
                     {
-                        Mod.modLog?.Trace?.Write($"{extension.id} matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                        Mod.modLog?.Trace?.Write($"{extension.id} - The unit tag collection did not meet the matching criteria. Match found: {foundMatch}, Non-match found: {foundNotMatch}");
                         matchUnitCollection = false;
                     }
                 }
 
                 if (!matchComponentCollection || !matchUnitCollection)
                 {
-                    Mod.modLog?.Trace?.Write($"{extension.id} returned false due to !matchComponentCollection {matchComponentCollection} or !matchUnitCollection {matchUnitCollection}");
+                    Mod.modLog?.Trace?.Write($"{extension.id} - Operation returned false because either the component or unit tag collections did not meet the matching criteria. Component match: {matchComponentCollection}, Unit match: {matchUnitCollection}");
                     return false;
                 }
             }
