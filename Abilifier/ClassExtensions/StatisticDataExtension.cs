@@ -215,7 +215,7 @@ namespace Abilifier.Patches
                     if (target is AbstractActor targetActor)
                     {
                         var extension = effectData.getStatDataExtension();
-                        Mod.modLog?.Trace?.Write($"[TRACE] Process extensions for {targetActor.Description.Id} {targetActor.GUID} extension {extension.id}");
+                        Mod.modLog?.Trace?.Write($"[TRACE] Process extensions for {targetActor.Description.Id} - {targetActor.GUID}: extension {extension.id}");
                         var targetCollectionsForSearch = extension.TargetCollectionsForSearch;
                         if (targetCollectionsForSearch.Count > 0)
                         {
@@ -243,7 +243,7 @@ namespace Abilifier.Patches
                                             if (configComponent.TargetCollectionTagMatch
                                                     .Contains(tag))
                                             {
-                                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionTagMatch}");
+                                                Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id} - component tag {tag} found in {configComponent.TargetCollectionTagMatch}");
                                                 foundMatch = true;
 
                                             }
@@ -251,7 +251,7 @@ namespace Abilifier.Patches
                                             if (configComponent.TargetCollectionNotMatch
                                                 .Contains(tag))
                                             {
-                                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configComponent.TargetCollectionNotMatch}");
+                                                Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id} - component tag {tag} found in {configComponent.TargetCollectionNotMatch}");
                                                 foundNotMatch = true;
                                             }
                                         }
@@ -270,12 +270,12 @@ namespace Abilifier.Patches
 
                                     if (configComponent.TargetCollectionTagMatch.All(x => flattenedComponentTags.Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionTagMatch)} should be in {string.Join(", ", flattenedComponentTags)}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id}.\r\nTags in Component TargetCollectionTagMatch: {string.Join(", ", configComponent.TargetCollectionTagMatch)}.\r\nTags in Component tags: {string.Join(", ", flattenedComponentTags)}");
                                         foundMatch = true;
                                     }
                                     if (configComponent.TargetCollectionNotMatch.All(x => flattenedComponentTags.Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configComponent.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", flattenedComponentTags)}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id}.\r\nTags in Component TargetCollectionNotMatch: {string.Join(", ", configComponent.TargetCollectionNotMatch)}.\r\nTags in Component tags: {string.Join(", ", flattenedComponentTags)}");
                                         foundNotMatch = true;
                                     }
                                 }
@@ -283,7 +283,7 @@ namespace Abilifier.Patches
                                 if (!configComponent.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                                 if (!foundMatch || foundNotMatch)
                                 {
-                                    Mod.modLog?.Trace?.Write($"{extension.id} matchComponentCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                                    Mod.modLog?.Trace?.Write($"{extension.id} did not meet the tag matching criteria. Match found: {foundMatch}, Non-match found: {foundNotMatch}");
                                     __runOriginal = false;
                                     return;
                                 }
@@ -300,13 +300,13 @@ namespace Abilifier.Patches
                                     {
                                         if (configPilot.TargetCollectionTagMatch.Contains(tag))
                                         {
-                                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configPilot.TargetCollectionTagMatch}");
+                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for match check: {configPilot.TargetCollectionMatch}.");
                                             foundMatch = true;
                                         }
 
                                         if (configPilot.TargetCollectionNotMatch.Contains(tag))
                                         {
-                                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configPilot.TargetCollectionNotMatch}");
+                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for non-match check: {configPilot.TargetCollectionNotMatch}.");
                                             foundNotMatch = true;
                                         }
                                     }
@@ -315,13 +315,13 @@ namespace Abilifier.Patches
                                 {
                                     if (configPilot.TargetCollectionTagMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configPilot.TargetCollectionTagMatch)} should be in {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id}.\r\nTags in Pilot TargetCollectionTagMatch: {string.Join(", ", configPilot.TargetCollectionTagMatch)}.\r\nTags in Pilot tags: {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
                                         foundMatch = true;
                                     }
 
                                     if (configPilot.TargetCollectionNotMatch.All(x => targetActor.GetPilot().pilotDef.PilotTags.Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configPilot.TargetCollectionNotMatch)} should be in {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id}.\r\nTags in Pilot TargetCollectionNotMatch: {string.Join(", ", configPilot.TargetCollectionNotMatch)}.\r\nTags in Pilot tags: {string.Join(", ", targetActor.GetPilot().pilotDef.PilotTags)}");
                                         foundNotMatch = true;
                                     }
                                 }
@@ -329,7 +329,7 @@ namespace Abilifier.Patches
                                 if (!configPilot.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                                 if (!foundMatch || foundNotMatch)
                                 {
-                                    Mod.modLog?.Trace?.Write($"{extension.id} matchPilotCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                                    Mod.modLog?.Trace?.Write($"{extension.id} - The pilot tag collection did not meet the matching criteria. Match found: {foundMatch}, Non-match found: {foundNotMatch}");
                                     __runOriginal = false;
                                     return;
                                 }
@@ -346,13 +346,13 @@ namespace Abilifier.Patches
                                     {
                                         if (configUnit.TargetCollectionTagMatch.Contains(tag))
                                         {
-                                            Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionTagMatch}");
+                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for match check: {configUnit.TargetCollectionTagMatch}.");
                                             foundMatch = true;
                                         }
 
                                         if (configUnit.TargetCollectionNotMatch.Contains(tag))
                                         {
-                                            Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} component {tag} found in {configUnit.TargetCollectionNotMatch}");
+                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for non-match check: {configUnit.TargetCollectionNotMatch}.");
                                             foundNotMatch = true;
                                         }
                                     }
@@ -361,13 +361,13 @@ namespace Abilifier.Patches
                                 {
                                     if (configUnit.TargetCollectionTagMatch.All(x => targetActor.GetTags().Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionTagMatch)} should be in {string.Join(", ", targetActor.GetTags())}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] MATCH check: {extension.id}.\r\nTags in Unit TargetCollectionTagMatch: {string.Join(", ", configUnit.TargetCollectionTagMatch)}.\r\nTags in Unit tags: {string.Join(", ", targetActor.GetTags())}");
                                         foundMatch = true;
                                     }
 
                                     if (configUnit.TargetCollectionNotMatch.All(x => targetActor.GetTags().Contains(x)))
                                     {
-                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check {extension.id} all tags in {string.Join(", ", configUnit.TargetCollectionNotMatch)} should NOT be in {string.Join(", ", targetActor.GetTags())}");
+                                        Mod.modLog?.Trace?.Write($"[TRACE] NOT MATCH check: {extension.id}.\r\nTags in Unit TargetCollectionNotMatch: {string.Join(", ", configUnit.TargetCollectionNotMatch)}.\r\nTags in Unit tags: {string.Join(", ", targetActor.GetTags())}");
                                         foundNotMatch = true;
                                     }
                                 }
@@ -376,7 +376,8 @@ namespace Abilifier.Patches
                                 if (!configUnit.TargetCollectionNotMatch.Any()) foundNotMatch = false;
                                 if (!foundMatch || foundNotMatch)
                                 {
-                                    Mod.modLog?.Trace?.Write($"{extension.id} matchUnitCollection false due to !foundMatch {foundMatch} or foundNotMatch {foundNotMatch}");
+                                    Mod.modLog?.Trace?.Write($"{extension.id} - The Unit tag collection did not meet the matching criteria. Match found: {foundMatch}, Non-match found: {foundNotMatch}");
+
                                     __runOriginal = false;
                                     return;
                                 }
@@ -385,7 +386,7 @@ namespace Abilifier.Patches
 
                             if (collectionsSuccess < collectionsToCheck)
                             {
-                                Mod.modLog?.Trace?.Write($"{extension.id} returned false due to collectionsSuccess {collectionsSuccess} < collectionsToCheck {collectionsToCheck}");
+                                Mod.modLog?.Trace?.Write($"{extension.id} - Operation stopped because the number of successful collections {collectionsSuccess} is less than the total collections to check {collectionsToCheck}");
                                 __runOriginal = false;
                                 return;
                             }
@@ -393,15 +394,14 @@ namespace Abilifier.Patches
                         skipCollections:
                         if (extension.TargetComponentTagMatch.Count <= 0)
                         {
-                            Mod.modLog?.Trace?.Write($"{extension.id} return true due to extension.TargetComponentTagMatch.Count = {extension.TargetComponentTagMatch.Count}");
+                            Mod.modLog?.Trace?.Write($"{extension.id} - skipCollections operation returned true because there are no tags to match in the target component.");
                             __runOriginal = true;
                             return;
                         }
 
                         if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor == null)
                         {
-                            Mod.modLog?.Trace?.Write($"{extension.id} return true due to targetCollection = NotSet && actor null");
-                            __runOriginal = true;
+                            Mod.modLog?.Trace?.Write($"{extension.id} - skipCollections operation returned true because the target collection is not set and the actor is null.");
                             return;
                         }
 
