@@ -65,7 +65,17 @@ namespace Abilifier.Framework
             return mechComponent;
         }
 
-        
+        public static List<SkillType> GetSortedSkillsList(this SimGameState sim, PilotDef p)
+        {
+            var skillCount = sim.GetSortedSkillCount(p).ToList().OrderByDescending(x => x.Value);
+            var sortedSkillsList = new List<SkillType>();
+            foreach (var skill in skillCount)
+            {
+                sortedSkillsList.Add(skill.Key);
+            }
+            return sortedSkillsList;
+        }
+
         public static Text ParseResolveDetailsFromConstants(this AbstractActor actor, bool isAttack, int moraleState, CombatGameConstants constants)
         {
             if (isAttack)

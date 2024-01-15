@@ -664,6 +664,38 @@ namespace Abilifier.Patches
             }
         }
 
+        [HarmonyPatch(typeof(SimGameState), "GetPrimaryPilotStatString")]
+        public static class SimGameState_GetPrimaryPilotStatString
+        {
+            public static void Prefix(ref bool __runOriginal, SimGameState __instance, Pilot p, ref string __result)
+            {
+                if (!__runOriginal) return;
+                var skillOrder = __instance.GetSortedSkillsList(p.pilotDef);
+                if (skillOrder == null || skillOrder.Count == 0) return;
+                __result = skillOrder[0].ToString();
+                __runOriginal = false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SimGameState), "GetSecondaryPilotStatString")]
+        public static class SimGameState_GetSecondaryPilotStatString
+        {
+            public static void Prefix(ref bool __runOriginal, SimGameState __instance, Pilot p, bool allowEqual, ref string __result)
+            {
+                if (!__runOriginal) return;
+                var skillOrder = __instance.GetSortedSkillsList(p.pilotDef);
+                if (skillOrder == null || skillOrder.Count == 0) return;
+                var idx = 0;
+                if (skillOrder.Count > 1)
+                {
+                    idx = 1;
+                }
+                __result = skillOrder[idx].ToString();
+                __runOriginal = false;
+            }
+        }
+
+
         [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
         public static class SimGameState_Rehydrate_Patch
         {
