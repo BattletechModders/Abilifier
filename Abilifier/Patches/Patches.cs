@@ -170,7 +170,7 @@ namespace Abilifier.Patches
                 {
                     Mod.modLog?.Trace?.Write($"Removing {type} {value}");
                     Mod.modLog?.Trace?.Write($"{pips[type][value].Ability}");
-                    Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value));
+                    Helpers.SetTempPilotSkill(type, value, -sim.GetLevelCost(value), __instance);
                     Mod.modLog?.Trace?.Write($"{string.Join(", ", __instance.curPilot.pilotDef.abilityDefNames)}");
                     //__instance.curPilot.pilotDef.abilityDefNames.Do(Mod.modLog?.Trace?.Write);
                     Mod.modLog?.Trace?.Write("\n");
@@ -185,7 +185,7 @@ namespace Abilifier.Patches
                         .hasAbility) //!Traverse.Create(pips[type][value]).Field("hasAbility").GetValue<bool>())
                 {
                     Mod.modLog?.Trace?.Write("Non-ability pip");
-                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), __instance);
                     Mod.modLog?.Trace?.Write($"{string.Join(", ", __instance.curPilot.pilotDef.abilityDefNames)}");
                     //__instance.curPilot.pilotDef.abilityDefNames.Do(Mod.modLog?.Trace?.Write);
                     Mod.modLog?.Trace?.Write("\n");
@@ -215,7 +215,7 @@ namespace Abilifier.Patches
                 if (abilityDefs.Count <= 1)
                 {
                     Mod.modLog?.Trace?.Write($"Single ability for {type}|{value}, skipping");
-                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), __instance);
                     __runOriginal = false;
                     return;
                 }
@@ -232,7 +232,7 @@ namespace Abilifier.Patches
                 {
                     Mod.modLog?.Trace?.Write(new string('=', 50));
                     Mod.modLog?.Trace?.Write("curButton != skillButton");
-                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value));
+                    Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), __instance);
                     __runOriginal = false;
                     return;
                 }
@@ -327,7 +327,7 @@ namespace Abilifier.Patches
                             //Traverse.Create(pip).Field("thisAbility").SetValue(abilityDef);
                             //Traverse.Create(pip).Field("abilityIcon").GetValue<SVGImage>().vectorGraphics = abilityDef.AbilityIcon;
                             //Traverse.Create(pip).Field("AbilityTooltip").GetValue<HBSTooltip>().SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(abilityDef.Description));
-                            Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), abilityDef);
+                            Helpers.SetTempPilotSkill(type, value, sim.GetLevelCost(value), __instance, abilityDef);
                         });
                 }
 

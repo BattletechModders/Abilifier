@@ -344,13 +344,13 @@ namespace Abilifier.Framework
                 {
                     Mod.modLog?.Trace?.Write($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                     // this is the only change - calling public implementation
-                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), abilityDef[0]);
+                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), panel, abilityDef[0]);
                 }
                 else
                 {
                     Mod.modLog?.Trace?.Write($"Resetting {keyValuePair.Key} {keyValuePair.Value}");
                     // this is the only change - calling public implementation
-                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value));
+                    SetTempPilotSkill(keyValuePair.Key, keyValuePair.Value, sim.GetLevelCost(keyValuePair.Value), panel);
                 }
             }
 
@@ -360,18 +360,18 @@ namespace Abilifier.Framework
         }
 
         // modified copy from assembly
-        public static void SetTempPilotSkill(string type, int skill, int expAmount, AbilityDef abilityDef = null)
+        public static void SetTempPilotSkill(string type, int skill, int expAmount, SGBarracksAdvancementPanel panel, AbilityDef abilityDef = null)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var abilityTree = sim.AbilityTree[type][skill];
 
-            var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
+            //var panel = Resources.FindObjectsOfTypeAll<SGBarracksAdvancementPanel>().First();
 
             //var traverse = Traverse.Create(panel);
 
             //    var curPilot = Traverse.Create(panel).Field("curPilot").GetValue<Pilot>();
-            var curPilot = panel.curPilot;//traverse.Field("curPilot").GetValue<Pilot>();
-
+            var curPilot = panel?.curPilot;//traverse.Field("curPilot").GetValue<Pilot>();
+            if (curPilot == null) return;
             var pilotDef = curPilot.ToPilotDef(true);
             pilotDef.DataManager = sim.DataManager;
             //    var upgradedSkills = Traverse.Create(panel).Field("upgradedSkills").GetValue<OrderedDictionary>();
