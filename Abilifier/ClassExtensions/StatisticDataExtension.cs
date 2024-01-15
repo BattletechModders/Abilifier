@@ -300,7 +300,7 @@ namespace Abilifier.Patches
                                     {
                                         if (configPilot.TargetCollectionTagMatch.Contains(tag))
                                         {
-                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for match check: {configPilot.TargetCollectionMatch}.");
+                                            Mod.modLog?.Trace?.Write($"[TRACE] {extension.id} - Found matching tag {tag} in the target collection for match check: {configPilot.TargetCollectionTagMatch}.");
                                             foundMatch = true;
                                         }
 
