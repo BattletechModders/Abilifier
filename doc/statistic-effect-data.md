@@ -39,6 +39,9 @@ For example, in `EffectDataExtensions.json` I have:
 			"Potato_Gun",
 			"Tomato_Gun"
 		],
+		"TargetComponentTagNotMatch": [
+			"nope"
+		],
 		"MustMatchAllComponent": false
 	},
 	"AccMod1": {
@@ -132,8 +135,8 @@ In the above example config for "StatusEffect-PotatoAccuracy", `TargetCollection
 - It likewise cannot have either of `test_unit_not_tag1` or `test_unit_not_tag2`. Again, requirements for both configured collections, Component and Unit, must be met.
 
 Ok, so lets say all those requirements are met. The 2nd step filters using `TargetComponentTagMatch`.
-- In this case, we have `Potato_Gun` amd `Tomato_Gun`, and `MustMatchAllComponent` is set to false. This means that components containing either the `Potato_Gun` or `Tomato_Gun` tags will receive the +20 accuracy bonus.
-- Similar to above, if `MustMatchAllComponent` was set to true, only components containing _both_ `Potato_Gun` AND `Tomato_Gun` will receive the effect.
+- In this case, we have `Potato_Gun` amd `Tomato_Gun`, and `MustMatchAllComponent` is set to false. This means that components containing either the `Potato_Gun` or `Tomato_Gun` tags will receive the +20 accuracy bonus, *unless* said component has the component tag `nope`.
+- Similar to above, if `MustMatchAllComponent` was set to true, only components containing _both_ `Potato_Gun` AND `Tomato_Gun` will receive the effect. If multiple tags are configured in `TargetComponentTagNotMatch` and `MustMatchAllComponent` is true, then a component must have all of those tags in order to be excluded.
 - If `TargetComponentTagMatch` is left empty, all valid components (see below note) would receive the effect.
 
 Note: this function still respects the existing restrictions of targetCollection, targetAmmoCategory, etc., with a few differences based on what TargetCollection, if any, is selected.
