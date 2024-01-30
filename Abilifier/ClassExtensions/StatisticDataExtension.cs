@@ -5,7 +5,6 @@ using System.Linq;
 using BattleTech;
 using HBS.Collections;
 using Newtonsoft.Json;
-using static Org.BouncyCastle.Crypto.Modes.EaxBlockCipher;
 
 namespace Abilifier.Patches
 {
@@ -86,15 +85,18 @@ namespace Abilifier.Patches
 
         public static List<MechComponent> GetTargetComponentsMatchingTags(ICombatant target,
             StatisticEffectData.TargetCollection targetCollection, WeaponSubType weaponSubType, WeaponType weaponType,
-            WeaponCategoryValue weaponCategoryValue, AmmoCategoryValue ammoCategoryValue, TagSet tagSet, bool mustMatchAll)
+            WeaponCategoryValue weaponCategoryValue, AmmoCategoryValue ammoCategoryValue, EffectDataExtensionManager.EffectDataExtension extension)
         {
             List<MechComponent> list = new List<MechComponent>();
+            bool mustMatchAll = extension.MustMatchAllComponent;
+            TagSet matchTagSet = extension.TargetComponentTagMatch;
+            TagSet notMatchTagSet = extension.TargetComponentTagNotMatch;
             if (targetCollection == StatisticEffectData.TargetCollection.SingleRandomWeapon)
             {
                 if (target is AbstractActor abstractActor)
                 {
                     List<Weapon> list2 = abstractActor.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                        !x.IsDisabled && (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                     if (list2.Count > 0)
                     {
                         list.Add(list2.GetRandomElement());
@@ -107,7 +109,7 @@ namespace Abilifier.Patches
                 if (target is AbstractActor abstractActor2)
                 {
                     List<Weapon> list3 = abstractActor2.Weapons.FindAll((Weapon x) =>
-                        !x.IsDisabled && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                        !x.IsDisabled && (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                     if (list3.Count > 0)
                     {
                         list3.Sort((Weapon a, Weapon b) =>
@@ -142,28 +144,30 @@ namespace Abilifier.Patches
                         else
                         {
                             list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                                x.WeaponSubType == weaponSubType && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                                x.WeaponSubType == weaponSubType && (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                         }
                     }
                     else if (weaponType != WeaponType.NotSet)
                     {
                         list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
-                            x.Type == weaponType && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags)));
+                            x.Type == weaponType && (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                     }
                     else if (!weaponCategoryValue.Is_NotSet)
                     {
                         list4 = abstractActor3.Weapons.FindAll((Weapon x) =>
                             x.WeaponCategoryValue.ID == weaponCategoryValue.ID &&
-                            tagSet.Overlaps(x.componentDef.ComponentTags));
+                            (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                     }
                     else
                     {
+                        Mod.modLog?.Trace?.Write($"{extension.id} - check all weapons");
                         list4 = new List<Weapon>(
-                            abstractActor3.Weapons.FindAll(x => (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags))));
+                            abstractActor3.Weapons.FindAll(x => (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags))));
                     }
 
                     for (int i = 0; i < list4.Count; i++)
                     {
+                        Mod.modLog?.Trace?.Write($"{extension.id} - adding {list4[i].weaponDef.Description.Id} to result");
                         list.Add(list4[i]);
                     }
                 }
@@ -176,13 +180,12 @@ namespace Abilifier.Patches
                     if (!ammoCategoryValue.Is_NotSet)
                     {
                         list5 = abstractActor4.ammoBoxes.FindAll((AmmunitionBox x) =>
-                            x.ammoCategoryValue.Equals(ammoCategoryValue) && (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) :
-                            tagSet.Overlaps(x.componentDef.ComponentTags)));
+                            x.ammoCategoryValue.Equals(ammoCategoryValue) && (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags)));
                     }
                     else
                     {
                         list5 = new List<AmmunitionBox>(
-                            abstractActor4.ammoBoxes.FindAll(x => (mustMatchAll ? tagSet.All(s => x.componentDef.ComponentTags.Contains(s)) : tagSet.Overlaps(x.componentDef.ComponentTags))));
+                            abstractActor4.ammoBoxes.FindAll(x => (mustMatchAll ? MatchAllTags(extension, x.componentDef.ComponentTags) : MatchAnyTag(extension, x.componentDef.ComponentTags))));
                     }
 
                     for (int j = 0; j < list5.Count; j++)
@@ -392,7 +395,7 @@ namespace Abilifier.Patches
                             }
                         }
                         skipCollections:
-                        if (extension.TargetComponentTagMatch.Count <= 0)
+                        if (extension.TargetComponentTagMatch.IsEmpty && extension.TargetComponentTagNotMatch.IsEmpty)
                         {
                             Mod.modLog?.Trace?.Write($"{extension.id} - skipCollections operation returned true because there are no tags to match in the target component.");
                             __runOriginal = true;
@@ -407,16 +410,20 @@ namespace Abilifier.Patches
 
                         if (targetCollection == StatisticEffectData.TargetCollection.NotSet && targetActor != null)
                         {
+                            Mod.modLog?.Trace?.Write($"{extension.id} - no TargetCollection, has TargetActor.");
                             if (!extension.MustMatchAllComponent)
                             {
-                                if (extension.TargetComponentTagMatch
-                                    .Overlaps(targetActor.GetTags()))
+                                if (MatchAnyTag(extension, targetActor.GetTags()))
+                                {
+                                    Mod.modLog?.Trace?.Write($"{extension.id} - no TargetCollection, has TargetActor  - adding target to result");
                                     list.Add(target.StatCollection);
+                                }
                             }
                             else
                             {
-                                if (extension.TargetComponentTagMatch.All(x => targetActor.GetTags().Contains(x)))
+                                if (MatchAllTags(extension, targetActor.GetTags()))
                                 {
+                                    Mod.modLog?.Trace?.Write($"{extension.id} - no TargetCollection, has TargetActor  - adding target to result");
                                     list.Add(target.StatCollection);
                                 }
                             }
@@ -429,13 +436,12 @@ namespace Abilifier.Patches
                                 var pilot = target.GetPilot();
                                 if (!extension.MustMatchAllComponent)
                                 {
-                                    if (extension.TargetComponentTagMatch
-                                        .Overlaps(pilot.pilotDef.PilotTags))
+                                    if (MatchAnyTag(extension, pilot.pilotDef.PilotTags))
                                         list.Add(target.GetPilot().StatCollection);
                                 }
                                 else
                                 {
-                                    if (extension.TargetComponentTagMatch.All(x => pilot.pilotDef.PilotTags.Contains(x)))
+                                    if (MatchAllTags(extension, pilot.pilotDef.PilotTags))
                                     {
                                         list.Add(target.GetPilot().StatCollection);
                                     }
@@ -449,7 +455,7 @@ namespace Abilifier.Patches
                                 targetCollection,
                                 targetWeaponSubType, targetWeaponType, targetWeaponCategoryValue,
                                 targetAmmoCategoryValue,
-                                extension.TargetComponentTagMatch, extension.MustMatchAllComponent);
+                                extension);
                             for (int i = 0; i < targetComponents.Count; i++)
                             {
                                 list.Add(targetComponents[i].StatCollection);
@@ -464,7 +470,38 @@ namespace Abilifier.Patches
                     __runOriginal = true;
                     return;
                 }
+
             }
+        }
+
+        public static bool MatchAllTags(EffectDataExtensionManager.EffectDataExtension extension, TagSet targetTagSet)
+        {
+            bool foundAllTags = extension.TargetComponentTagMatch.IsEmpty || extension.TargetComponentTagMatch.All(x => targetTagSet.Contains(x));
+            bool foundAllNotTags = extension.TargetComponentTagNotMatch.All(x => targetTagSet.Contains(x));
+            if (Mod.modLog != null && Mod.modLog.IsTrace)
+            {
+                string targetComponentTagMatchString = extension.TargetComponentTagMatch.IsEmpty ? "empty" : string.Join(", ", extension.TargetComponentTagMatch);
+                string targetComponentNotTagMatchString = extension.TargetComponentTagNotMatch.IsEmpty ? "empty" : string.Join(", ", extension.TargetComponentTagNotMatch);
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAllTags target:[{string.Join(", ", targetTagSet)}]");
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAllTags query TargetComponentTagMatch:[{targetComponentTagMatchString}]  TargetComponentTagNotMatch:[{targetComponentNotTagMatchString}]");
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAllTags result foundMatch:{foundAllTags} foundNotMatch:{foundAllNotTags}");
+            }
+            return foundAllTags && !foundAllNotTags;
+        }
+
+        public static bool MatchAnyTag(EffectDataExtensionManager.EffectDataExtension extension, TagSet targetTagSet)
+        {
+            bool foundMatch = extension.TargetComponentTagMatch.IsEmpty || extension.TargetComponentTagMatch.Overlaps(targetTagSet);
+            bool foundNotMatch = extension.TargetComponentTagNotMatch.Overlaps(targetTagSet);
+            if (Mod.modLog != null && Mod.modLog.IsTrace) 
+            {
+                string targetComponentTagMatchString = extension.TargetComponentTagMatch.IsEmpty ? "empty" : string.Join(", ", extension.TargetComponentTagMatch);
+                string targetComponentNotTagMatchString = extension.TargetComponentTagNotMatch.IsEmpty ? "empty" : string.Join(", ", extension.TargetComponentTagNotMatch);
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAnyTags target:[{string.Join(", ", targetTagSet)}]");
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAnyTags query TargetComponentTagMatch:[{targetComponentTagMatchString}]  TargetComponentTagNotMatch:[{targetComponentNotTagMatchString}]");
+                Mod.modLog?.Trace?.Write($"{extension.id} - MatchAnyTags result foundMatch:{foundMatch} foundNotMatch:{foundNotMatch}");
+            }
+            return foundMatch && !foundNotMatch;
         }
     }
 }
