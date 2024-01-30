@@ -165,7 +165,7 @@ namespace Abilifier
 
             skipCollections:
 
-            if (extension.TargetComponentTagMatch.Count == 0)
+            if (extension.TargetComponentTagMatch.IsEmpty && extension.TargetComponentTagNotMatch.IsEmpty)
             {
                 return true;
             }
@@ -174,22 +174,22 @@ namespace Abilifier
             {
                 if (!extension.MustMatchAllComponent)
                 {
-                    return extension.TargetComponentTagMatch.Overlaps(mechDef.GetTags());
+                    return EffectDataExtensions.MatchAnyTag(extension, mechDef.GetTags());
                 }
                 else
                 {
-                    return (extension.TargetComponentTagMatch.All(x => mechDef.GetTags().Contains(x)));
+                    return EffectDataExtensions.MatchAllTags(extension, mechDef.GetTags());
                 }
             }
             else
             {
                 if (!extension.MustMatchAllComponent)
                 {
-                    return extension.TargetComponentTagMatch.Overlaps(componentDef.ComponentTags);
+                    return EffectDataExtensions.MatchAnyTag(extension, componentDef.ComponentTags);
                 }
                 else
                 {
-                    return (extension.TargetComponentTagMatch.All(x => componentDef.ComponentTags.Contains(x)));
+                    return EffectDataExtensions.MatchAllTags(extension, componentDef.ComponentTags);
                 }
             }
         }
