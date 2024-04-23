@@ -35,7 +35,7 @@ namespace Abilifier.Patches
                     return;
                 }
                 //Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement] Processing end of movement for {actor.DisplayName} - {actor.GetPilot().Callsign}");
-
+                
                 __instance.expiringEffects.Clear();
                 for (int i = 0; i < __instance.effects.Count; i++)
                 {
@@ -45,7 +45,7 @@ namespace Abilifier.Patches
                     if (Mod.modSettings.ticksOnMovementDistanceIDs.Contains(effect.EffectData.Description.Id))
                     {
                         Mod.modLog?.Info?.Write($"[EffectManager_NotifyEndOfMovement] found settings for {effect.EffectData.Description.Id}");
-                        if (effect.Duration.activationActorGUID == targetGUID)
+                        if (effect.targetID == targetGUID)
                         {
                             if (effect.Duration.isRunning)
                             {
@@ -72,6 +72,7 @@ namespace Abilifier.Patches
                         }
                     }
                 }
+
                 for (int j = __instance.expiringEffects.Count - 1; j >= 0; j--)
                 {
                     __instance.expiringEffects[j].OnEffectExpiration();
