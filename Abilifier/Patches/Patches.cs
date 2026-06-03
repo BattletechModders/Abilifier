@@ -350,47 +350,74 @@ namespace Abilifier.Patches
             public static void Postfix(SGBarracksSkillPip __instance, SGBarracksSkillPip.PurchaseState purchaseState,
                 bool canClick, bool showXP, bool needXP, bool isLocked)
             {
-                var sim = UnityGameInstance.BattleTechGame.Simulation;
-                var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
-
-                var abilityDefs = new List<AbilityDef>();
-                foreach (var abilityDictionary in abilityDictionaries)
+                // This postfix runs inside the barracks roster-population coroutine
+                // (SGBarracksRosterList.WaitForPortraitRender -> SGBarracksMWDetailPanel
+                // .DisplayPilot -> SGBarracksAdvancementPanel.SetPips -> SGBarracksSkillPip
+                // .Set). A NullReferenceException thrown here kills that coroutine, so the
+                // Barracks never finishes loading and hangs on its spinner. Guard every
+                // dereference and bail gracefully instead of throwing.
+                try
                 {
-                    abilityDefs.AddRange(abilityDictionary[__instance.idx]
-                        .Where(x => x.ReqSkill.ToString() == __instance.type));
+                    if (__instance == null) return;
+
+                    var sim = UnityGameInstance.BattleTechGame?.Simulation;
+                    if (sim?.AbilityTree == null) return;
+
+                    var abilityDictionaries = sim.AbilityTree.Select(x => x.Value).ToList();
+
+                    var abilityDefs = new List<AbilityDef>();
+                    foreach (var abilityDictionary in abilityDictionaries)
+                    {
+                        if (abilityDictionary == null) continue;
+                        // Indexer would throw KeyNotFoundException when this tree has no
+                        // entry at the pip's level; TryGetValue skips it instead.
+                        if (!abilityDictionary.TryGetValue(__instance.idx, out var abilitiesAtLevel) || abilitiesAtLevel == null)
+                            continue;
+                        abilityDefs.AddRange(abilitiesAtLevel
+                            .Where(x => x != null && x.ReqSkill.ToString() == __instance.type));
+                    }
+
+                    var title = $"{__instance.type}: Level {__instance.idx + 1} Ability Options";
+
+                    var desc = "";
+
+
+                    foreach (var ability in abilityDefs)
+                    {
+                        if (ability?.Description == null) continue;
+
+                        var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
+
+                        List<AbilityDef> abilitiesWithReqs =
+                            abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
+
+                        if (abilitiesWithReqs.Contains(ability))
+                        {
+                            var reqAbilityName = modSettings.abilityReqs
+                                .FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
+
+                            sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
+
+                            // reqAbility is null when TryGet fails; fall back to the id/name
+                            // instead of dereferencing null.Description.Name.
+                            desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
+                                    (reqAbility?.Description?.Name ?? reqAbilityName ?? "Unknown") + "\n\n" + Helpers.ProcessAbilityDefDetailString(ability) + "\n\n\n";
+                        }
+                        else
+                        {
+                            desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + Helpers.ProcessAbilityDefDetailString(ability) +
+                                    "\n\n\n";
+                        }
+                    }
+
+                    if (__instance.AbilityTooltip == null) return;
+                    var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
+                    __instance.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
                 }
-
-                var title = $"{__instance.type}: Level {__instance.idx + 1} Ability Options";
-
-                var desc = "";
-
-
-                foreach (var ability in abilityDefs)
+                catch (Exception e)
                 {
-                    var abilityFilter = modSettings.abilityReqs.Values.SelectMany(x => x).ToList();
-
-                    List<AbilityDef> abilitiesWithReqs =
-                        abilityDefs.Where(x => abilityFilter.Any(y => y.Equals(x.Id))).ToList();
-
-                    if (abilitiesWithReqs.Contains(ability))
-                    {
-                        var reqAbilityName = modSettings.abilityReqs
-                            .FirstOrDefault(x => x.Value.Contains(ability.Description.Id)).Key;
-
-                        sim.DataManager.AbilityDefs.TryGet(reqAbilityName, out var reqAbility);
-
-                        desc += "<b><u>" + ability.Description.Name + "</b></u> - Requires: " +
-                                reqAbility.Description.Name + "\n\n" + Helpers.ProcessAbilityDefDetailString(ability) + "\n\n\n";
-                    }
-                    else
-                    {
-                        desc += "<b><u>" + ability.Description.Name + "</b></u>\n\n" + Helpers.ProcessAbilityDefDetailString(ability) +
-                                "\n\n\n";
-                    }
+                    modLog?.Error?.Write($"SGBarracksSkillPip.Set postfix failed (type={__instance?.type}, idx={__instance?.idx}): {e}");
                 }
-
-                var descDef = new BaseDescriptionDef("PilotSpecs", title, desc, null);
-                __instance.AbilityTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(descDef));
             }
         }
 
