@@ -206,7 +206,7 @@ namespace Abilifier.Framework
             }
         }
 
-        public static void TryUpdateAbilities(Pilot pilot)
+        public static void TryUpdateAbilities(Pilot pilot, bool initLateAbilities = false)
         {
             if (dataManager.PilotDefs.Exists(pilot.pilotDef.Description.Id)
                 && pilot.pilotDef == dataManager.PilotDefs.Get(pilot.pilotDef.Description.Id))
@@ -227,6 +227,7 @@ namespace Abilifier.Framework
                     return;
             }
 
+            var namesBefore = pilotDef.abilityDefNames.ToList();
 
             reloadAbilities |= UpdateAbilitiesFromTree(pilotDef);
             reloadAbilities |= UpdateAbilitiesFromTags(pilotDef);
@@ -253,7 +254,7 @@ namespace Abilifier.Framework
                     reloadAbilities |= SwapAIAbilities(pilotDef);
             }
 
-            reloadAbilities = UpgradeAbilities(pilotDef);
+            reloadAbilities |= UpgradeAbilities(pilotDef);
 
             if (reloadAbilities)
             {
@@ -264,6 +265,76 @@ namespace Abilifier.Framework
                     pilotDef.DataManager = dataManager;
 
                 pilotDef.ForceRefreshAbilityDefs();
+            }
+
+            if (initLateAbilities)
+            {
+                InitLateAbilities(pilot, namesBefore.Except(pilotDef.abilityDefNames).ToList());
+            }
+        }
+
+        private static void InitLateAbilities(Pilot pilot, List<string> removed)
+        {
+            var combat = pilot.Combat;
+            if (combat == null || combat.IsLoadingFromSave || pilot.Abilities == null || pilot.ParentActor == null || pilot.pilotDef.AbilityDefs == null)
+            {
+                return;
+            }
+
+            RemoveLateAbilities(pilot, combat, removed);
+            AddLateAbilities(pilot, combat);
+        }
+
+        private static void RemoveLateAbilities(Pilot pilot, CombatGameState combat, List<string> removed)
+        {
+            foreach (var ability in pilot.Abilities.Where(x => removed.Contains(x.Def.Id)).ToList())
+            {
+                pilot.Abilities.Remove(ability);
+                pilot.ActiveAbilities.Remove(ability);
+                pilot.AuraAbilities.Remove(ability);
+                pilot.PassiveAbilities.Remove(ability);
+                pilot.OnInjuredAbilities.Remove(ability);
+                pilot.OnReserveAbilities.Remove(ability);
+                foreach (var effect in combat.EffectManager.GetAllEffectsWithID(ability.Def.Id).Where(x => x.Target == pilot.ParentActor).ToList())
+                {
+                    combat.EffectManager.CancelEffect(effect);
+                }
+
+                Mod.HBSLog.Log($"{pilot.pilotDef.Description.Id}: Removed late ability '{ability.Def.Id}'");
+            }
+        }
+
+        private static void AddLateAbilities(Pilot pilot, CombatGameState combat)
+        {
+            foreach (var defAbility in pilot.pilotDef.AbilityDefs.ToList())
+            {
+                if (pilot.Abilities.Any(currentAbility => currentAbility.Def.Id == defAbility.Id))
+                {
+                    continue;
+                }
+
+                var ability = new Ability(defAbility);
+                ability.Init(combat);
+                pilot.Abilities.Add(ability);
+                switch (defAbility.Targeting)
+                {
+                    case AbilityDef.TargetingType.MultiFire:
+                        pilot.StatCollection.ModifyStat("", -1, "MaxTargets", StatCollection.StatOperation.Set, 3);
+                        break;
+                    case AbilityDef.TargetingType.ConfirmCoolantVent:
+                        pilot.StatCollection.ModifyStat("", -1, "CanUseCoolantVent", StatCollection.StatOperation.Set, true);
+                        break;
+                }
+                pilot.SortAbilityIntoLists(ability);
+                if (pilot.PassiveAbilities.Contains(ability))
+                {
+                    foreach (var effectData in defAbility.EffectData)
+                    {
+                        combat.EffectManager.CreateEffect(effectData, defAbility.Id, 0, pilot.ParentActor, pilot.ParentActor, default, 0);
+                    }
+                }
+
+                Mod.HBSLog.Log($"{pilot.pilotDef.Description.Id}: Initialized late ability '{defAbility.Id}'");
             }
         }
 

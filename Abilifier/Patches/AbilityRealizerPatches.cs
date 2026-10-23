@@ -42,7 +42,7 @@ namespace Abilifier.Patches
         {
             public static void Postfix(Pilot __instance)
             {
-                Framework.AbilityRealizerFramework.TryUpdateAbilities(__instance);
+                Framework.AbilityRealizerFramework.TryUpdateAbilities(__instance, true);
                 if (__instance.ParentActor == null && !Mod.AbilityRealizerSettings.DumpAbilityDefNamesAtAddToTeam) return;
                     Mod.HBSLog.Log($"[Pilot.AddToTeam] Dumping pilot abilitydefnames for {__instance.ParentActor?.DisplayName} - {__instance.ParentActor?.GUID}\n{string.Join(", ", __instance.pilotDef.abilityDefNames)}");
             }
